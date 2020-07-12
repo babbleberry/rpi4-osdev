@@ -201,7 +201,7 @@ void uart_writeText(char *buffer) {
 }
 ```
 
-You'll see that the two functions we defined in our _io.h_ header file now have some actual code, along with some other supporting functions. I'll explain what's going on in this code in the next lesson, but let's skip straight to the action now!
+You'll see that the two functions we defined in our _io.h_ header file now have some actual code, along with some other supporting functions. I'll explain what's going on in this code in the next tutorial, but let's skip straight to the action now!
 
 With your new _io.c_ and _io.h_ files in place, as well as the changes to _kernel.c_ made, run `make` to build your new OS. 
 
