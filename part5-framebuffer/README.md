@@ -84,7 +84,7 @@ If everything comes back as expected, then we're ready to write to the screen!
 Drawing a pixel
 ---------------
 
-To save us remembering RGB colour combinations, let's set up a simple 16-colour **palette**. Anyone remember the old [EGA/VGA palette](https://en.wikipedia.org/wiki/Enhanced_Graphics_Adapter)? If you take a look in `terminal.h`, you'll see the `vgapal` array sets up that same palette, with Black as item 0 and White as item 15, and many shades in between!
+To save us remembering RGB colour combinations, let's set up a simple 16-colour **palette**. Anyone remember the old [EGA/VGA palette](https://en.wikipedia.org/wiki/Enhanced_Graphics_Adapter)? If you take a look in _terminal.h_, you'll see the `vgapal` array sets up that same palette, with Black as item 0 and White as item 15, and many shades in between!
 
 Our `drawPixel` routine can then take an (x, y) coordinate and a colour. We use an `unsigned char` (8 bits) to represent two palette indexes at once, with the 4 most significant bits representing the background colour and the 4 least significant bits, the foreground colour. You may see why it's helpful to have only a 16-colour palette for now!
 
