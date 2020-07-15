@@ -123,7 +123,7 @@ Imagine an 8x8 "A":
 0 0 0 0 0 0 0 0 = 0x00
 ```
 
-This bitmap can be represented by just 8 bytes (the hexadecimal numbers after the = signs). When you look in `terminal.h`, you'll see that we've done this for many of the useful characters found in [code page 437](https://en.wikipedia.org/wiki/Code_page_437).
+This bitmap can be represented by just 8 bytes (the hexadecimal numbers after the = signs). When you look in _terminal.h_, you'll see that we've done this for many of the useful characters found in [code page 437](https://en.wikipedia.org/wiki/Code_page_437).
 
 `drawChar` should now be fairly self-explanatory. 
 
@@ -137,7 +137,7 @@ This bitmap can be represented by just 8 bytes (the hexadecimal numbers after th
 Updating our kernel to be more artistic
 ---------------------------------------
 
-Finally, we can create a work of art on-screen! Our updated `kernel.c` exercises all these graphics routines to draw the picture below.
+Finally, we can create a work of art on-screen! Our updated _kernel.c_ exercises all these graphics routines to draw the picture below.
 
 Build the kernel, copy it to your SD card. You may need to update your _config.txt_ once more. If you previously set the `hdmi_safe` parameter to get Raspbian going, you probably won't need it now. You might, however, need to set `hdmi_mode` and `hdmi_group` specifically to ensure we get into 1080p mode.
 
