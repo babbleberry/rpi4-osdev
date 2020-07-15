@@ -20,14 +20,14 @@ void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 {
     unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
 
-    for (int i=0;i<(FONT_HEIGHT*zoom);i++) {
+    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
         for (int j=0;j<(FONT_WIDTH*zoom);j++) {
             unsigned char mask = 1 << (j/zoom);
             unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
 
             drawPixel(x+j, y+i, col);
         }
-        glyph += (i%zoom) ? FONT_BPL : 0;
+        glyph += (i%zoom) ? 0 : FONT_BPL;
     }
 }
 ```
@@ -70,21 +70,23 @@ j=7 : (j / zoom) = 7       j=7 : (j / zoom) = 3
 ...                        ...
 ```
 
-So, that sorts out our horizontal zoom. To achieve the vertical zoom, it's a similar solution. Instead of advancing our glyph pointer by the number of bytes per line on each iteration, we do it one in every `zoom` iterations by making use of the **modulo** operator (I think of this as "remainder after division"). If `i` divided by `zoom` has a non-zero remainder then we advance our glyph pointer, otherwise we leave it where it is!
+So, that sorts out our horizontal zoom. To achieve the vertical zoom, it's a similar solution. Instead of advancing our glyph pointer by the number of bytes per line on each iteration, we do it one in every `zoom` iterations by making use of the **modulo** operator (I think of this as "remainder after division"). If `i` divided by `zoom` has no remainder then we advance our glyph pointer, otherwise we leave it where it is!
 
 ```c
 zoom=2
-i=0 : (i % zoom) = 0
-i=1 : (i % zoom) = 1 -> advance the pointer 
-i=2 : (i % zoom) = 0
-i=3 : (i % zoom) = 1 -> advance the pointer
-i=4 : (i % zoom) = 0
-i=5 : (i % zoom) = 1 -> advance the pointer
-i=6 : (i % zoom) = 0
-i=7 : (i % zoom) = 1 -> advance the pointer
+i=1 : (i % zoom) = 1
+i=2 : (i % zoom) = 0 -> advance the pointer 
+i=3 : (i % zoom) = 1
+i=4 : (i % zoom) = 0 -> advance the pointer
+i=5 : (i % zoom) = 1
+i=6 : (i % zoom) = 0 -> advance the pointer
+i=7 : (i % zoom) = 1
+i=8 : (i % zoom) = 0 -> advance the pointer
 ...
 ```
 
-By all means make these changes to _fb.c_ in your part5-framebuffer code and exercise them properly in _kernel.c_ to check that they work. Don't forget to update the function definition in _fb.h_ to include the `zoom` parameter too.
+Perhaps you can see why we changed our loop to count from 1 rather than 0?
 
-It is now trivial to modify `drawString` to take a `zoom` parameter and pass it through, so I won't document the changes here.
+If you want, you can now make these changes to _fb.c_ in your part5-framebuffer code and exercise them properly in _kernel.c_ to check that they work. Don't forget to update the function definition in _fb.h_ to include the `zoom` parameter too.
+
+It is also now trivial to modify `drawString` to take a `zoom` parameter and pass it through, so I won't document the changes here.
