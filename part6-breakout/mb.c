@@ -24,7 +24,7 @@ unsigned int mbox_call(unsigned char ch)
     // Wait until we can write
     while (mmio_read(MBOX_STATUS) & MBOX_FULL);
     
-    /* write the address of our message to the mailbox with channel identifier */
+    // Write the address of our buffer to the mailbox with the channel appended
     mmio_write(MBOX_WRITE, r);
 
     while (1) {

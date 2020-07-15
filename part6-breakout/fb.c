@@ -5,7 +5,6 @@
 unsigned int width, height, pitch, isrgb;
 unsigned char *fb;
 
-// Refer to https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface in write-up!
 void fb_init()
 {
     mbox[0] = 35*4; // Length of message in bytes
@@ -69,36 +68,6 @@ void drawPixel(int x, int y, unsigned char attr)
     *((unsigned int*)(fb + offs)) = vgapal[attr & 0x0f];
 }
 
-void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
-{
-    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
-
-    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
-	for (int j=0;j<(FONT_WIDTH*zoom);j++) {
-	    unsigned char mask = 1 << (j/zoom);
-	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
-
-	    drawPixel(x+j, y+i, col);
-	}
-	glyph += (i%zoom) ? 0 : FONT_BPL;
-    }
-}
-
-void drawString(int x, int y, char *s, unsigned char attr, int zoom)
-{
-    while(*s) {
-       if (*s == '\r') {
-          x = 0;
-       } else if(*s == '\n') {
-          x = 0; y += FONT_HEIGHT;
-       } else {
-	  drawChar(*s, x, y, attr, zoom);
-          x += (FONT_WIDTH*zoom);
-       }
-       s++;
-    }
-}
-
 void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill)
 {
     int y=y1;
@@ -106,39 +75,11 @@ void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill)
     while (y <= y2) {
        int x=x1;
        while (x <= x2) {
-	  if (fill || (x == x1 || x == x2) || (y == y1 || y == y2)) drawPixel(x, y, attr);
+	  if ((x == x1 || x == x2) || (y == y1 || y == y2)) drawPixel(x, y, attr);
+	  else if (fill) drawPixel(x, y, (attr & 0xf0) >> 4);
           x++;
        }
        y++;
-    }
-}
-
-void moveRect(int oldx, int oldy, int width, int height, int shiftx, int shifty, unsigned char attr)
-{
-    unsigned int newx = oldx + shiftx, newy = oldy + shifty;
-    unsigned int xcount = 0, ycount = 0;
-    unsigned int bitmap[width][height]; // This is very unsafe if it's too big for the stack...
-    unsigned int offs;
-
-    // Save the bitmap
-    while (xcount < width) {
-       while (ycount < height) {
-          offs = ((oldy + ycount) * pitch) + ((oldx + xcount) * 4);
-
-	  bitmap[xcount][ycount] = *((unsigned int*)(fb + offs));
-	  ycount++;
-       }
-       ycount=0;
-       xcount++;
-    }
-    // Wipe it out with background colour
-    drawRect(oldx, oldy, oldx + width, oldy + width, attr, 1);
-    // Draw it again
-    for (int i=newx;i<newx + width;i++) {
-        for (int j=newy;j<newy + height;j++) {
-            offs = (j * pitch) + (i * 4);
-	    *((unsigned int*)(fb + offs)) = bitmap[i-newx][j-newy];
-        }
     }
 }
 
@@ -173,20 +114,19 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
  
     while (x >= y) {
 	if (fill) {
-	   drawLine(x0 - y, y0 + x, x0 + y, y0 + x, attr);
-	   drawLine(x0 - x, y0 + y, x0 + x, y0 + y, attr);
-	   drawLine(x0 - x, y0 - y, x0 + x, y0 - y, attr);
-	   drawLine(x0 - y, y0 - x, x0 + y, y0 - x, attr);
-	} else {
-	   drawPixel(x0 - y, y0 + x, attr);
-	   drawPixel(x0 + y, y0 + x, attr);
-	   drawPixel(x0 - x, y0 + y, attr);
-           drawPixel(x0 + x, y0 + y, attr);
-	   drawPixel(x0 - x, y0 - y, attr);
-	   drawPixel(x0 + x, y0 - y, attr);
-	   drawPixel(x0 - y, y0 - x, attr);
-	   drawPixel(x0 + y, y0 - x, attr);
+	   drawLine(x0 - y, y0 + x, x0 + y, y0 + x, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 + y, x0 + x, y0 + y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 - y, x0 + x, y0 - y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - y, y0 - x, x0 + y, y0 - x, (attr & 0xf0) >> 4);
 	}
+	drawPixel(x0 - y, y0 + x, attr);
+	drawPixel(x0 + y, y0 + x, attr);
+	drawPixel(x0 - x, y0 + y, attr);
+        drawPixel(x0 + x, y0 + y, attr);
+	drawPixel(x0 - x, y0 - y, attr);
+	drawPixel(x0 + x, y0 - y, attr);
+	drawPixel(x0 - y, y0 - x, attr);
+	drawPixel(x0 + y, y0 - x, attr);
 
 	if (err <= 0) {
 	    y += 1;
@@ -197,6 +137,65 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
 	    x -= 1;
 	    err -= 2*x + 1;
 	}
+    }
+}
+
+void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
+{
+    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
+
+    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
+	for (int j=0;j<(FONT_WIDTH*zoom);j++) {
+	    unsigned char mask = 1 << (j/zoom);
+	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+
+	    drawPixel(x+j, y+i, col);
+	}
+	glyph += (i%zoom) ? 0 : FONT_BPL;
+    }
+}
+
+void drawString(int x, int y, char *s, unsigned char attr, int zoom)
+{
+    while(*s) {
+       if (*s == '\r') {
+          x = 0;
+       } else if(*s == '\n') {
+          x = 0; y += FONT_HEIGHT;
+       } else {
+	  drawChar(*s, x, y, attr, zoom);
+          x += (FONT_WIDTH*zoom);
+       }
+       s++;
+    }
+}
+
+void moveRect(int oldx, int oldy, int width, int height, int shiftx, int shifty, unsigned char attr)
+{
+    unsigned int newx = oldx + shiftx, newy = oldy + shifty;
+    unsigned int xcount = 0, ycount = 0;
+    unsigned int bitmap[width][height]; // This is very unsafe if it's too big for the stack...
+    unsigned int offs;
+
+    // Save the bitmap
+    while (xcount < width) {
+       while (ycount < height) {
+          offs = ((oldy + ycount) * pitch) + ((oldx + xcount) * 4);
+
+	  bitmap[xcount][ycount] = *((unsigned int*)(fb + offs));
+	  ycount++;
+       }
+       ycount=0;
+       xcount++;
+    }
+    // Wipe it out with background colour
+    drawRect(oldx, oldy, oldx + width, oldy + width, attr, 1);
+    // Draw it again
+    for (int i=newx;i<newx + width;i++) {
+        for (int j=newy;j<newy + height;j++) {
+            offs = (j * pitch) + (i * 4);
+	    *((unsigned int*)(fb + offs)) = bitmap[i-newx][j-newy];
+        }
     }
 }
 
