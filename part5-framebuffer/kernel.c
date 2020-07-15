@@ -7,10 +7,10 @@ void main()
     fb_init();
 
     drawRect(150,150,400,400,0x03,0);
-    drawRect(300,300,350,350,0x02,1);
+    drawRect(300,300,350,350,0x2e,1);
 
     drawCircle(960,540,250,0x0e,0);
-    drawCircle(960,540,50,0x04,1);
+    drawCircle(960,540,50,0x13,1);
 
     drawPixel(250,250,0x0e);
 

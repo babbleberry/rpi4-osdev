@@ -5,7 +5,6 @@
 unsigned int width, height, pitch, isrgb;
 unsigned char *fb;
 
-// Refer to https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface in write-up!
 void fb_init()
 {
     mbox[0] = 35*4; // Length of message in bytes
@@ -69,36 +68,6 @@ void drawPixel(int x, int y, unsigned char attr)
     *((unsigned int*)(fb + offs)) = vgapal[attr & 0x0f];
 }
 
-void drawChar(unsigned char ch, int x, int y, unsigned char attr)
-{
-    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
-
-    for (int i=1;i<=FONT_HEIGHT;i++) {
-	for (int j=0;j<FONT_WIDTH;j++) {
-	    unsigned char mask = 1 << j;
-	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
-
-	    drawPixel(x+j, y+i, col);
-	}
-	glyph += FONT_BPL;
-    }
-}
-
-void drawString(int x, int y, char *s, unsigned char attr)
-{
-    while(*s) {
-       if (*s == '\r') {
-          x = 0;
-       } else if(*s == '\n') {
-          x = 0; y += FONT_HEIGHT;
-       } else {
-	  drawChar(*s, x, y, attr);
-          x += FONT_WIDTH;
-       }
-       s++;
-    }
-}
-
 void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill)
 {
     int y=y1;
@@ -106,7 +75,8 @@ void drawRect(int x1, int y1, int x2, int y2, unsigned char attr, int fill)
     while (y <= y2) {
        int x=x1;
        while (x <= x2) {
-	  if (fill || (x == x1 || x == x2) || (y == y1 || y == y2)) drawPixel(x, y, attr);
+	  if ((x == x1 || x == x2) || (y == y1 || y == y2)) drawPixel(x, y, attr);
+	  else if (fill) drawPixel(x, y, (attr & 0xf0) >> 4);
           x++;
        }
        y++;
@@ -144,20 +114,19 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
  
     while (x >= y) {
 	if (fill) {
-	   drawLine(x0 - y, y0 + x, x0 + y, y0 + x, attr);
-	   drawLine(x0 - x, y0 + y, x0 + x, y0 + y, attr);
-	   drawLine(x0 - x, y0 - y, x0 + x, y0 - y, attr);
-	   drawLine(x0 - y, y0 - x, x0 + y, y0 - x, attr);
-	} else {
-	   drawPixel(x0 - y, y0 + x, attr);
-	   drawPixel(x0 + y, y0 + x, attr);
-	   drawPixel(x0 - x, y0 + y, attr);
-           drawPixel(x0 + x, y0 + y, attr);
-	   drawPixel(x0 - x, y0 - y, attr);
-	   drawPixel(x0 + x, y0 - y, attr);
-	   drawPixel(x0 - y, y0 - x, attr);
-	   drawPixel(x0 + y, y0 - x, attr);
+	   drawLine(x0 - y, y0 + x, x0 + y, y0 + x, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 + y, x0 + x, y0 + y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - x, y0 - y, x0 + x, y0 - y, (attr & 0xf0) >> 4);
+	   drawLine(x0 - y, y0 - x, x0 + y, y0 - x, (attr & 0xf0) >> 4);
 	}
+	drawPixel(x0 - y, y0 + x, attr);
+	drawPixel(x0 + y, y0 + x, attr);
+	drawPixel(x0 - x, y0 + y, attr);
+        drawPixel(x0 + x, y0 + y, attr);
+	drawPixel(x0 - x, y0 - y, attr);
+	drawPixel(x0 + x, y0 - y, attr);
+	drawPixel(x0 - y, y0 - x, attr);
+	drawPixel(x0 + y, y0 - x, attr);
 
 	if (err <= 0) {
 	    y += 1;
@@ -168,5 +137,35 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill)
 	    x -= 1;
 	    err -= 2*x + 1;
 	}
+    }
+}
+
+void drawChar(unsigned char ch, int x, int y, unsigned char attr)
+{
+    unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
+
+    for (int i=0;i<FONT_HEIGHT;i++) {
+	for (int j=0;j<FONT_WIDTH;j++) {
+	    unsigned char mask = 1 << j;
+	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
+
+	    drawPixel(x+j, y+i, col);
+	}
+	glyph += FONT_BPL;
+    }
+}
+
+void drawString(int x, int y, char *s, unsigned char attr)
+{
+    while (*s) {
+       if (*s == '\r') {
+          x = 0;
+       } else if(*s == '\n') {
+          x = 0; y += FONT_HEIGHT;
+       } else {
+	  drawChar(*s, x, y, attr);
+          x += FONT_WIDTH;
+       }
+       s++;
     }
 }
