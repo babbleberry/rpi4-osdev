@@ -157,7 +157,7 @@ void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 
 void drawString(int x, int y, char *s, unsigned char attr, int zoom)
 {
-    while(*s) {
+    while (*s) {
        if (*s == '\r') {
           x = 0;
        } else if(*s == '\n') {
