@@ -144,14 +144,14 @@ void drawChar(unsigned char ch, int x, int y, unsigned char attr, int zoom)
 {
     unsigned char *glyph = (unsigned char *)&font + (ch < FONT_NUMGLYPHS ? ch : 0) * FONT_BPG;
 
-    for (int i=1;i<=(FONT_HEIGHT*zoom);i++) {
+    for (int i=0;i<(FONT_HEIGHT*zoom);i++) {
 	for (int j=0;j<(FONT_WIDTH*zoom);j++) {
 	    unsigned char mask = 1 << (j/zoom);
 	    unsigned char col = (*glyph & mask) ? attr & 0x0f : (attr & 0xf0) >> 4;
 
 	    drawPixel(x+j, y+i, col);
 	}
-	glyph += (i%zoom) ? 0 : FONT_BPL;
+	glyph += (i%zoom) ? FONT_BPL : 0;
     }
 }
 
@@ -161,7 +161,7 @@ void drawString(int x, int y, char *s, unsigned char attr, int zoom)
        if (*s == '\r') {
           x = 0;
        } else if(*s == '\n') {
-          x = 0; y += FONT_HEIGHT;
+          x = 0; y += (FONT_HEIGHT*zoom);
        } else {
 	  drawChar(*s, x, y, attr, zoom);
           x += (FONT_WIDTH*zoom);
