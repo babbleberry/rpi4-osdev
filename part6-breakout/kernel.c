@@ -53,39 +53,20 @@ void moveObject(struct Object *object, int xoff, int yoff)
     object->y = object->y + yoff;
 }
 
-struct Object *objectAt(unsigned int x, unsigned int y)
+struct Object *detectCollision(struct Object *with, int xoff, int yoff)
 {
     for (int i=0; i<numobjs;i++) {
-        if (x >= objects[i].x && x <= objects[i].x + objects[i].width) {
-           if (y >= objects[i].y && y <= objects[i].y + objects[i].height) { 
-	      if (&objects[i] != ball && objects[i].alive == 1) {
-		 return &objects[i];
-              }
+	if (&objects[i] != with && objects[i].alive == 1) {
+	   if (with->x + xoff > objects[i].x + objects[i].width || objects[i].x > with->x + xoff + with->width) {
+              // with is too far left or right to ocllide
+	   } else if (with->y + yoff > objects[i].y + objects[i].height || objects[i].y > with->y + yoff + with->height) {
+              // with is too far up or down to ocllide
+	   } else {
+	      // Collision!
+	      return &objects[i];
 	   }
-	}
+        }
     }
-    return 0;
-}
-
-struct Object *detectCollision(int xoff, int yoff)
-{
-    struct Object *collision;
-
-    unsigned int x = ball->x + xoff;
-    unsigned int y = ball->y + yoff;
-
-    collision = objectAt(x,y);
-    if (collision) return collision;
-
-    collision = objectAt(x + ball->width, y);
-    if (collision) return collision;
-
-    collision = objectAt(x, y + ball->height);
-    if (collision) return collision;
-
-    collision = objectAt(x + ball->width, y + ball->height);
-    if (collision) return collision;
-
     return 0;
 }
 
@@ -207,7 +188,7 @@ void main()
        uart_loadOutputFifo();
 
        // Are we going to hit anything?
-       foundObject = detectCollision(velocity_x, velocity_y);
+       foundObject = detectCollision(ball, velocity_x, velocity_y);
 
        if (foundObject) {
           if (foundObject == paddle) {

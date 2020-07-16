@@ -85,8 +85,33 @@ i=8 : (i % zoom) = 0 -> advance the pointer
 ...
 ```
 
-Perhaps you can see why we changed our loop to count from 1 rather than 0?
+Perhaps you can see why we changed our outer loop to count from 1 rather than 0?
 
 If you want, you can now make these changes to _fb.c_ in your part5-framebuffer code and exercise them properly in _kernel.c_ to check that they work. Don't forget to update the function definition in _fb.h_ to include the `zoom` parameter too.
 
 It is also now trivial to modify `drawString` to take a `zoom` parameter and pass it through, so I won't document the changes here.
+
+Object tracking
+---------------
+
+As we can now draw text (e.g. a score/lives counter), rectangles (paddle & bricks) and circles (ball), we can recreate the Breakout game screen. Check out `initBall()`, `initPaddle()`, `initBricks()` and `drawScoreboard(score, lives)` in our new _kernel.c_.
+
+In addition to the graphics code, you'll see that we're keeping a record of each game object we create in the global `objects` array:
+
+ * its (x, y) coordinates
+ * its width & height
+ * what type of object it is (ball, paddle or brick)
+ * whether it's "alive"
+
+We also store a global pointer to the ball and paddle object, so they're easy to track down!
+
+As we'll need to knock out our bricks during gameplay, we create `removeObject(object)`, which simply draws a filled black rectangle over the object we pass, and sets its `alive` parameter to 0 to signal that it's now out of play.
+
+To know that our ball is about to hit a brick (or indeed the paddle), we'll need to detect **collisions**. We simply conduct a search of the alive objects and return the first object we find whose coordinates overlap. If no object is found, we return 0. `detectCollision(object, xoff, yoff)` implements this. Note that `xoff` and `yoff` can be negative since the ball could be travelling in any direction.
+
+Keyboard input
+--------------
+
+We'll be using the UART to take input, just like we did in part4-miniuart.
+
+`getUart()` simply checks if a key has been pressed and, if so, it returns the character, otherwise 0. We don't want this function to wait for a key, because gameplay needs to continue regardless.
