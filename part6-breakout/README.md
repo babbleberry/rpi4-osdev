@@ -123,7 +123,7 @@ Let's look at the new `main()` routine which controls the gameplay. Most of the 
 
 First, we check if we need to move the paddle. We'll move it left if we get a keypress of "h", and right if we get a keypress of "l". I would use the arrow keys normally, but they're a little harder to capture over the UART so we'll keep it simple for now.
 
-We now implement another function `moveObject(object, xoff, yoff)` to make these moves. This starts by calling another routine I've implemented in _fb.c_ to move a rectangular bitmap from one screen location to another, leaving only the background colour behind. It's a sloppy implementation, but it will do for now.
+We now implement another function `moveObject(object, xoff, yoff)` to make these moves. This starts by calling another routine I've implemented in _fb.c_ to move a rectangular bitmap from one screen location to another, leaving only the background colour behind. It's a sloppy implementation, but it will do for now. We then just update the object's (x, y) coordinates and return.
 
 With our paddle logic in place, let's deal with the ball. We've set some initial velocities but, before we actually move the ball, we need to check for collisions. If we're about to hit a brick, we:
 
@@ -137,9 +137,9 @@ If we're about to hit the paddle, we:
  * reverse our vertical direction 
  * make any necessary changes to our horizontal direction (in case we hit the side)
 
-We can then actually move our ball after a slight delay so gameplay isn't too fast! The delay code is implemented in _fb.c_ and uses the on-board timer on the ARM.
+We can then move our ball after a slight delay (so gameplay isn't too fast). The delay code is implemented in _fb.c_ and uses the on-board timer on the ARM.
 
-Finally, we just need to make sure we ball is in the game arena. We bounce it off the sides if we need to, but if it escapes the bottom of the screen then we lose a life and reset the paddle & ball. This is easy enough since we can just remove them and create new ones!
+Finally, we just need to make sure the ball is in the game arena. We bounce it off the sides if we need to but, if it escapes the bottom of the screen then we lose a life and reset both the paddle & ball. This is easy enough since we can just remove them and create new ones!
 
 Conclusion
 ----------
