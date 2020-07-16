@@ -204,7 +204,7 @@ void main()
           }
        }
 
-       wait_msec(4000); // Wait for a tenth of a second
+       wait_msec(4000); // Wait a little...
        moveObject(ball, velocity_x, velocity_y);
 
        // Check we're in the game arena still
