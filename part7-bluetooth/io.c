@@ -147,8 +147,8 @@ void uart_writeByteBlocking(unsigned char ch) {
 
 void uart_writeText(char *buffer) {
     while (*buffer) {
-       if (*buffer == '\n') uart_writeByteBlocking('\r');
-       uart_writeByteBlocking(*buffer++);
+       if (*buffer == '\n') uart_writeByteBlockingActual('\r');
+       uart_writeByteBlockingActual(*buffer++);
     }
 }
 
@@ -174,6 +174,6 @@ void uart_hex(unsigned int d) {
         // 0-9 => '0'-'9', 10-15 => 'A'-'F'
         n+=n>9?0x37:0x30;
 
-        uart_writeByteBlocking(n);
+        uart_writeByteBlockingActual(n);
     }
 }
