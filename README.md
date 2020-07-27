@@ -59,3 +59,5 @@ Download and unpack [Arm's gcc compiler](https://developer.arm.com/tools-and-sof
 I also advocate installing GNU make - you'll need it soon enough. Because I'm using WSL, for me that was simply a matter of typing `sudo apt install make` and entering my password.
 
 _Now you're ready to start writing your OS!_
+
+[Go to part1-bootstrapping >](/part1-bootstrapping)
