@@ -65,3 +65,5 @@ We can now read from our UART too! If you build the kernel and power on the RPi4
 _Now we're communicating in two directions!_
 
 We also implemented a software [FIFO buffer](https://en.wikipedia.org/wiki/FIFO_(computing_and_electronics)) for our UART communication. The RPi4 has limited buffer space for data arriving on the UART, and incorporating our own is likely to make it easier to manage incoming data in future.
+
+[Go to part5-framebuffer >](../part5-framebuffer)

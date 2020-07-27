@@ -149,3 +149,5 @@ I hope writing your first game was easier than you thought it might be - and on 
 _Well done, you've just written your first game!_
 
 ![The finished game](images/6-breakout-thefinishedgame.jpg)
+
+[Go to part7-bluetooth >](../part7-bluetooth)

@@ -154,3 +154,5 @@ Now fire up the RPi4!
 _We've done so much more than a basic "Hello world!" on-screen already!_ Sit back, relax and enjoy your artwork. In the next tutorial, we'll be combining graphics with keyboard input from the UART to create our first game.
 
 ![Our first on-screen artwork](images/5-framebuffer-screen.jpg)
+
+[Go to part6-breakout >](../part6-breakout)

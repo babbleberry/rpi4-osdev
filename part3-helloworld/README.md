@@ -215,3 +215,5 @@ Then:
 If you've followed all these instructions, after a few seconds you'll see "Hello world!" appear in your PuTTY window on your dev machine.
 
 _It's a message from your RPi4 to say that your OS is working. Proof at last!_
+
+[Go to part4-miniuart >](../part4-miniuart)
