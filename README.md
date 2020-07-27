@@ -60,4 +60,4 @@ I also advocate installing GNU make - you'll need it soon enough. Because I'm us
 
 _Now you're ready to start writing your OS!_
 
-[Go to part1-bootstrapping >](/part1-bootstrapping)
+[Go to part1-bootstrapping >](part1-bootstrapping)
