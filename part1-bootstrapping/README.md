@@ -104,3 +104,5 @@ __bss_size = (__bss_end - __bss_start)>>3;
 Writing linker scripts is [worth investigating](http://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html#SEC6) but, for our purposes, all you need to know is that by referencing `.text.boot` first and using the `KEEP()`, we ensure the `.text` section starts with our assembly code. That means our first instruction starts at 0x80000, which is exactly where the RPi4 will look for it when it boots. Our code will be run.
 
 _Now you're ready to compile and then boot your OS!_
+
+[Go to part2-building >](../part2-building)
