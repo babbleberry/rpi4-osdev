@@ -124,7 +124,7 @@ If you look in _kernel.c_, you'll see the main bulk of our scanning code. Exactl
 
 There may be one or more **ad report** in each event, and each contains the 48-bit Bluetooth address of the associated device e.g. `AA:BB:CC:DD:EE:FF` (bd_addr) as well as the data. I found a great article on the [Advertising Data Format from Silicon Labs](https://www.silabs.com/community/wireless/bluetooth/knowledge-base.entry.html/2017/02/10/bluetooth_advertisin-hGsf). Reading this will help you interpret my decode routines.
 
-Right now, I'm just printing the bd_addr (using the convenient `uart_hex` routine added to _io.c_), RSSI (an indicator of signal strength), the ad report type & length, and the manufacturer code if received (`ad_type == 0xff`).
+Right now, I'm just printing the bd_addr (using the convenient `uart_hex` routine added to _io.c_), the ad report type & length, and the friendly/full device name if received (ad_type 0x08 & 0x08 respectively).
 
 Proof of life!
 --------------
