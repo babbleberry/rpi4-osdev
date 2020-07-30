@@ -60,6 +60,17 @@ unsigned char *poll()
     return 0;
 }
 
+void print_bdaddr(long bd_addr)
+{
+    unsigned char byte;
+
+    for (int c=9;c>=4;c--) {
+        byte = (unsigned char)((bd_addr >> ((c-4)*8) & 0xff));
+	uart_hex(byte);
+	if (c != 4) uart_writeText(":");
+    }
+}
+
 void bt_update()
 {
     unsigned char *buf;
@@ -70,7 +81,7 @@ void bt_update()
 	  unsigned int c=0;
 
 	  if (numreports > 0 && data_len >= 11) {
-             uart_writeText("\ra("); 
+	     uart_writeText("\ra("); 
 	     for (int c=9;c>=4;c--) {
 		 if (c != 9) uart_writeText(":");
 		 uart_hex(buf[c]);
@@ -88,11 +99,10 @@ void bt_update()
 	           buf += 2;
 
    		   if (ad_len > 2) {
-		      uart_writeText(" -> adtype("); uart_hex(ad_type); uart_writeText(":"); uart_hex(ad_len); uart_writeText(")");
-
 		      if (ad_type == 0x09 || ad_type == 0x08) {
 			 unsigned int d=0;
 
+		         uart_writeText(" -> adtype("); uart_hex(ad_type); uart_writeText(":"); uart_hex(ad_len); uart_writeText(")");
 			 uart_writeText(" -> ");
 			 while (d<ad_len - 1) {
 			    uart_writeByteBlockingActual(buf[d]);
