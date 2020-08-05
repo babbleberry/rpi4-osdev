@@ -104,29 +104,8 @@ The firmware is simply a sequence of HCI commands following this format:
 
 We check each HCI command succeeds as we go, wait a second and then return. If it runs without error then we've loaded our firmware and we're ready to start some Bluetooth communications!
 
-The Bluetooth spec
-------------------
+Todo
+----
 
-From here, you must tackle the [Bluetooth specification](https://www.bluetooth.com/specifications/bluetooth-core-specification/). You really owe it to yourself to begin with a good understanding of how Bluetooth works - something that is beyond the scope of my write-up!
-
-I just picked some easy Bluetooth LE commands to implement for our "proof of life" (see the _LE CONTROLLER COMMANDS_ section of the spec):
-
- * setLEeventmask
- * setLEscanenable
- * setLEscanparameters
-
-Read through my implementation alongside the Bluetooth spec - you should see what's going on. Fortunately, these are all we need to start scanning for BLE devices around us. If I can show that I'm seeing other devices, then I've got my proof of life.
-
-Implementing scanning
----------------------
-
-If you look in _kernel.c_, you'll see the main bulk of our scanning code. Exactly as we described above, we first reset the chip, then load the firmware. After that, we set the LE event mask (tell the chip what we want to be notified about) and start scanning for events. `bt_update()` then polls the chip to see if any events are awaiting our attention.
-
-There may be one or more **ad report** in each event, and each contains the 48-bit Bluetooth address of the associated device e.g. `AA:BB:CC:DD:EE:FF` (bd_addr) as well as the data. I found a great article on the [Advertising Data Format from Silicon Labs](https://www.silabs.com/community/wireless/bluetooth/knowledge-base.entry.html/2017/02/10/bluetooth_advertisin-hGsf). Reading this will help you interpret my decode routines.
-
-Right now, I'm just printing the bd_addr (using the convenient `uart_hex` routine added to _io.c_), the ad report type & length, and the friendly/full device name if received (ad_type 0x08/0x09 respectively).
-
-Proof of life!
---------------
-
-And, when I build and run this, I see reports coming in from my neighbouring Bluetooth speaker - magic! _This is our first step towards low-level Bluetooth control of the RPi4._
+ * Write up scanning implementation (receiving advertising reports)
+ * Write up advertising implementation (simple Eddystone Beacon)

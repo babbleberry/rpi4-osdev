@@ -39,6 +39,7 @@ void bt_writeByte(char byte)
 {
     while ((mmio_read(ARM_UART0_FR) & 0x20) != 0);
     mmio_write(ARM_UART0_DR, (unsigned int)byte);
+    uart_byte(byte);
 }
 
 void bt_flushrx()
@@ -74,15 +75,17 @@ enum {
     OGF_LE_CONTROL            = 0x08,
     OGF_VENDOR                = 0x3f,
 
+    COMMAND_SET_BDADDR        = 0x01,
     COMMAND_RESET_CHIP        = 0x03,
+    COMMAND_SET_BAUD          = 0x18,
     COMMAND_LOAD_FIRMWARE     = 0x2e,
 
     HCI_COMMAND_PKT           = 0x01,
     HCI_EVENT_PKT             = 0x04,
-
     COMMAND_COMPLETE_CODE     = 0x0e,
 
-    LL_SCAN_ACTIVE            = 0x01
+    LL_SCAN_ACTIVE            = 0x01,
+    LL_ADV_NONCONN_IND        = 0x03
 };
 
 unsigned char empty[] = {};
@@ -91,12 +94,15 @@ int hciCommandBytes(unsigned char *opcodebytes, unsigned char *data, unsigned ch
 {
     unsigned char c=0;
 
+    uart_writeText("HCI_START\n");
     bt_writeByte(HCI_COMMAND_PKT);
     bt_writeByte(opcodebytes[0]);
     bt_writeByte(opcodebytes[1]);
     bt_writeByte(length);
 
+    uart_writeText("\n______ DATA:\n");
     while (c++<length) bt_writeByte(*data++);
+    uart_writeText("\nHCI_END\n");
 
     if (bt_waitReadByte() != HCI_EVENT_PKT) return 0;
     if (bt_waitReadByte() != COMMAND_COMPLETE_CODE) return 0;
@@ -115,6 +121,10 @@ int hciCommand(unsigned short ogf, unsigned short ocf, unsigned char *data, unsi
     unsigned char opcodebytes[2] = { lo(opcode), hi(opcode) };
 
     return hciCommandBytes(opcodebytes, data, length);
+}
+
+void bt_reset() {
+    if (!hciCommand(OGF_HOST_CONTROL, COMMAND_RESET_CHIP, empty, 0)) uart_writeText("bt_reset() failed\n");
 }
 
 void bt_loadfirmware()
@@ -142,6 +152,35 @@ void bt_loadfirmware()
     wait_msec(0x100000);
 }
 
+void bt_setbaud()
+{
+    static unsigned char params[] = { 0, 0, 0x00, 0xc2, 0x01, 0x00 }; // little endian, 115200
+    if (!hciCommand(OGF_VENDOR, COMMAND_SET_BAUD, params, 6)) uart_writeText("bt_setbaud() failed\n");
+}
+
+void bt_setbdaddr()
+{
+    static unsigned char params[] = { 0xee, 0xff, 0xc0, 0xee, 0xff, 0xc0 }; // reversed
+    if (!hciCommand(OGF_VENDOR, COMMAND_SET_BDADDR, params, 6)) uart_writeText("bt_setbdaddr() failed\n");
+}
+
+void bt_getbdaddr(unsigned char *bdaddr) {
+    bt_writeByte(HCI_COMMAND_PKT);
+    bt_writeByte(0x09);
+    bt_writeByte(0x10);
+    bt_writeByte(0x00);
+
+    if (bt_waitReadByte() != HCI_EVENT_PKT) return;
+    if (bt_waitReadByte() != COMMAND_COMPLETE_CODE) return;
+    if (bt_waitReadByte() != 0x0a) return;
+    if (bt_waitReadByte() != 1) return;
+    if (bt_waitReadByte() != 0x09) return;
+    if (bt_waitReadByte() != 0x10) return;
+    if (bt_waitReadByte() != 0x00) return;
+
+    for (int c=0;c<6;c++) bdaddr[c] = bt_waitReadByte();
+}
+
 void setLEeventmask(unsigned char mask)
 {
     unsigned char params[] = { mask, 0, 0, 0, 0, 0, 0, 0 };
@@ -158,6 +197,35 @@ void setLEscanparameters(unsigned char type, unsigned char linterval, unsigned c
     if (!hciCommand(OGF_LE_CONTROL, 0x0b, params, 7)) uart_writeText("setLEscanparameters failed\n");
 }
 
+void setLEadvertenable(unsigned char state) {
+    unsigned char params[] = { state };
+    uart_writeText("doing the HCIcommand\n");
+    if (!hciCommand(OGF_LE_CONTROL, 0x0a, params, 1)) uart_writeText("setLEadvertenable failed\n");
+}
+
+void setLEadvertparameters(unsigned char type, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max, unsigned char own_address_type, unsigned char filter_policy) {
+    unsigned char params[16] = { linterval_min, hinterval_min, linterval_max, hinterval_max, type, own_address_type, 0, 0, 0, 0, 0, 0, 0, 0x07, filter_policy };
+    uart_writeText("doing the HCIcommand\n");
+    if (!hciCommand(OGF_LE_CONTROL, 0x06, params, 15)) uart_writeText("setLEadvertparameters failed\n");
+}
+
+void setLEadvertdata() {
+    static unsigned char params[] = { 0x19,
+	                              0x02, 0x01, 0x06, 
+			              0x03, 0x03, 0xAA, 0xFE, 
+				      0x11, 0x16, 0xAA, 0xFE, 0x10, 0x00, 0x03, 0x69, 0x73, 0x6f, 0x6d, 0x65, 0x74, 0x69, 0x6d, 0x2e, 0x65, 0x73,
+				      0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    if (!hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
+}
+
+void stopScanning() {
+    setLEscanenable(0, 0);
+}
+
+void stopAdvertising() {
+    setLEadvertenable(0);
+}
+
 void startActiveScanning() {
     float BleScanUnitsPerSecond = 1600;
     float BleScanInterval = 0.8;
@@ -170,10 +238,15 @@ void startActiveScanning() {
     setLEscanenable(1, 0);
 }
 
-void stopScanning() {
-    setLEscanenable(0, 0);
-}
+void startActiveAdvertising() {
+    float advertMinFreq = 100; // every 48ms
+    float advertMaxFreq = 100; // every 48ms
+    float bleGranularity = 0.625;
 
-void bt_reset() {
-    if (!hciCommand(OGF_HOST_CONTROL, COMMAND_RESET_CHIP, empty, 0)) uart_writeText("bt_reset() failed\n");
+    unsigned int min_interval = advertMinFreq / bleGranularity;
+    unsigned int max_interval = advertMaxFreq / bleGranularity;
+
+    setLEadvertparameters(LL_ADV_NONCONN_IND, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval), 0, 0);
+    setLEadvertdata();
+    setLEadvertenable(1);
 }

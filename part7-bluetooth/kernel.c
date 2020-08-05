@@ -60,17 +60,6 @@ unsigned char *poll()
     return 0;
 }
 
-void print_bdaddr(long bd_addr)
-{
-    unsigned char byte;
-
-    for (int c=9;c>=4;c--) {
-        byte = (unsigned char)((bd_addr >> ((c-4)*8) & 0xff));
-	uart_hex(byte);
-	if (c != 4) uart_writeText(":");
-    }
-}
-
 void bt_update()
 {
     unsigned char *buf;
@@ -132,8 +121,27 @@ void main()
     uart_writeText("bt_loadfirmware()\n");
     bt_loadfirmware();
 
+    uart_writeText("bt_setbaud()\n");
+    bt_setbaud();
+
+    uart_writeText("bt_setbdaddr()\n");
+    bt_setbdaddr();
+
+    /*
+    uart_writeText("startActiveScanning()\n");
     setLEeventmask(0xff);
     startActiveScanning();
+    */
+    
+    unsigned char local_addr[6];
+    uart_writeText("bt_getbdaddr()\n");
+    bt_getbdaddr(local_addr);
+    uart_writeText("\nBD_ADDR is ");
+    for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
+    uart_writeText("\n");
+
+    uart_writeText("startActiveAdvertising()\n");
+    startActiveAdvertising();
 
     uart_writeText("Waiting for input...\n");
     while (1) {

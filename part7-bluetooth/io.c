@@ -177,3 +177,17 @@ void uart_hex(unsigned int d) {
         uart_writeByteBlockingActual(n);
     }
 }
+
+void uart_byte(unsigned char b) {
+    unsigned int n;
+    int c;
+    for(c=4;c>=0;c-=4) {
+        // get highest tetrad
+        n=(b>>c)&0xF;
+        // 0-9 => '0'-'9', 10-15 => 'A'-'F'
+        n+=n>9?0x37:0x30;
+
+        uart_writeByteBlockingActual(n);
+    }
+    uart_writeByteBlockingActual(' ');
+}

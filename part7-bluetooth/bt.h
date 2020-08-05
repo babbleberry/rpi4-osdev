@@ -1,7 +1,11 @@
 void bt_reset();
-void bt_init();
 void bt_loadfirmware();
-void setLEeventmask(unsigned char mask);
-void startActiveScanning();
+void bt_setbaud();
+void bt_setbdaddr();
+void bt_getbdaddr(unsigned char *bdaddr);
+void bt_init();
 unsigned int bt_isReadByteReady();
 unsigned char bt_readByte();
+void setLEeventmask(unsigned char mask);
+void startActiveScanning();
+void startActiveAdvertising();
