@@ -110,5 +110,4 @@ Todo
  * Write up scanning implementation (receiving advertising reports)
  * Write up advertising implementation (simple Eddystone Beacon)
 
-![BLE advertising is working](images/7-ble-advertising.png)
-![Detected Eddystone Beacon](images/7-eddystone-beacon.png)
+![Working Eddystone Beacon on RPi4](images/7-eddystone-beacon.png)
