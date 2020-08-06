@@ -239,8 +239,8 @@ void startActiveScanning() {
 }
 
 void startActiveAdvertising() {
-    float advertMinFreq = 100; // every 48ms
-    float advertMaxFreq = 100; // every 48ms
+    float advertMinFreq = 100; // every 100ms
+    float advertMaxFreq = 100; // every 100ms
     float bleGranularity = 0.625;
 
     unsigned int min_interval = advertMinFreq / bleGranularity;

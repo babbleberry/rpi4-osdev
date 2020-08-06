@@ -127,12 +127,7 @@ void main()
     uart_writeText("bt_setbdaddr()\n");
     bt_setbdaddr();
 
-    /*
-    uart_writeText("startActiveScanning()\n");
-    setLEeventmask(0xff);
-    startActiveScanning();
-    */
-    
+    // Check we set the BD_ADDR correctly
     unsigned char local_addr[6];
     uart_writeText("bt_getbdaddr()\n");
     bt_getbdaddr(local_addr);
@@ -140,6 +135,14 @@ void main()
     for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
     uart_writeText("\n");
 
+    // Start scanning for devices around us
+    /*
+    uart_writeText("startActiveScanning()\n");
+    setLEeventmask(0xff);
+    startActiveScanning();
+    */
+    
+    // Get the Eddystone beacon going
     uart_writeText("startActiveAdvertising()\n");
     startActiveAdvertising();
 
