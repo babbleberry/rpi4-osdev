@@ -255,7 +255,7 @@ void stopAdvertising() {
 }
 
 void startActiveScanning() {
-    float BleScanInterval = 60;
+    float BleScanInterval = 60; // every 60ms
     float BleScanWindow = 60;
     float BleScanDivisor = 0.625;
 
@@ -269,25 +269,6 @@ void startActiveScanning() {
     wait_msec(0x100000);
 }
 
-void connect()
-{
-    float BleScanInterval = 60;
-    float BleScanWindow = 60;
-    float BleScanDivisor = 0.625;
-
-    float connMinFreq = 30; // every 100ms
-    float connMaxFreq = 50; // every 100ms
-    float BleGranularity = 1.25;
-
-    unsigned int p = BleScanInterval / BleScanDivisor;
-    unsigned int q = BleScanWindow / BleScanDivisor;
-
-    unsigned int min_interval = connMinFreq / BleGranularity;
-    unsigned int max_interval = connMaxFreq / BleGranularity;
-
-    createLEconnection(lo(p), hi(p), lo(q), hi(q), 0, 0, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval));
-}
-
 void startActiveAdvertising() {
     float advertMinFreq = 100; // every 100ms
     float advertMaxFreq = 100; // every 100ms
@@ -299,4 +280,23 @@ void startActiveAdvertising() {
     setLEadvertparameters(LL_ADV_NONCONN_IND, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval), 0, 0);
     setLEadvertdata();
     setLEadvertenable(1);
+}
+
+void connect()
+{
+    float BleScanInterval = 60; // every 60ms
+    float BleScanWindow = 60;
+    float BleScanDivisor = 0.625;
+
+    float connMinFreq = 30; // every 30ms
+    float connMaxFreq = 50; // every 50ms
+    float BleGranularity = 1.25;
+
+    unsigned int p = BleScanInterval / BleScanDivisor;
+    unsigned int q = BleScanWindow / BleScanDivisor;
+
+    unsigned int min_interval = connMinFreq / BleGranularity;
+    unsigned int max_interval = connMaxFreq / BleGranularity;
+
+    createLEconnection(lo(p), hi(p), lo(q), hi(q), 0, 0, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval));
 }

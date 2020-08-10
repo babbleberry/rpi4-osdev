@@ -146,8 +146,8 @@ void main()
     for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
     uart_writeText("\n");
 
-    // Start scanning for devices around us
     /*
+    // Start scanning for devices around us
     uart_writeText("startActiveScanning()\n");
     setLEeventmask(0xff);
     startActiveScanning();
@@ -156,8 +156,8 @@ void main()
     uart_writeText("connect()\n");
     connect();
     
-    // Get the Eddystone beacon going
     /*
+    // Get the Eddystone beacon going
     uart_writeText("startActiveAdvertising()\n");
     startActiveAdvertising();
     */
