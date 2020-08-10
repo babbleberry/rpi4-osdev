@@ -67,45 +67,48 @@ void bt_update()
     while ( (buf = poll()) ) {
        if (data_len >= 2 && buf[0] == LE_ADREPORT_CODE) {
 	  unsigned char numreports = buf[1];
-	  unsigned int c=0;
 
-	  if (numreports > 0 && data_len >= 11) {
-	     uart_writeText("\ra("); 
-	     for (int c=9;c>=4;c--) {
-		 if (c != 9) uart_writeText(":");
-		 uart_hex(buf[c]);
-	     }
-	     uart_writeText(")");
+	  if (numreports == 1) {
+             unsigned char event_type = buf[2];
 
-	     unsigned char buf_len = buf[10];
+	     if (event_type == 0x00) {
+	        unsigned char buf_len = buf[10];
+		unsigned char ad_len = buf[11];
 
-	     if ((buf_len + 11) <= data_len - 1) {
-	        buf += 11;
+	        if (ad_len < data_len && 
+		   buf_len + 11 == data_len - 1) {
+	           for (int c=9;c>=4;c--) uart_byte(buf[c]);
 
-		while (c < numreports) {
-	           unsigned char ad_len = buf[0];
-	           unsigned char ad_type = buf[1];
-	           buf += 2;
+	           buf += 11;
 
-   		   if (ad_len > 2) {
-		      if (ad_type == 0x09 || ad_type == 0x08) {
-			 unsigned int d=0;
+		   unsigned char rssi = buf[buf_len];
+		   uart_writeText("-> rssi("); uart_hex(rssi); uart_writeText(")");
 
+		   do {
+	              ad_len = buf[0];
+	              unsigned char ad_type = buf[1];
+	              buf += 2;
+
+   		      if (ad_len >= 2) {
 		         uart_writeText(" -> adtype("); uart_hex(ad_type); uart_writeText(":"); uart_hex(ad_len); uart_writeText(")");
-			 uart_writeText(" -> ");
-			 while (d<ad_len - 1) {
-			    uart_writeByteBlockingActual(buf[d]);
-			    d++;
-			 }
-			 uart_writeText("\n");
-		      }
-	           }
 
-		   buf += ad_len - 1;
-	           c++;
-		}
+		         if (ad_type == 0x09) {
+		            unsigned int d=0;
+		            uart_writeText(" -> ");
+		            while (d<ad_len - 1) {
+		               uart_writeByteBlockingActual(buf[d]);
+		               d++;
+		            }
+	                 }
+	              }
+
+		      buf += ad_len - 1;
+		   } while (buf[1]);
+
+		   uart_writeText("\n");
+	        }
 	     }
-	  }
+          }
        }
     }
 }
@@ -136,15 +139,15 @@ void main()
     uart_writeText("\n");
 
     // Start scanning for devices around us
-    /*
     uart_writeText("startActiveScanning()\n");
     setLEeventmask(0xff);
     startActiveScanning();
-    */
     
     // Get the Eddystone beacon going
+    /*
     uart_writeText("startActiveAdvertising()\n");
     startActiveAdvertising();
+    */
 
     uart_writeText("Waiting for input...\n");
     while (1) {

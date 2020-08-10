@@ -218,6 +218,12 @@ void setLEadvertdata() {
     if (!hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
 }
 
+void setLEwhitelist() {
+    static unsigned char params[] = { 0x00,
+				      0xBC, 0xF2, 0xCA, 0x32, 0xBC, 0xAC };
+    if (!hciCommand(OGF_LE_CONTROL, 0x11, params, 7)) uart_writeText("setLEwhitelist failed\n");
+}
+
 void stopScanning() {
     setLEscanenable(0, 0);
 }
@@ -234,8 +240,11 @@ void startActiveScanning() {
     unsigned int p = BleScanInterval * BleScanUnitsPerSecond;
     unsigned int q = BleScanWindow * BleScanUnitsPerSecond;
 
-    setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 0);
+    setLEwhitelist();
+    setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
     setLEscanenable(1, 0);
+    
+    wait_msec(0x100000);
 }
 
 void startActiveAdvertising() {
