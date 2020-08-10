@@ -9,3 +9,4 @@ unsigned char bt_readByte();
 void setLEeventmask(unsigned char mask);
 void startActiveScanning();
 void startActiveAdvertising();
+void connect();

@@ -39,7 +39,6 @@ void bt_writeByte(char byte)
 {
     while ((mmio_read(ARM_UART0_FR) & 0x20) != 0);
     mmio_write(ARM_UART0_DR, (unsigned int)byte);
-    uart_byte(byte);
 }
 
 void bt_flushrx()
@@ -83,6 +82,7 @@ enum {
     HCI_COMMAND_PKT           = 0x01,
     HCI_EVENT_PKT             = 0x04,
     COMMAND_COMPLETE_CODE     = 0x0e,
+    CONNECT_COMPLETE_CODE     = 0x0f,
 
     LL_SCAN_ACTIVE            = 0x01,
     LL_ADV_NONCONN_IND        = 0x03
@@ -94,23 +94,35 @@ int hciCommandBytes(unsigned char *opcodebytes, unsigned char *data, unsigned ch
 {
     unsigned char c=0;
 
-    uart_writeText("HCI_START\n");
     bt_writeByte(HCI_COMMAND_PKT);
     bt_writeByte(opcodebytes[0]);
     bt_writeByte(opcodebytes[1]);
     bt_writeByte(length);
 
-    uart_writeText("\n______ DATA:\n");
     while (c++<length) bt_writeByte(*data++);
-    uart_writeText("\nHCI_END\n");
 
     if (bt_waitReadByte() != HCI_EVENT_PKT) return 0;
-    if (bt_waitReadByte() != COMMAND_COMPLETE_CODE) return 0;
-    if (bt_waitReadByte() != 4) return 0;
-    if (bt_waitReadByte() == 0) return 0;
-    if (bt_waitReadByte() != opcodebytes[0]) return 0;
-    if (bt_waitReadByte() != opcodebytes[1]) return 0;
-    if (bt_waitReadByte() != 0) return 0;
+
+    unsigned char code = bt_waitReadByte();
+    if (code == CONNECT_COMPLETE_CODE) {
+       if (bt_waitReadByte() != 4) return 0;
+
+       unsigned char err = bt_waitReadByte();
+       if (err != 0) {
+	  uart_writeText("Saw HCI COMMAND STATUS error "); uart_hex(err); uart_writeText("\n");
+	  return 0;
+       }
+
+       if (bt_waitReadByte() == 0) return 0;
+       if (bt_waitReadByte() != opcodebytes[0]) return 0;
+       if (bt_waitReadByte() != opcodebytes[1]) return 0;
+    } else if (code == COMMAND_COMPLETE_CODE) {
+       if (bt_waitReadByte() != 4) return 0;
+       if (bt_waitReadByte() == 0) return 0;
+       if (bt_waitReadByte() != opcodebytes[0]) return 0;
+       if (bt_waitReadByte() != opcodebytes[1]) return 0;
+       if (bt_waitReadByte() != 0) return 0;
+    } else return 0;
 
     return 1;
 }
@@ -224,6 +236,16 @@ void setLEwhitelist() {
     if (!hciCommand(OGF_LE_CONTROL, 0x11, params, 7)) uart_writeText("setLEwhitelist failed\n");
 }
 
+void createLEconnection(unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max) {
+    unsigned char params[26] = { linterval, hinterval, lwindow, hwindow, 
+	                       filter_policy,
+	                       0, 0xBC, 0xF2, 0xCA, 0x32, 0xBC, 0xAC, 
+			       own_address_type,
+			       linterval_min, hinterval_min, linterval_max, hinterval_max, 
+			       0, 0, 0x2a, 0x00, 0, 0, 0, 0 };
+    if (!hciCommand(OGF_LE_CONTROL, 0x0d, params, 25)) uart_writeText("createLEconnection failed\n");
+}
+
 void stopScanning() {
     setLEscanenable(0, 0);
 }
@@ -233,18 +255,37 @@ void stopAdvertising() {
 }
 
 void startActiveScanning() {
-    float BleScanUnitsPerSecond = 1600;
-    float BleScanInterval = 0.8;
-    float BleScanWindow = 0.4;
+    float BleScanInterval = 60;
+    float BleScanWindow = 60;
+    float BleScanDivisor = 0.625;
 
-    unsigned int p = BleScanInterval * BleScanUnitsPerSecond;
-    unsigned int q = BleScanWindow * BleScanUnitsPerSecond;
+    unsigned int p = BleScanInterval / BleScanDivisor;
+    unsigned int q = BleScanWindow / BleScanDivisor;
 
     setLEwhitelist();
     setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
     setLEscanenable(1, 0);
     
     wait_msec(0x100000);
+}
+
+void connect()
+{
+    float BleScanInterval = 60;
+    float BleScanWindow = 60;
+    float BleScanDivisor = 0.625;
+
+    float connMinFreq = 30; // every 100ms
+    float connMaxFreq = 50; // every 100ms
+    float BleGranularity = 1.25;
+
+    unsigned int p = BleScanInterval / BleScanDivisor;
+    unsigned int q = BleScanWindow / BleScanDivisor;
+
+    unsigned int min_interval = connMinFreq / BleGranularity;
+    unsigned int max_interval = connMaxFreq / BleGranularity;
+
+    createLEconnection(lo(p), hi(p), lo(q), hi(q), 0, 0, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval));
 }
 
 void startActiveAdvertising() {
