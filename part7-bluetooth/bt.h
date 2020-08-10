@@ -8,5 +8,6 @@ unsigned int bt_isReadByteReady();
 unsigned char bt_readByte();
 void setLEeventmask(unsigned char mask);
 void startActiveScanning();
+void stopScanning();
 void startActiveAdvertising();
-void connect();
+void connect(unsigned char *addr);

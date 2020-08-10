@@ -1,5 +1,8 @@
 #include "io.h"
 #include "bt.h"
+#include "fb.h"
+
+#define memcmp         __builtin_memcmp
 
 #define MAX_MSG_LEN    50
 #define MAX_READ_RUN   100
@@ -15,6 +18,10 @@ enum {
     LE_ADREPORT_CODE          = 0x02,
     HCI_EVENT_PKT             = 0x04
 };
+
+unsigned int got_echo_sid = 0;
+unsigned int got_echo_name = 0;
+unsigned char echo_addr[6];
 
 unsigned int connected = 0;
 unsigned int connection_handle = 0;
@@ -64,7 +71,7 @@ unsigned char *poll()
     return 0;
 }
 
-void bt_update()
+void bt_search()
 {
     unsigned char *buf;
 
@@ -81,41 +88,62 @@ void bt_update()
 		   unsigned char ad_len = buf[11];
 
 	           if (ad_len < data_len && buf_len + 11 == data_len - 1) {
-	              for (int c=9;c>=4;c--) uart_byte(buf[c]);
+	              for (int c=9;c>=4;c--) echo_addr[9-c] = buf[c];
 	              buf += 11;
 
-		      unsigned char rssi = buf[buf_len];
-		      uart_writeText("-> rssi("); uart_hex(rssi); uart_writeText(")");
-
+		      got_echo_sid = 0; got_echo_name = 0; // Reset the search state machine
 		      do {
 	                 ad_len = buf[0];
 	                 unsigned char ad_type = buf[1];
 	                 buf += 2;
 
    		         if (ad_len >= 2) {
-		            uart_writeText(" -> adtype("); uart_hex(ad_type); uart_writeText(":"); uart_hex(ad_len); uart_writeText(")");
+			    if (ad_type == 0x03) {
+			       unsigned int sid=0;
 
-		            if (ad_type == 0x09) {
+			       for (int d=0;d<ad_len - 1;d+=2) {
+			          sid = buf[d] | (buf[d+1] << 8);
+				  if (sid == 0xEC00) {
+			             uart_hex(sid); uart_writeText(" ");
+			             got_echo_sid = 1;
+				  }
+			       }
+			    } else if (ad_type == 0x09) {
+			       char remote_name[ad_len - 1];
 		               unsigned int d=0;
-		               uart_writeText(" -> ");
+
 		               while (d<ad_len - 1) {
-		                  uart_writeByteBlockingActual(buf[d]);
+				  remote_name[d] = buf[d];
 		                  d++;
 		               }
+			       if (!memcmp(remote_name,"echo",4)) {
+			          uart_writeText(remote_name); uart_writeText(" ");
+				  got_echo_name = 1;
+			       }
 	                    }
 	                 }
 
 		         buf += ad_len - 1;
 		      } while (buf[1]);
-
-		      uart_writeText("\n");
 	           }
 	        }
              }
-          } else if (buf[0] == LE_CONNECT_CODE && !connected) {
-             unsigned char status = buf[1];
+          }
+       }
+    }
+}
+
+void bt_conn()
+{
+    unsigned char *buf;
+
+    while ( (buf = poll()) ) {
+       if (data_len >= 2) {
+          if (buf[0] == LE_CONNECT_CODE && !connected) {
+             connected = !buf[1];
+	     uart_hex(connected); uart_writeText(" ");
 	     connection_handle = buf[2] | (buf[3] << 8);
-	     connected = (status == 0 && connection_handle != 0) ? 1 : 0;
+	     uart_hex(connection_handle); uart_writeText(" ");
 	  }
        }
     }
@@ -126,49 +154,40 @@ void main()
     uart_init();
     bt_init();
 
-    uart_writeText("bt_reset()\n");
+    uart_writeText("Initialising Bluetooth: ");
     bt_reset();
-
-    uart_writeText("bt_loadfirmware()\n");
     bt_loadfirmware();
-
-    uart_writeText("bt_setbaud()\n");
     bt_setbaud();
-
-    uart_writeText("bt_setbdaddr()\n");
     bt_setbdaddr();
 
-    // Check we set the BD_ADDR correctly
+    // Print the BD_ADDR
     unsigned char local_addr[6];
-    uart_writeText("bt_getbdaddr()\n");
     bt_getbdaddr(local_addr);
-    uart_writeText("BD_ADDR is ");
     for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
     uart_writeText("\n");
 
-    /*
-    // Start scanning for devices around us
-    uart_writeText("startActiveScanning()\n");
+    // Start scanning for echo
     setLEeventmask(0xff);
     startActiveScanning();
-    */
+    uart_writeText("Waiting for echo: ");
+    while (!(got_echo_sid && got_echo_name)) bt_search();
+    for (int c=0;c<=5;c++) uart_byte(echo_addr[c]);
+    uart_writeText("\n");
+    stopScanning();
 
-    uart_writeText("connect()\n");
-    connect();
-    
+    // Ask to connect to the echo
+    uart_writeText("Connecting to echo: ");
+    connect(echo_addr);
+    while (!connected) bt_conn();
+    uart_writeText("-> "); uart_hex(connection_handle); uart_writeText("\n");
+
+    // Into the main infinite loop
+    uart_writeText("Waiting for input...\n");
+    while (1) uart_update();
+
     /*
     // Get the Eddystone beacon going
     uart_writeText("startActiveAdvertising()\n");
     startActiveAdvertising();
     */
-
-    uart_writeText("Waiting for connection...\n");
-    while (!connected) bt_update();
-    uart_writeText("Connected - handle "); uart_hex(connection_handle); uart_writeText("\n");
-
-    uart_writeText("Waiting for input...\n");
-    while (1) {
-       uart_update();
-       bt_update();
-    }
 }

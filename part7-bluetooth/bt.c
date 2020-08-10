@@ -101,30 +101,30 @@ int hciCommandBytes(unsigned char *opcodebytes, unsigned char *data, unsigned ch
 
     while (c++<length) bt_writeByte(*data++);
 
-    if (bt_waitReadByte() != HCI_EVENT_PKT) return 0;
+    if (bt_waitReadByte() != HCI_EVENT_PKT) return 1;
 
     unsigned char code = bt_waitReadByte();
     if (code == CONNECT_COMPLETE_CODE) {
-       if (bt_waitReadByte() != 4) return 0;
+       if (bt_waitReadByte() != 4) return 2;
 
        unsigned char err = bt_waitReadByte();
        if (err != 0) {
 	  uart_writeText("Saw HCI COMMAND STATUS error "); uart_hex(err); uart_writeText("\n");
-	  return 0;
+	  return 12;
        }
 
-       if (bt_waitReadByte() == 0) return 0;
-       if (bt_waitReadByte() != opcodebytes[0]) return 0;
-       if (bt_waitReadByte() != opcodebytes[1]) return 0;
+       if (bt_waitReadByte() == 0) return 3;
+       if (bt_waitReadByte() != opcodebytes[0]) return 4;
+       if (bt_waitReadByte() != opcodebytes[1]) return 5;
     } else if (code == COMMAND_COMPLETE_CODE) {
-       if (bt_waitReadByte() != 4) return 0;
-       if (bt_waitReadByte() == 0) return 0;
-       if (bt_waitReadByte() != opcodebytes[0]) return 0;
-       if (bt_waitReadByte() != opcodebytes[1]) return 0;
-       if (bt_waitReadByte() != 0) return 0;
-    } else return 0;
+       if (bt_waitReadByte() != 4) return 6;
+       if (bt_waitReadByte() == 0) return 7;
+       if (bt_waitReadByte() != opcodebytes[0]) return 8;
+       if (bt_waitReadByte() != opcodebytes[1]) return 9;
+       if (bt_waitReadByte() != 0) return 10;
+    } else return 11;
 
-    return 1;
+    return 0;
 }
 
 int hciCommand(unsigned short ogf, unsigned short ocf, unsigned char *data, unsigned char length)
@@ -136,12 +136,12 @@ int hciCommand(unsigned short ogf, unsigned short ocf, unsigned char *data, unsi
 }
 
 void bt_reset() {
-    if (!hciCommand(OGF_HOST_CONTROL, COMMAND_RESET_CHIP, empty, 0)) uart_writeText("bt_reset() failed\n");
+    if (hciCommand(OGF_HOST_CONTROL, COMMAND_RESET_CHIP, empty, 0)) uart_writeText("bt_reset() failed\n");
 }
 
 void bt_loadfirmware()
 {
-    if (!hciCommand(OGF_VENDOR, COMMAND_LOAD_FIRMWARE, empty, 0)) uart_writeText("loadFirmware() failed\n");
+    if (hciCommand(OGF_VENDOR, COMMAND_LOAD_FIRMWARE, empty, 0)) uart_writeText("loadFirmware() failed\n");
 
     extern unsigned char _binary_BCM4345C0_hcd_start[];
     extern unsigned char _binary_BCM4345C0_hcd_size[];
@@ -154,7 +154,7 @@ void bt_loadfirmware()
         unsigned char length = _binary_BCM4345C0_hcd_start[c+2];
         unsigned char *data = &(_binary_BCM4345C0_hcd_start[c+3]);
 
-        if (!hciCommandBytes(opcodebytes, data, length)) {
+        if (hciCommandBytes(opcodebytes, data, length)) {
 	   uart_writeText("Firmware data load failed\n");
 	   break;
 	}
@@ -167,13 +167,13 @@ void bt_loadfirmware()
 void bt_setbaud()
 {
     static unsigned char params[] = { 0, 0, 0x00, 0xc2, 0x01, 0x00 }; // little endian, 115200
-    if (!hciCommand(OGF_VENDOR, COMMAND_SET_BAUD, params, 6)) uart_writeText("bt_setbaud() failed\n");
+    if (hciCommand(OGF_VENDOR, COMMAND_SET_BAUD, params, 6)) uart_writeText("bt_setbaud() failed\n");
 }
 
 void bt_setbdaddr()
 {
     static unsigned char params[] = { 0xee, 0xff, 0xc0, 0xee, 0xff, 0xc0 }; // reversed
-    if (!hciCommand(OGF_VENDOR, COMMAND_SET_BDADDR, params, 6)) uart_writeText("bt_setbdaddr() failed\n");
+    if (hciCommand(OGF_VENDOR, COMMAND_SET_BDADDR, params, 6)) uart_writeText("bt_setbdaddr() failed\n");
 }
 
 void bt_getbdaddr(unsigned char *bdaddr) {
@@ -196,29 +196,29 @@ void bt_getbdaddr(unsigned char *bdaddr) {
 void setLEeventmask(unsigned char mask)
 {
     unsigned char params[] = { mask, 0, 0, 0, 0, 0, 0, 0 };
-    if (!hciCommand(OGF_LE_CONTROL, 0x01, params, 8)) uart_writeText("setLEeventmask failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x01, params, 8)) uart_writeText("setLEeventmask failed\n");
 }
 
 void setLEscanenable(unsigned char state, unsigned char duplicates) {
     unsigned char params[] = { state, duplicates };
-    if (!hciCommand(OGF_LE_CONTROL, 0x0c, params, 2)) uart_writeText("setLEscanenable failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x0c, params, 2)) uart_writeText(" setLEscanenable failed\n");
 }
 
 void setLEscanparameters(unsigned char type, unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy) {
     unsigned char params[] = { type, linterval, hinterval, lwindow, hwindow, own_address_type, filter_policy };
-    if (!hciCommand(OGF_LE_CONTROL, 0x0b, params, 7)) uart_writeText("setLEscanparameters failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x0b, params, 7)) uart_writeText("setLEscanparameters failed\n");
 }
 
 void setLEadvertenable(unsigned char state) {
     unsigned char params[] = { state };
     uart_writeText("doing the HCIcommand\n");
-    if (!hciCommand(OGF_LE_CONTROL, 0x0a, params, 1)) uart_writeText("setLEadvertenable failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x0a, params, 1)) uart_writeText("setLEadvertenable failed\n");
 }
 
 void setLEadvertparameters(unsigned char type, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max, unsigned char own_address_type, unsigned char filter_policy) {
     unsigned char params[16] = { linterval_min, hinterval_min, linterval_max, hinterval_max, type, own_address_type, 0, 0, 0, 0, 0, 0, 0, 0x07, filter_policy };
     uart_writeText("doing the HCIcommand\n");
-    if (!hciCommand(OGF_LE_CONTROL, 0x06, params, 15)) uart_writeText("setLEadvertparameters failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x06, params, 15)) uart_writeText("setLEadvertparameters failed\n");
 }
 
 void setLEadvertdata() {
@@ -227,23 +227,23 @@ void setLEadvertdata() {
 			              0x03, 0x03, 0xAA, 0xFE, 
 				      0x11, 0x16, 0xAA, 0xFE, 0x10, 0x00, 0x03, 0x69, 0x73, 0x6f, 0x6d, 0x65, 0x74, 0x69, 0x6d, 0x2e, 0x65, 0x73,
 				      0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    if (!hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
 }
 
 void setLEwhitelist() {
     static unsigned char params[] = { 0x00,
 				      0xBC, 0xF2, 0xCA, 0x32, 0xBC, 0xAC };
-    if (!hciCommand(OGF_LE_CONTROL, 0x11, params, 7)) uart_writeText("setLEwhitelist failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x11, params, 7)) uart_writeText("setLEwhitelist failed\n");
 }
 
-void createLEconnection(unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max) {
+void createLEconnection(unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4, unsigned char a5, unsigned char a6, unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max) {
     unsigned char params[26] = { linterval, hinterval, lwindow, hwindow, 
 	                       filter_policy,
-	                       0, 0xBC, 0xF2, 0xCA, 0x32, 0xBC, 0xAC, 
+	                       0, a1, a2, a3, a4, a5, a6,
 			       own_address_type,
 			       linterval_min, hinterval_min, linterval_max, hinterval_max, 
 			       0, 0, 0x2a, 0x00, 0, 0, 0, 0 };
-    if (!hciCommand(OGF_LE_CONTROL, 0x0d, params, 25)) uart_writeText("createLEconnection failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x0d, params, 25)) uart_writeText("createLEconnection failed\n");
 }
 
 void stopScanning() {
@@ -265,8 +265,6 @@ void startActiveScanning() {
     setLEwhitelist();
     setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
     setLEscanenable(1, 0);
-    
-    wait_msec(0x100000);
 }
 
 void startActiveAdvertising() {
@@ -282,7 +280,7 @@ void startActiveAdvertising() {
     setLEadvertenable(1);
 }
 
-void connect()
+void connect(unsigned char *addr)
 {
     float BleScanInterval = 60; // every 60ms
     float BleScanWindow = 60;
@@ -298,5 +296,5 @@ void connect()
     unsigned int min_interval = connMinFreq / BleGranularity;
     unsigned int max_interval = connMaxFreq / BleGranularity;
 
-    createLEconnection(lo(p), hi(p), lo(q), hi(q), 0, 0, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval));
+    createLEconnection(addr[5], addr[4], addr[3], addr[2], addr[1], addr[0], lo(p), hi(p), lo(q), hi(q), 0, 0, lo(min_interval), hi(min_interval), lo(max_interval), hi(max_interval));
 }
