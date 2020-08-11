@@ -16,6 +16,7 @@ enum {
     LE_EVENT_CODE             = 0x3e,
     LE_CONNECT_CODE           = 0x01,
     LE_ADREPORT_CODE          = 0x02,
+    HCI_ACL_PKT               = 0x02,
     HCI_EVENT_PKT             = 0x04
 };
 
@@ -149,6 +150,43 @@ void bt_conn()
     }
 }
 
+void acl_poll()
+{
+    while (bt_isReadByteReady()) {
+       unsigned char byte = bt_readByte(); 
+
+       if (byte == HCI_EVENT_PKT) {
+	  unsigned char opcode = bt_waitReadByte();
+	  unsigned char length = bt_waitReadByte();
+	  for (int i=0;i<length;i++) bt_waitReadByte();
+       } else if (byte == HCI_ACL_PKT) {
+	  unsigned char h1 = bt_waitReadByte();
+	  unsigned char h2 = bt_waitReadByte();
+
+	  unsigned int handle = h1 | (h2 & 0x0f);
+	  unsigned char flags = (h2 & 0xf0) >> 4;
+
+	  h1 = bt_waitReadByte();
+	  h2 = bt_waitReadByte();
+
+	  unsigned int length = h1 | (h2 << 8);
+	  unsigned char data[length];
+
+	  for (int i=0;i<length;i++) data[i] = bt_waitReadByte();
+
+	  length = data[0] | (data[1] << 8);
+
+	  unsigned int channel =  data[2] | (data[3] << 8);
+
+	  unsigned char opcode = data[4];
+	  if (opcode == 0x0b) {
+             for (int c=0;c<length-1;c++) uart_byte(data[5+c]);
+	     uart_writeText("\n");
+	  }
+       }
+    }
+}
+
 void main()
 {
     uart_init();
@@ -179,15 +217,17 @@ void main()
     uart_writeText("Connecting to echo: ");
     connect(echo_addr);
     while (!connected) bt_conn();
-    uart_writeText("-> "); uart_hex(connection_handle); uart_writeText("\n");
+    uart_writeText("\n");
+
+    // Get the characteristic value
+    uart_writeText("Sending read request: ");
+    uart_hex(connection_handle); uart_writeText("\n");
+    sendACLreadreq(connection_handle);
 
     // Into the main infinite loop
     uart_writeText("Waiting for input...\n");
-    while (1) uart_update();
-
-    /*
-    // Get the Eddystone beacon going
-    uart_writeText("startActiveAdvertising()\n");
-    startActiveAdvertising();
-    */
+    while (1) {
+       acl_poll();
+       uart_update();
+    }
 }

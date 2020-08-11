@@ -80,6 +80,7 @@ enum {
     COMMAND_LOAD_FIRMWARE     = 0x2e,
 
     HCI_COMMAND_PKT           = 0x01,
+    HCI_ACL_PKT               = 0x02,
     HCI_EVENT_PKT             = 0x04,
     COMMAND_COMPLETE_CODE     = 0x0e,
     CONNECT_COMPLETE_CODE     = 0x0f,
@@ -193,6 +194,31 @@ void bt_getbdaddr(unsigned char *bdaddr) {
     for (int c=0;c<6;c++) bdaddr[c] = bt_waitReadByte();
 }
 
+void sendACLreadreq(unsigned int handle)
+{
+    bt_writeByte(HCI_ACL_PKT);
+
+    bt_writeByte(lo(handle));
+    bt_writeByte(hi(handle));
+
+    unsigned int length = 0x0007;
+    bt_writeByte(lo(length));
+    bt_writeByte(hi(length));
+
+    unsigned int data_length = 0x0003;
+    bt_writeByte(lo(data_length));
+    bt_writeByte(hi(data_length));
+
+    unsigned int channel = 0x0004;
+    bt_writeByte(lo(channel));
+    bt_writeByte(hi(channel));
+
+    unsigned char params[] = { 0x0a, 0x2a, 0x00 };
+
+    unsigned int c=0;
+    while (c++<data_length) bt_writeByte(params[c-1]);
+}
+
 void setLEeventmask(unsigned char mask)
 {
     unsigned char params[] = { mask, 0, 0, 0, 0, 0, 0, 0 };
@@ -230,12 +256,6 @@ void setLEadvertdata() {
     if (hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
 }
 
-void setLEwhitelist() {
-    static unsigned char params[] = { 0x00,
-				      0xBC, 0xF2, 0xCA, 0x32, 0xBC, 0xAC };
-    if (hciCommand(OGF_LE_CONTROL, 0x11, params, 7)) uart_writeText("setLEwhitelist failed\n");
-}
-
 void createLEconnection(unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4, unsigned char a5, unsigned char a6, unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max) {
     unsigned char params[26] = { linterval, hinterval, lwindow, hwindow, 
 	                       filter_policy,
@@ -262,8 +282,6 @@ void startActiveScanning() {
     unsigned int p = BleScanInterval / BleScanDivisor;
     unsigned int q = BleScanWindow / BleScanDivisor;
 
-    //setLEwhitelist();
-    //setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
     setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 0);
     setLEscanenable(1, 0);
 }
