@@ -171,9 +171,9 @@ void main()
     startActiveScanning();
     uart_writeText("Waiting for echo: ");
     while (!(got_echo_sid && got_echo_name)) bt_search();
+    stopScanning();
     for (int c=0;c<=5;c++) uart_byte(echo_addr[c]);
     uart_writeText("\n");
-    stopScanning();
 
     // Ask to connect to the echo
     uart_writeText("Connecting to echo: ");

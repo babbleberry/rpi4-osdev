@@ -262,8 +262,9 @@ void startActiveScanning() {
     unsigned int p = BleScanInterval / BleScanDivisor;
     unsigned int q = BleScanWindow / BleScanDivisor;
 
-    setLEwhitelist();
-    setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
+    //setLEwhitelist();
+    //setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 1);
+    setLEscanparameters(LL_SCAN_ACTIVE, lo(p), hi(p), lo(q), hi(q), 0, 0);
     setLEscanenable(1, 0);
 }
 

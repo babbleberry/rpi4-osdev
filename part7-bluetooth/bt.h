@@ -11,3 +11,4 @@ void startActiveScanning();
 void stopScanning();
 void startActiveAdvertising();
 void connect(unsigned char *addr);
+void bt_flushrx();
