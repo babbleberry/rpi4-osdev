@@ -113,3 +113,5 @@ Todo
  * Write up ACL notification of characteristic change (using [bleno echo example](https://github.com/noble/bleno))
 
 ![Working Eddystone Beacon on RPi4](images/7-eddystone-beacon.png)
+
+[Go to part8-breakout-ble >](../part8-breakout-ble)
