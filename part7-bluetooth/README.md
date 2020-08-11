@@ -109,5 +109,7 @@ Todo
 
  * Write up scanning implementation (receiving advertising reports)
  * Write up advertising implementation (simple Eddystone Beacon)
+ * Write up device detection (service UUID & name matching)
+ * Write up ACL notification of characteristic change (using [bleno echo example](https://github.com/noble/bleno))
 
 ![Working Eddystone Beacon on RPi4](images/7-eddystone-beacon.png)
