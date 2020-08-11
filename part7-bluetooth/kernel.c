@@ -26,7 +26,7 @@ unsigned char echo_addr[6];
 unsigned int connected = 0;
 unsigned int connection_handle = 0;
 
-void poll2(unsigned char byte)
+void hci_poll2(unsigned char byte)
 {
     switch (poll_state) {
        case 0:
@@ -53,7 +53,7 @@ void poll2(unsigned char byte)
    }
 }
 
-unsigned char *poll()
+unsigned char *hci_poll()
 {
     unsigned int goal = messages_received + 1;
 
@@ -62,7 +62,7 @@ unsigned char *poll()
 
        while (run < MAX_READ_RUN && messages_received < goal && bt_isReadByteReady()) {
           unsigned char byte = bt_readByte(); 
-	  poll2(byte);
+	  hci_poll2(byte);
 	  run++;
        }
        if (run == MAX_READ_RUN) return 0;
@@ -75,7 +75,7 @@ void bt_search()
 {
     unsigned char *buf;
 
-    while ( (buf = poll()) ) {
+    while ( (buf = hci_poll()) ) {
        if (data_len >= 2) {
           if (buf[0] == LE_ADREPORT_CODE) {
 	     unsigned char numreports = buf[1];
@@ -137,7 +137,7 @@ void bt_conn()
 {
     unsigned char *buf;
 
-    while ( (buf = poll()) ) {
+    while ( (buf = hci_poll()) ) {
        if (data_len >= 2) {
           if (buf[0] == LE_CONNECT_CODE && !connected) {
              connected = !buf[1];

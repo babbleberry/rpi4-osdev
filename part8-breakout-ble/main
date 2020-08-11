@@ -1,0 +1,44 @@
+void main()
+{
+    uart_init();
+    bt_init();
+
+    uart_writeText("Initialising Bluetooth: ");
+    bt_reset();
+    bt_loadfirmware();
+    bt_setbaud();
+    bt_setbdaddr();
+
+    // Print the BD_ADDR
+    unsigned char local_addr[6];
+    bt_getbdaddr(local_addr);
+    for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
+    uart_writeText("\n");
+
+    // Start scanning for echo
+    setLEeventmask(0xff);
+    startActiveScanning();
+    uart_writeText("Waiting for echo: ");
+    while (!(got_echo_sid && got_echo_name)) bt_search();
+    stopScanning();
+    for (int c=0;c<=5;c++) uart_byte(echo_addr[c]);
+    uart_writeText("\n");
+
+    // Ask to connect to the echo
+    uart_writeText("Connecting to echo: ");
+    connect(echo_addr);
+    while (!connected) bt_conn();
+    uart_writeText("\n");
+
+    // Get the characteristic value
+    uart_writeText("Sending read request: ");
+    uart_hex(connection_handle); uart_writeText("\n");
+    sendACLsubscribe(connection_handle);
+
+    // Into the main infinite loop
+    uart_writeText("Waiting for input...\n");
+    while (1) {
+       acl_poll();
+       uart_update();
+    }
+}
