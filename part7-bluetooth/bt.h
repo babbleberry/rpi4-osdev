@@ -13,4 +13,4 @@ void stopScanning();
 void startActiveAdvertising();
 void connect(unsigned char *addr);
 void bt_flushrx();
-void sendACLreadreq(unsigned int handle);
+void sendACLsubscribe(unsigned int handle);

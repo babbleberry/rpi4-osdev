@@ -194,18 +194,18 @@ void bt_getbdaddr(unsigned char *bdaddr) {
     for (int c=0;c<6;c++) bdaddr[c] = bt_waitReadByte();
 }
 
-void sendACLreadreq(unsigned int handle)
+void sendACLsubscribe(unsigned int handle)
 {
     bt_writeByte(HCI_ACL_PKT);
 
     bt_writeByte(lo(handle));
     bt_writeByte(hi(handle));
 
-    unsigned int length = 0x0007;
+    unsigned int length = 0x0009;
     bt_writeByte(lo(length));
     bt_writeByte(hi(length));
 
-    unsigned int data_length = 0x0003;
+    unsigned int data_length = 0x0005;
     bt_writeByte(lo(data_length));
     bt_writeByte(hi(data_length));
 
@@ -213,7 +213,7 @@ void sendACLreadreq(unsigned int handle)
     bt_writeByte(lo(channel));
     bt_writeByte(hi(channel));
 
-    unsigned char params[] = { 0x0a, 0x2a, 0x00 };
+    unsigned char params[] = { 0x12, 0x2b, 0x00, 0x01, 0x00 };
 
     unsigned int c=0;
     while (c++<data_length) bt_writeByte(params[c-1]);

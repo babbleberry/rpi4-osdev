@@ -1,6 +1,5 @@
 #include "io.h"
 #include "bt.h"
-#include "fb.h"
 
 #define memcmp         __builtin_memcmp
 
@@ -176,11 +175,13 @@ void acl_poll()
 
 	  length = data[0] | (data[1] << 8);
 
-	  unsigned int channel =  data[2] | (data[3] << 8);
-
+	  unsigned int channel = data[2] | (data[3] << 8);
 	  unsigned char opcode = data[4];
-	  if (opcode == 0x0b) {
-             for (int c=0;c<length-1;c++) uart_byte(data[5+c]);
+
+	  if (opcode == 0x1b) {
+             unsigned int from_handle = data[5] | (data[6] << 8);
+	     
+             for (int c=0;c<length-3;c++) uart_byte(data[7+c]);
 	     uart_writeText("\n");
 	  }
        }
@@ -222,7 +223,7 @@ void main()
     // Get the characteristic value
     uart_writeText("Sending read request: ");
     uart_hex(connection_handle); uart_writeText("\n");
-    sendACLreadreq(connection_handle);
+    sendACLsubscribe(connection_handle);
 
     // Into the main infinite loop
     uart_writeText("Waiting for input...\n");
