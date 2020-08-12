@@ -25,7 +25,7 @@ unsigned int got_echo_name = 0;
 unsigned char echo_addr[6];
 unsigned int connected = 0;
 unsigned int connection_handle = 0;
-unsigned char dir = 'l';
+unsigned char dir = 50;
 
 void hci_poll2(unsigned char byte)
 {
@@ -160,7 +160,6 @@ void bt_conn()
 // For the bricks
 #define ROWS          5
 #define COLS          10
-unsigned int bricks = ROWS * COLS;
 
 // Gameplay
 #define NUM_LIVES     3
@@ -194,13 +193,6 @@ void removeObject(struct Object *object)
 {
     drawRect(object->x, object->y, object->x + object->width, object->y + object->height, 0, 1);
     object->alive = 0;
-}
-
-void moveObject(struct Object *object, int xoff, int yoff)
-{
-    moveRect(object->x, object->y, object->width, object->height, xoff, yoff, 0x00);
-    object->x = object->x + xoff;
-    object->y = object->y + yoff;
 }
 
 void moveObjectAbs(struct Object *object, int x, int y)
@@ -277,11 +269,12 @@ void initBall()
 void initPaddle()
 {
     int paddleheight = 20;
+    int startx = MARGIN + (dir * ((VIRTWIDTH - paddlewidth + MARGIN)/100));
 
-    drawRect((WIDTH-paddlewidth)/2, (HEIGHT-MARGIN-paddleheight), (WIDTH-paddlewidth)/2 + paddlewidth, (HEIGHT-MARGIN), 0x11, 1);
+    drawRect(startx, (HEIGHT-MARGIN-paddleheight), startx + paddlewidth, (HEIGHT-MARGIN), 0x11, 1);
 
     objects[numobjs].type = OBJ_PADDLE;
-    objects[numobjs].x = (WIDTH-paddlewidth)/2;
+    objects[numobjs].x = startx;
     objects[numobjs].y = (HEIGHT-MARGIN-paddleheight);
     objects[numobjs].width = paddlewidth;
     objects[numobjs].height = paddleheight;
@@ -310,51 +303,107 @@ void acl_poll()
        unsigned char byte = bt_readByte(); 
 
        if (byte == HCI_EVENT_PKT) {
-	  unsigned char opcode = bt_waitReadByte();
-	  unsigned char length = bt_waitReadByte();
-	  for (int i=0;i<length;i++) bt_waitReadByte();
+	  bt_readByte(); // opcode
+	  unsigned char length = bt_readByte();
+	  for (int i=0;i<length;i++) bt_readByte();
        } else if (byte == HCI_ACL_PKT) {
-	  unsigned char h1 = bt_waitReadByte();
-	  unsigned char h2 = bt_waitReadByte();
+	  bt_readByte(); // handle1
+	  bt_readByte(); // handle2
 
-	  unsigned int handle = h1 | (h2 & 0x0f);
-	  unsigned char flags = (h2 & 0xf0) >> 4;
-
-	  h1 = bt_waitReadByte();
-	  h2 = bt_waitReadByte();
+	  unsigned char h1 = bt_readByte();
+	  unsigned char h2 = bt_readByte();
 
 	  unsigned int length = h1 | (h2 << 8);
 	  unsigned char data[length];
 
-	  for (int i=0;i<length;i++) data[i] = bt_waitReadByte();
+	  for (int i=0;i<length;i++) data[i] = bt_readByte();
 
 	  length = data[0] | (data[1] << 8);
-
-	  unsigned int channel = data[2] | (data[3] << 8);
 	  unsigned char opcode = data[4];
 
 	  if (opcode == 0x1b) {
-             unsigned int from_handle = data[5] | (data[6] << 8);
 	     if (length == 4) {
-		dir = data[7];
-                moveObjectAbs(paddle, MARGIN + (dir*((VIRTWIDTH - paddlewidth)/100)), paddle->y);
+	   	dir = data[7];
+                moveObjectAbs(paddle, MARGIN + (dir * ((VIRTWIDTH - paddlewidth + MARGIN)/100)), paddle->y);
              }
-	     uart_writeText("\n");
 	  }
        }
     }
 }
 
-void main()
+void breakout()
 {
     struct Object *foundObject;
 
+    int bricks = ROWS * COLS;
     int lives = NUM_LIVES;
     int points = 0;
     
     int velocity_x = 1;
     int velocity_y = 3;
 
+    initBricks();
+    initBall();
+    initPaddle();
+    drawScoreboard(points, lives);
+
+    while (lives > 0 && bricks > 0) {
+       acl_poll();
+
+       // Are we going to hit anything?
+       foundObject = detectCollision(ball, velocity_x, velocity_y);
+
+       if (foundObject) {
+          if (foundObject == paddle) {
+             velocity_y = -velocity_y;
+	     // Are we going to hit the side of the paddle
+	     if (ball->x + ball->width + velocity_x == paddle->x || ball->x + velocity_x == paddle->x + paddle->width) velocity_x = -velocity_x;
+          } else if (foundObject->type == OBJ_BRICK) {
+             removeObject(foundObject);
+             velocity_y = -velocity_y;
+             bricks--;
+             points++;
+             drawScoreboard(points, lives);
+          }
+       }
+
+       wait_msec(0x186A);
+       moveObjectAbs(ball, ball->x + velocity_x, ball->y + velocity_y);
+
+       // Check we're in the game arena still
+       if (ball->x + ball->width >= WIDTH-MARGIN) {
+          velocity_x = -velocity_x;
+       } else if (ball->x <= MARGIN) {
+          velocity_x = -velocity_x;
+       } else if (ball->y + ball->height >= HEIGHT-MARGIN) {
+          lives--;
+
+	  removeObject(ball);
+	  removeObject(paddle);
+
+          drawScoreboard(points, lives);
+	  if (lives) {
+             initBall();
+             initPaddle();
+	  }
+       } else if (ball->y <= MARGIN) {
+          velocity_y = -velocity_y;
+       }
+    }
+
+    int zoom = WIDTH/192;
+    int strwidth = 10 * FONT_BPG * zoom;
+    int strheight = FONT_BPG * zoom;
+
+    if (bricks == 0) drawString((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), "Well done!", 0x02, zoom);
+    else drawString((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), "Game over!", 0x04, zoom);
+
+    wait_msec(0x500000); // Wait 5 seconds
+    drawRect((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), (WIDTH/2)+(strwidth/2), (HEIGHT/2)+(strheight/2), 0, 1);
+}
+
+void main()
+{
     uart_init();
 
     bt_init();
@@ -363,12 +412,6 @@ void main()
     bt_loadfirmware();
     bt_setbaud();
     bt_setbdaddr();
-
-    fb_init();
-    initBricks();
-    initBall();
-    initPaddle();
-    drawScoreboard(points, lives);
 
     // Print the BD_ADDR
     unsigned char local_addr[6];
@@ -398,55 +441,8 @@ void main()
 
     // Begin the game
     uart_writeText("Let the game commence...\n");
+    wait_msec(0x100000); // Wait a second
 
-    while (lives > 0 && bricks > 0) {
-       acl_poll();
-
-       // Are we going to hit anything?
-       foundObject = detectCollision(ball, velocity_x, velocity_y);
-
-       if (foundObject) {
-          if (foundObject == paddle) {
-             velocity_y = -velocity_y;
-	     // Are we going to hit the side of the paddle
-	     if (ball->x + ball->width + velocity_x == paddle->x || ball->x + velocity_x == paddle->x + paddle->width) velocity_x = -velocity_x;
-          } else if (foundObject->type == OBJ_BRICK) {
-             removeObject(foundObject);
-             velocity_y = -velocity_y;
-             bricks--;
-             points++;
-             drawScoreboard(points, lives);
-          }
-       }
-
-       wait_msec(0x2000);
-       moveObject(ball, velocity_x, velocity_y);
-
-       // Check we're in the game arena still
-       if (ball->x + ball->width >= WIDTH-MARGIN) {
-          velocity_x = -velocity_x;
-       } else if (ball->x <= MARGIN) {
-          velocity_x = -velocity_x;
-       } else if (ball->y + ball->height >= HEIGHT-MARGIN) {
-          lives--;
-
-	  removeObject(ball);
-	  removeObject(paddle);
-
-          initBall();
-          initPaddle();
-          drawScoreboard(points, lives);
-       } else if (ball->y <= MARGIN) {
-          velocity_y = -velocity_y;
-       }
-    }
-
-    int zoom = WIDTH/192;
-    int strwidth = 10 * FONT_BPG * zoom;
-    int strheight = FONT_BPG * zoom;
-
-    if (bricks == 0) drawString((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), "Well done!", 0x02, zoom);
-    else drawString((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), "Game over!", 0x04, zoom);
-
-    while (1) acl_poll();
+    fb_init();
+    while (1) breakout();
 }
