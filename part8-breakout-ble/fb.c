@@ -199,6 +199,34 @@ void moveRect(int oldx, int oldy, int width, int height, int shiftx, int shifty,
     }
 }
 
+void moveRectAbs(int oldx, int oldy, int width, int height, int newx, int newy, unsigned char attr)
+{
+    unsigned int xcount = 0, ycount = 0;
+    unsigned int bitmap[width][height]; // This is very unsafe if it's too big for the stack...
+    unsigned int offs;
+
+    // Save the bitmap
+    while (xcount < width) {
+       while (ycount < height) {
+          offs = ((oldy + ycount) * pitch) + ((oldx + xcount) * 4);
+
+	  bitmap[xcount][ycount] = *((unsigned int*)(fb + offs));
+	  ycount++;
+       }
+       ycount=0;
+       xcount++;
+    }
+    // Wipe it out with background colour
+    drawRect(oldx, oldy, oldx + width, oldy + width, attr, 1);
+    // Draw it again
+    for (int i=newx;i<newx + width;i++) {
+        for (int j=newy;j<newy + height;j++) {
+            offs = (j * pitch) + (i * 4);
+	    *((unsigned int*)(fb + offs)) = bitmap[i-newx][j-newy];
+        }
+    }
+}
+
 void wait_msec(unsigned int n)
 {
     register unsigned long f, t, r;

@@ -25,7 +25,7 @@ unsigned int got_echo_name = 0;
 unsigned char echo_addr[6];
 unsigned int connected = 0;
 unsigned int connection_handle = 0;
-unsigned char dir = 1;
+unsigned char dir = 'l';
 
 void hci_poll2(unsigned char byte)
 {
@@ -150,47 +150,6 @@ void bt_conn()
     }
 }
 
-void acl_poll()
-{
-    while (bt_isReadByteReady()) {
-       unsigned char byte = bt_readByte(); 
-
-       if (byte == HCI_EVENT_PKT) {
-	  unsigned char opcode = bt_waitReadByte();
-	  unsigned char length = bt_waitReadByte();
-	  for (int i=0;i<length;i++) bt_waitReadByte();
-       } else if (byte == HCI_ACL_PKT) {
-	  unsigned char h1 = bt_waitReadByte();
-	  unsigned char h2 = bt_waitReadByte();
-
-	  unsigned int handle = h1 | (h2 & 0x0f);
-	  unsigned char flags = (h2 & 0xf0) >> 4;
-
-	  h1 = bt_waitReadByte();
-	  h2 = bt_waitReadByte();
-
-	  unsigned int length = h1 | (h2 << 8);
-	  unsigned char data[length];
-
-	  for (int i=0;i<length;i++) data[i] = bt_waitReadByte();
-
-	  length = data[0] | (data[1] << 8);
-
-	  unsigned int channel = data[2] | (data[3] << 8);
-	  unsigned char opcode = data[4];
-
-	  if (opcode == 0x1b) {
-             unsigned int from_handle = data[5] | (data[6] << 8);
-	     if (length == 4) {
-		dir = data[7];
-		uart_byte(dir);
-             }
-	     uart_writeText("\n");
-	  }
-       }
-    }
-}
-
 // The screen
 #define WIDTH         1920
 #define HEIGHT        1080
@@ -229,6 +188,7 @@ unsigned int numobjs = 0;
 struct Object objects[(ROWS * COLS) + (2 * NUM_LIVES)];
 struct Object *ball;
 struct Object *paddle;
+int paddlewidth = 80;
 
 void removeObject(struct Object *object)
 {
@@ -241,6 +201,13 @@ void moveObject(struct Object *object, int xoff, int yoff)
     moveRect(object->x, object->y, object->width, object->height, xoff, yoff, 0x00);
     object->x = object->x + xoff;
     object->y = object->y + yoff;
+}
+
+void moveObjectAbs(struct Object *object, int x, int y)
+{
+    moveRectAbs(object->x, object->y, object->width, object->height, x, y, 0x00);
+    object->x = x;
+    object->y = y;
 }
 
 struct Object *detectCollision(struct Object *with, int xoff, int yoff)
@@ -258,16 +225,6 @@ struct Object *detectCollision(struct Object *with, int xoff, int yoff)
         }
     }
     return 0;
-}
-
-// KEY HANDLER
-
-unsigned char getUart()
-{
-    unsigned char ch = 0;
-
-    if (uart_isReadByteReady()) ch = uart_readByte();
-    return ch;
 }
 
 // OBJECT INITIALISERS
@@ -319,7 +276,6 @@ void initBall()
 
 void initPaddle()
 {
-    int paddlewidth = 80;
     int paddleheight = 20;
 
     drawRect((WIDTH-paddlewidth)/2, (HEIGHT-MARGIN-paddleheight), (WIDTH-paddlewidth)/2 + paddlewidth, (HEIGHT-MARGIN), 0x11, 1);
@@ -346,6 +302,47 @@ void drawScoreboard(int score, int lives)
     string[20] = (char)lives + 0x30;
 
     drawString((WIDTH/2)-252, MARGIN-25, string, 0x0f, 3);
+}
+
+void acl_poll()
+{
+    while (bt_isReadByteReady()) {
+       unsigned char byte = bt_readByte(); 
+
+       if (byte == HCI_EVENT_PKT) {
+	  unsigned char opcode = bt_waitReadByte();
+	  unsigned char length = bt_waitReadByte();
+	  for (int i=0;i<length;i++) bt_waitReadByte();
+       } else if (byte == HCI_ACL_PKT) {
+	  unsigned char h1 = bt_waitReadByte();
+	  unsigned char h2 = bt_waitReadByte();
+
+	  unsigned int handle = h1 | (h2 & 0x0f);
+	  unsigned char flags = (h2 & 0xf0) >> 4;
+
+	  h1 = bt_waitReadByte();
+	  h2 = bt_waitReadByte();
+
+	  unsigned int length = h1 | (h2 << 8);
+	  unsigned char data[length];
+
+	  for (int i=0;i<length;i++) data[i] = bt_waitReadByte();
+
+	  length = data[0] | (data[1] << 8);
+
+	  unsigned int channel = data[2] | (data[3] << 8);
+	  unsigned char opcode = data[4];
+
+	  if (opcode == 0x1b) {
+             unsigned int from_handle = data[5] | (data[6] << 8);
+	     if (length == 4) {
+		dir = data[7];
+                moveObjectAbs(paddle, MARGIN + (dir*((VIRTWIDTH - paddlewidth)/100)), paddle->y);
+             }
+	     uart_writeText("\n");
+	  }
+       }
+    }
 }
 
 void main()
@@ -405,13 +402,6 @@ void main()
     while (lives > 0 && bricks > 0) {
        acl_poll();
 
-       // Get any waiting input and flush the buffer
-       if (dir != 1) {
-          if (dir == 2) if (paddle->x + paddle->width + (paddle->width / 2) <= WIDTH-MARGIN) moveObject(paddle, paddle->width / 2, 0);
-          if (dir == 0) if (paddle->x >= MARGIN+(paddle->width / 2)) moveObject(paddle, -(paddle->width / 2), 0);
-       }
-       uart_loadOutputFifo();
-
        // Are we going to hit anything?
        foundObject = detectCollision(ball, velocity_x, velocity_y);
 
@@ -429,7 +419,7 @@ void main()
           }
        }
 
-       wait_msec(4000); // Wait a little...
+       wait_msec(0x2000);
        moveObject(ball, velocity_x, velocity_y);
 
        // Check we're in the game arena still
