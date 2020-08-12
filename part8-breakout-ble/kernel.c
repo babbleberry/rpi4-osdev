@@ -207,9 +207,9 @@ struct Object *detectCollision(struct Object *with, int xoff, int yoff)
     for (int i=0; i<numobjs;i++) {
 	if (&objects[i] != with && objects[i].alive == 1) {
 	   if (with->x + xoff > objects[i].x + objects[i].width || objects[i].x > with->x + xoff + with->width) {
-              // with is too far left or right to ocllide
+              // with is too far left or right to collide
 	   } else if (with->y + yoff > objects[i].y + objects[i].height || objects[i].y > with->y + yoff + with->height) {
-              // with is too far up or down to ocllide
+              // with is too far up or down to collide
 	   } else {
 	      // Collision!
 	      return &objects[i];
@@ -313,20 +313,23 @@ void acl_poll()
 	  unsigned char h1 = bt_readByte();
 	  unsigned char h2 = bt_readByte();
 
-	  unsigned int length = h1 | (h2 << 8);
-	  unsigned char data[length];
+	  unsigned int dlen = h1 | (h2 << 8);
+	  unsigned char data[dlen];
 
-	  for (int i=0;i<length;i++) data[i] = bt_readByte();
+	  if (dlen > 7) {
+	     for (int i=0;i<dlen;i++) data[i] = bt_readByte();
 
-	  length = data[0] | (data[1] << 8);
-	  unsigned char opcode = data[4];
+	     unsigned int length = data[0] | (data[1] << 8);
+	     unsigned int channel = data[2] | (data[3] << 8);
+	     unsigned char opcode = data[4];
 
-	  if (opcode == 0x1b) {
-	     if (length == 4) {
-	   	dir = data[7];
-                moveObjectAbs(paddle, MARGIN + (dir * ((VIRTWIDTH - paddlewidth + MARGIN)/100)), paddle->y);
-             }
-	  }
+	     if (length == 4 && opcode == 0x1b) {
+	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
+	      	   dir = data[7];
+                   moveObjectAbs(paddle, MARGIN + (dir * ((VIRTWIDTH - paddlewidth + MARGIN)/100)), paddle->y);
+                }
+	     }
+          }
        }
     }
 }
