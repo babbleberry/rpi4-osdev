@@ -1,6 +1,16 @@
 Writing a "bare metal" operating system for Raspberry Pi 4
 ==========================================================
 
+Acknowledgements
+----------------
+Not all of the code here is original and has been amassed from some fantastic contributors.
+
+Thanks go to:
+
+ * Zoltan Baldaszti's "Bare metal Raspberry Pi 3 tutorials" [(github)](https://github.com/bztsrc/raspi3-tutorial/)
+
+Do reach out if you would like to be acknowledged here too!
+
 Introduction
 ------------
 
