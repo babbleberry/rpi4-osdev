@@ -2,6 +2,8 @@
 #include "mb.h"
 #include "terminal.h"
 
+#define DEBUG 1
+
 unsigned int width, height, pitch, isrgb;
 unsigned char *fb;
 
@@ -228,7 +230,7 @@ void debugstr(char *str) {
     if (cury + 8 >= 1080) {
        cury = 0;
     }
-    drawString(curx, cury, str, 0x0f, 1);
+    if (DEBUG == 1) drawString(curx, cury, str, 0x0f, 1);
     curx += (strlen(str) * 8);
 }
 
