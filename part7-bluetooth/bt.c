@@ -350,15 +350,23 @@ void connect(unsigned char *addr)
     float BleGranularity = 1.25;
 
     unsigned int p = BleScanInterval / BleScanDivisor;
+    unsigned char lp = lo(p);
+    unsigned char hp = hi(p);
     unsigned int q = BleScanWindow / BleScanDivisor;
+    unsigned char lq = lo(q);
+    unsigned char hq = hi(q);
 
     unsigned int min_interval = connMinFreq / BleGranularity;
+    unsigned char lmini = lo(min_interval);
+    unsigned char hmini = hi(min_interval);
     unsigned int max_interval = connMaxFreq / BleGranularity;
+    unsigned char lmaxi = lo(max_interval);
+    unsigned char hmaxi = hi(max_interval);
 
-    params[0] = lo(p);
-    params[1] = hi(p);
-    params[2] = lo(q);
-    params[3] = hi(q);
+    params[0] = lp;
+    params[1] = hp;
+    params[2] = lq;
+    params[3] = hq;
     params[4] = 0;
     params[5] = 0;
     params[6] = addr[5];
@@ -368,10 +376,10 @@ void connect(unsigned char *addr)
     params[10] = addr[1];
     params[11] = addr[0];
     params[12] = 0;
-    params[13] = lo(min_interval);
-    params[14] = hi(min_interval);
-    params[15] = lo(max_interval);
-    params[16] = hi(max_interval);
+    params[13] = lmini;
+    params[14] = hmini;
+    params[15] = lmaxi;
+    params[16] = hmaxi;
     params[17] = 0;
     params[18] = 0;
     params[19] = 0x2a;
@@ -380,5 +388,6 @@ void connect(unsigned char *addr)
     params[22] = 0;
     params[23] = 0;
     params[24] = 0;
+
     if (hciCommand(OGF_LE_CONTROL, 0x0d, params, 25)) uart_writeText("createLEconnection failed\n");
 }

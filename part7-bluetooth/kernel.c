@@ -2,9 +2,6 @@
 #include "bt.h"
 #include "fb.h"
 
-int curx = 0;
-int cury = 0;
-
 #define MAX_MSG_LEN    50
 #define MAX_READ_RUN   100
 
@@ -25,12 +22,8 @@ unsigned int got_echo_sid = 0;
 unsigned int got_echo_name = 0;
 unsigned char echo_addr[6];
 
-int strlen(const char *str) {
-    const char *s;
-
-    for (s = str; *s; ++s);
-    return (s - str);
-}
+unsigned int connected = 0;
+unsigned int connection_handle = 0;
 
 int memcmp(const char *str1, const char *str2, int count) {
     const char *s1 = (const char*)str1;
@@ -40,43 +33,6 @@ int memcmp(const char *str1, const char *str2, int count) {
        if (*s1++ != *s2++) return s1[-1] < s2[-1] ? -1 : 1;
     }
     return 0;
-}
-
-void debugstr(char *str) {
-    if (curx + (strlen(str) * 8)  >= 1920) {
-       curx = 0; cury += 8; 
-    }
-    if (cury + 8 >= 1080) {
-       cury = 0;
-    }
-    drawString(curx, cury, str, 0x0f, 1);
-    curx += (strlen(str) * 8);
-}
-
-void debugcrlf(void) {
-    curx = 0; cury += 8;
-}
-
-void debugch(unsigned char b) {
-    unsigned int n;
-    int c;
-    for(c=4;c>=0;c-=4) {
-        n=(b>>c)&0xF;
-        n+=n>9?0x37:0x30;
-        debugstr((char *)&n);
-    }
-    debugstr(" ");
-}
-
-void debughex(unsigned int d) {
-    unsigned int n;
-    int c;
-    for(c=28;c>=0;c-=4) {
-        n=(d>>c)&0xF;
-        n+=n>9?0x37:0x30;
-        debugstr((char *)&n);
-    }
-    debugstr(" ");
 }
 
 void hci_poll2(unsigned char byte)
@@ -175,22 +131,91 @@ void bt_search(void) {
     }
 }
 
+void bt_conn()
+{
+    unsigned char *buf;
+
+    while ( (buf = hci_poll()) ) {
+       if (data_len >= 2) {
+          if (buf[0] == LE_CONNECT_CODE && !connected) {
+             connected = !buf[1];
+	     debughex(connected); debugstr(" ");
+	     connection_handle = buf[2] | (buf[3] << 8);
+	     debughex(connection_handle); debugstr(" ");
+	  }
+       }
+    }
+}
+
+void acl_poll()
+{
+    while (bt_isReadByteReady()) {
+       unsigned char byte = bt_readByte(); 
+
+       if (byte == HCI_EVENT_PKT) {
+	  bt_waitReadByte(); // opcode
+	  unsigned char length = bt_waitReadByte();
+	  for (int i=0;i<length;i++) bt_waitReadByte();
+       } else if (byte == HCI_ACL_PKT) {
+	  bt_waitReadByte(); // handle1
+	  bt_waitReadByte(); // handle2
+
+	  unsigned char h1 = bt_waitReadByte();
+	  unsigned char h2 = bt_waitReadByte();
+
+	  unsigned int dlen = h1 | (h2 << 8);
+	  unsigned char data[dlen];
+
+	  if (dlen > 7) {
+	     for (int i=0;i<dlen;i++) data[i] = bt_waitReadByte();
+
+	     unsigned int length = data[0] | (data[1] << 8);
+	     unsigned int channel = data[2] | (data[3] << 8);
+	     unsigned char opcode = data[4];
+
+	     if (length == 4 && opcode == 0x1b) {
+	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
+		   debugcrlf();
+                   debugstr("Got ACL packet... ");
+                   debugch(data[7]); 
+                }
+	     }
+          }
+       }
+    }
+}
+
 void run_search(void) {
-    // Start scanning for echo
+    // Start scanning
     debugstr("Setting event mask... ");
     setLEeventmask(0xff);
     debugstr("Starting scanning... ");
     startActiveScanning();
 
-    // Enter an infinite loop
-    debugstr("Going loopy...");
+    // Search for the echo
+    debugstr("Waiting...");
     debugcrlf();
-
     while (!(got_echo_sid && got_echo_name)) bt_search();
     stopScanning();
     for (int c=0;c<=5;c++) debugch(echo_addr[c]);
+    debugcrlf();
 
+    // Connecting to echo
+    debugstr("Connecting to echo: ");
+    connect(echo_addr);
+    while (!connected) bt_conn();
+    debugstr("Connected!");
+    debugcrlf();
+
+    // Get the characteristic value
+    debugstr("Sending read request: ");
+    debughex(connection_handle); debugcrlf();
+    sendACLsubscribe(connection_handle);
+
+    // Enter an infinite loop
+    debugstr("Going loopy...");
     while (1) {
+       acl_poll();
        uart_update();
     }
 }

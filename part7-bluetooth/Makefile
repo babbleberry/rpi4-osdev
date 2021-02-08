@@ -1,7 +1,7 @@
 CFILES = $(wildcard *.c)
 OFILES = $(CFILES:.c=.o)
 LLVMPATH = /opt/homebrew/opt/llvm/bin
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
+GCCFLAGS = -Wall -O0 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
 
 all: clean kernel8.img
 
