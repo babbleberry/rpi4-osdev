@@ -182,11 +182,10 @@ enum {
     OBJ_BALL   = 3
 };
 
-//#define OBJS_ADDRESS    0x02200000 // Somewhere safe to store a lot of data
+#define OBJS_ADDRESS    0x02200000 // Somewhere safe to store a lot of data
 
 unsigned int numobjs = 0;
-struct Object objects[(ROWS * COLS) + (2 * NUM_LIVES)];
-//struct Object *objects = (struct Object *)OBJS_ADDRESS;
+struct Object *objects = (struct Object *)OBJS_ADDRESS;
 struct Object *ball;
 struct Object *paddle;
 int paddlewidth = 80;

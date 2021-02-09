@@ -89,7 +89,7 @@ void initBricks()
     int brickwidth = 32;
     int brickheight = 8;
     int brickspacer = 20;
-    int brickcols[5] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
+    static int brickcols[] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
 
     int ybrick = MARGIN + brickheight;
 
