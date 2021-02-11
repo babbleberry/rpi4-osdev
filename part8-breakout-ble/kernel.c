@@ -368,7 +368,7 @@ void breakout()
           }
        }
 
-       //wait_msec(0x186A);
+       wait_msec(0x186A);
        moveObjectAbs(ball, ball->x + velocity_x, ball->y + velocity_y);
 
        // Check we're in the game arena still

@@ -1,7 +1,7 @@
 #include "io.h"
 #include "fb.h"
 
-unsigned char *params = (unsigned char *)SAFE_ADDRESS;
+volatile unsigned char *params = (unsigned char *)SAFE_ADDRESS;
 
 // UART0
 
@@ -93,7 +93,7 @@ enum {
 
 unsigned char empty[] = {};
 
-int hciCommandBytes(unsigned char *opcodebytes, unsigned char *data, unsigned char length)
+int hciCommandBytes(volatile unsigned char *opcodebytes, volatile unsigned char *data, unsigned char length)
 {
     unsigned char c=0;
 
@@ -130,7 +130,7 @@ int hciCommandBytes(unsigned char *opcodebytes, unsigned char *data, unsigned ch
     return 0;
 }
 
-int hciCommand(unsigned short ogf, unsigned short ocf, unsigned char *data, unsigned char length)
+int hciCommand(unsigned short ogf, unsigned short ocf, volatile unsigned char *data, unsigned char length)
 {
     unsigned short opcode = ogf << 10 | ocf;
     unsigned char opcodebytes[2] = { lo(opcode), hi(opcode) };
@@ -233,6 +233,7 @@ void sendACLsubscribe(unsigned int handle)
     params[4] = 0x00;
 
     unsigned int c=0;
+
     while (c++<data_length) bt_writeByte(params[c-1]);
 }
 
