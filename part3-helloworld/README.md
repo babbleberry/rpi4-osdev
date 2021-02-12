@@ -213,10 +213,10 @@ Then:
 
  * Copy the newly built _kernel8.img_ to the SD card, and then put the SD card into your RPi4
  * Make sure your USB to serial TTL cable is connected correctly
- * Run PuTTY and double-click your "Raspberry Pi 4" session - you should see an empty black screen and no errors
+ * Run your terminal emulator (e.g. PuTTY) and connect to the "Raspberry Pi 4" session you set up earlier - you should see an empty black screen and no errors
  * Power on your RPi4
 
-If you've followed all these instructions, after a few seconds you'll see "Hello world!" appear in your PuTTY window on your dev machine.
+If you've followed all these instructions, after a few seconds you'll see "Hello world!" appear in the terminal emulator window on your dev machine.
 
 _It's a message from your RPi4 to say that your OS is working. Proof at last!_
 
