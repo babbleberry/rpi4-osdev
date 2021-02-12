@@ -37,7 +37,7 @@ var ioHook = require('iohook');
 
 var buf = Buffer.allocUnsafe(1);
 var obuf = Buffer.allocUnsafe(1);
-const scrwidth = 1680;
+const scrwidth = 1440;
 const divisor = scrwidth / 100;
 
 ioHook.on( 'mousemove', event => {

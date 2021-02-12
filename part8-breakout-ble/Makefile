@@ -1,22 +1,22 @@
 CFILES = $(wildcard *.c)
 OFILES = $(CFILES:.c=.o)
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
-GCCPATH = ../../gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf/bin
+LLVMPATH = /opt/homebrew/opt/llvm/bin
+GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
 
 all: clean kernel8.img
 
 boot.o: boot.S
-	$(GCCPATH)/aarch64-none-elf-gcc $(GCCFLAGS) -c boot.S -o boot.o
+	clang --target=aarch64-elf $(GCCFLAGS) -c boot.S -o boot.o
 
 BCM4345C0.o : BCM4345C0.hcd
-	$(GCCPATH)/aarch64-none-elf-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
+	$(LLVMPATH)/llvm-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
 
 %.o: %.c
-	$(GCCPATH)/aarch64-none-elf-gcc $(GCCFLAGS) -c $< -o $@
+	clang --target=aarch64-elf $(GCCFLAGS) -c $< -o $@
 
 kernel8.img: boot.o $(OFILES) BCM4345C0.o
-	$(GCCPATH)/aarch64-none-elf-ld -nostdlib -nostartfiles boot.o $(OFILES) BCM4345C0.o -T link.ld -o kernel8.elf
-	$(GCCPATH)/aarch64-none-elf-objcopy -O binary kernel8.elf kernel8.img
+	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib boot.o $(OFILES) BCM4345C0.o -T link.ld -o kernel8.elf
+	$(LLVMPATH)/llvm-objcopy -O binary kernel8.elf kernel8.img
 
 clean:
 	/bin/rm kernel8.elf *.o *.img > /dev/null 2> /dev/null || true

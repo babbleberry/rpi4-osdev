@@ -35,8 +35,10 @@ enum {
     OBJ_BALL   = 3
 };
 
+#define OBJS_ADDRESS    0x02100000 // Somewhere safe to store a lot of data
+
 unsigned int numobjs = 0;
-struct Object objects[(ROWS * COLS) + (2 * NUM_LIVES)];
+struct Object *objects = (struct Object *)OBJS_ADDRESS;
 struct Object *ball;
 struct Object *paddle;
 
@@ -87,7 +89,7 @@ void initBricks()
     int brickwidth = 32;
     int brickheight = 8;
     int brickspacer = 20;
-    int brickcols[5] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
+    static int brickcols[] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
 
     int ybrick = MARGIN + brickheight;
 
@@ -149,13 +151,10 @@ void drawScoreboard(int score, int lives)
     char tens = score / 10; score -= (10 * tens);
     char ones = score;
 
-    char string[] = "Score: 0xx   Lives: x\0\0";
-
-    string[8] = tens + 0x30;
-    string[9] = ones + 0x30;
-    string[20] = (char)lives + 0x30;
-
-    drawString((WIDTH/2)-252, MARGIN-25, string, 0x0f, 3);
+    drawString((WIDTH/2)-252, MARGIN-25, "Score: 0     Lives:  ", 0x0f, 3);
+    drawChar(tens + 0x30, (WIDTH/2)-252 + (8*8*3), MARGIN-25, 0x0f, 3);
+    drawChar(ones + 0x30, (WIDTH/2)-252 + (8*9*3), MARGIN-25, 0x0f, 3);
+    drawChar((char)lives + 0x30, (WIDTH/2)-252 + (8*20*3), MARGIN-25, 0x0f, 3);
 }
 
 void main()

@@ -7,3 +7,7 @@ void drawCircle(int x0, int y0, int radius, unsigned char attr, int fill);
 void drawLine(int x1, int y1, int x2, int y2, unsigned char attr);
 void moveRectAbs(int oldx, int oldy, int width, int height, int newx, int newy, unsigned char attr);
 void wait_msec(unsigned int n);
+void debugstr(char *str);
+void debugcrlf(void);
+void debugch(unsigned char b);
+void debughex(unsigned int d);

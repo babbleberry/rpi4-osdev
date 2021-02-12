@@ -147,8 +147,8 @@ void uart_writeByteBlocking(unsigned char ch) {
 
 void uart_writeText(char *buffer) {
     while (*buffer) {
-       if (*buffer == '\n') uart_writeByteBlocking('\r');
-       uart_writeByteBlocking(*buffer++);
+       if (*buffer == '\n') uart_writeByteBlockingActual('\r');
+       uart_writeByteBlockingActual(*buffer++);
     }
 }
 

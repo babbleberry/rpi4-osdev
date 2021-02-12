@@ -1,9 +1,7 @@
-#include "fb.h"
 #include "io.h"
 #include "bt.h"
+#include "fb.h"
 
-// The BLE stuff
-#define memcmp         __builtin_memcmp
 #define MAX_MSG_LEN    50
 #define MAX_READ_RUN   100
 
@@ -23,9 +21,21 @@ enum {
 unsigned int got_echo_sid = 0;
 unsigned int got_echo_name = 0;
 unsigned char echo_addr[6];
+
 unsigned int connected = 0;
 unsigned int connection_handle = 0;
+
 unsigned char dir = 50;
+
+int memcmp(const char *str1, const char *str2, int count) {
+    const char *s1 = (const char*)str1;
+    const char *s2 = (const char*)str2;
+
+    while (count-- > 0) {
+       if (*s1++ != *s2++) return s1[-1] < s2[-1] ? -1 : 1;
+    }
+    return 0;
+}
 
 void hci_poll2(unsigned char byte)
 {
@@ -72,62 +82,51 @@ unsigned char *hci_poll()
     return 0;
 }
 
-void bt_search()
-{
+void bt_search(void) {
     unsigned char *buf;
 
     while ( (buf = hci_poll()) ) {
        if (data_len >= 2) {
           if (buf[0] == LE_ADREPORT_CODE) {
-	     unsigned char numreports = buf[1];
-
-	     if (numreports == 1) {
-                unsigned char event_type = buf[2];
-
-	        if (event_type == 0x00) {
-	           unsigned char buf_len = buf[10];
+             if (buf[1] == 1) { // num_reports
+                if (buf[2] == 0) { // event_type
+                   int bufindex = 0;
 		   unsigned char ad_len = buf[11];
 
-	           if (ad_len < data_len && buf_len + 11 == data_len - 1) {
-	              for (int c=9;c>=4;c--) echo_addr[9-c] = buf[c];
-	              buf += 11;
+                   for (int c=9;c>=4;c--) echo_addr[9-c] = buf[bufindex + c]; // save the mac address
+                   bufindex += 11;
 
-		      got_echo_sid = 0; got_echo_name = 0; // Reset the search state machine
-		      do {
-	                 ad_len = buf[0];
-	                 unsigned char ad_type = buf[1];
-	                 buf += 2;
+                   got_echo_sid = 0; got_echo_name = 0; // Reset the search state machine
+                   do {
+                      ad_len = buf[bufindex];
+                      unsigned char ad_type = buf[bufindex + 1];
+                      bufindex += 2;
 
-   		         if (ad_len >= 2) {
-			    if (ad_type == 0x03) {
-			       unsigned int sid=0;
+                      if (ad_len >= 2) {
+                         if (ad_type == 0x03) {
+			    unsigned int sid = buf[bufindex] | (buf[bufindex + 1] << 8);
+			    if (sid == 0xEC00) {
+			       got_echo_sid = 1;
+			       debugstr("got sid... ");
+			    }
+                         } else if (ad_type == 0x09) {
+                            char remote_name[ad_len - 1];
+		            unsigned int d=0;
 
-			       for (int d=0;d<ad_len - 1;d+=2) {
-			          sid = buf[d] | (buf[d+1] << 8);
-				  if (sid == 0xEC00) {
-			             uart_hex(sid); uart_writeText(" ");
-			             got_echo_sid = 1;
-				  }
-			       }
-			    } else if (ad_type == 0x09) {
-			       char remote_name[ad_len - 1];
-		               unsigned int d=0;
+		            while (d<ad_len - 1) {
+			       remote_name[d] = buf[bufindex + d];
+		               d++;
+		            }
+			    if (!memcmp(remote_name,"echo",4)) {
+			       got_echo_name = 1;
+			       debugstr("got name... ");
+			    }
+                         }
+                      }
 
-		               while (d<ad_len - 1) {
-				  remote_name[d] = buf[d];
-		                  d++;
-		               }
-			       if (!memcmp(remote_name,"echo",4)) {
-			          uart_writeText(remote_name); uart_writeText(" ");
-				  got_echo_name = 1;
-			       }
-	                    }
-	                 }
-
-		         buf += ad_len - 1;
-		      } while (buf[1]);
-	           }
-	        }
+                      bufindex += ad_len - 1;
+                   } while (bufindex < data_len);
+                }
              }
           }
        }
@@ -142,9 +141,9 @@ void bt_conn()
        if (data_len >= 2) {
           if (buf[0] == LE_CONNECT_CODE && !connected) {
              connected = !buf[1];
-	     uart_hex(connected); uart_writeText(" ");
+	     debughex(connected); debugstr(" ");
 	     connection_handle = buf[2] | (buf[3] << 8);
-	     uart_hex(connection_handle); uart_writeText(" ");
+	     debughex(connection_handle); debugstr(" ");
 	  }
        }
     }
@@ -183,8 +182,10 @@ enum {
     OBJ_BALL   = 3
 };
 
+#define OBJS_ADDRESS    0x02200000 // Somewhere safe to store a lot of data
+
 unsigned int numobjs = 0;
-struct Object objects[(ROWS * COLS) + (2 * NUM_LIVES)];
+struct Object *objects = (struct Object *)OBJS_ADDRESS;
 struct Object *ball;
 struct Object *paddle;
 int paddlewidth = 80;
@@ -226,7 +227,7 @@ void initBricks()
     int brickwidth = 32;
     int brickheight = 8;
     int brickspacer = 20;
-    int brickcols[5] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
+    static int brickcols[] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
 
     int ybrick = MARGIN + brickheight;
 
@@ -288,13 +289,10 @@ void drawScoreboard(int score, int lives)
     char tens = score / 10; score -= (10 * tens);
     char ones = score;
 
-    char string[] = "Score: 0xx   Lives: x\0\0";
-
-    string[8] = tens + 0x30;
-    string[9] = ones + 0x30;
-    string[20] = (char)lives + 0x30;
-
-    drawString((WIDTH/2)-252, MARGIN-25, string, 0x0f, 3);
+    drawString((WIDTH/2)-252, MARGIN-25, "Score: 0     Lives:  ", 0x0f, 3);
+    drawChar(tens + 0x30, (WIDTH/2)-252 + (8*8*3), MARGIN-25, 0x0f, 3);
+    drawChar(ones + 0x30, (WIDTH/2)-252 + (8*9*3), MARGIN-25, 0x0f, 3);
+    drawChar((char)lives + 0x30, (WIDTH/2)-252 + (8*20*3), MARGIN-25, 0x0f, 3);
 }
 
 void acl_poll()
@@ -407,45 +405,55 @@ void breakout()
 
 void main()
 {
+    fb_init();
     uart_init();
-
     bt_init();
-    uart_writeText("Initialising Bluetooth: ");
+
+    debugstr("Initialising Bluetooth: ");
+    debugstr(">> reset: ");
     bt_reset();
+    debugstr(">> firmware load: ");
     bt_loadfirmware();
+    debugstr(">> set baud: ");
     bt_setbaud();
+    debugstr(">> set bdaddr: ");
     bt_setbdaddr();
 
     // Print the BD_ADDR
     unsigned char local_addr[6];
     bt_getbdaddr(local_addr);
-    for (int c=5;c>=0;c--) uart_byte(local_addr[c]);
-    uart_writeText("\n");
+    for (int c=5;c>=0;c--) debugch(local_addr[c]);
+    debugcrlf();
 
-    // Start scanning for echo
+    // Start scanning
+    debugstr("Setting event mask... ");
     setLEeventmask(0xff);
+    debugstr("Starting scanning... ");
     startActiveScanning();
-    uart_writeText("Waiting for echo: ");
+
+    // Search for the echo
+    debugstr("Waiting...");
+    debugcrlf();
     while (!(got_echo_sid && got_echo_name)) bt_search();
     stopScanning();
-    for (int c=0;c<=5;c++) uart_byte(echo_addr[c]);
-    uart_writeText("\n");
+    for (int c=0;c<=5;c++) debugch(echo_addr[c]);
+    debugcrlf();
 
-    // Ask to connect to the echo
-    uart_writeText("Connecting to echo: ");
+    // Connecting to echo
+    debugstr("Connecting to echo: ");
     connect(echo_addr);
     while (!connected) bt_conn();
-    uart_writeText("\n");
+    debugstr("Connected!");
+    debugcrlf();
 
     // Subscribe to updates
-    uart_writeText("Sending subscribe request: ");
-    uart_hex(connection_handle); uart_writeText("\n");
+    debugstr("Sending read request: ");
+    debughex(connection_handle); debugcrlf();
     sendACLsubscribe(connection_handle);
 
     // Begin the game
-    uart_writeText("Let the game commence...\n");
+    debugstr("Let the game commence...\n");
     wait_msec(0x100000); // Wait a second
 
-    fb_init();
     while (1) breakout();
 }
