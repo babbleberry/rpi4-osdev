@@ -35,7 +35,7 @@ Here's what my machine looks like:
 
 Make a note of the COMx number in brackets after the Prolific entry - in my case, that's **COM5**.
 
-The same cable will work on a Mac without the need to install any drivers. I'd recommend installing [Serial Tools](https://apps.apple.com/gb/app/serialtools/id611021963?mt=12) as an alternative to PuTTY before you read ahead. There's a good article on how to use it [here](https://www.w7ay.net/site/Applications/Serial%20Tools/).
+The same cable will work on a Mac without the need to install any drivers.
 
 Now we need to look at the RPi4 to identify how to connect the other end of the cable. You'll be looking for the **GPIO pins**, all 40 of them, which are just above the Raspberry Pi copyright notice. 
 
