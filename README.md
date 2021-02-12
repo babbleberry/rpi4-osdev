@@ -32,7 +32,7 @@ You'll need some hardware to get started with writing your OS:
  * An RPi4 with a dedicated power supply and HDMI lead
  * A monitor/TV connected to the RPi4 via HDMI
  * A micro-SD card to boot the RPi4 from
- * A computer to write your code on e.g. a Windows laptop (the **dev machine**)
+ * A computer to write your code on e.g. a Windows/Mac laptop (the **dev machine**)
 
 You'll need to make sure that you can write to the micro-SD card using your dev machine. For me, that meant buying an SD card adapter, because the micro-SD card was too small for the slot in my laptop. You may need the same, or even a USB SD card reader too if your laptop doesn't have one built-in.
 
