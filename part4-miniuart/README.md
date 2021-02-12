@@ -60,7 +60,7 @@ Some extra code
 
 I don't want this tutorial to just be an explanation so, in the code, you'll see I've added some more functionality to _io.c_ and made use of it in our kernel. Have a read through and see if you can understand what's going on. Refer to the documentation again if you need to.
 
-We can now read from our UART too! If you build the kernel and power on the RPi4 just like before, it'll say hello to the world again. But, after that, you can type into the PuTTY window and the RPi4 sends the characters right back to you.
+We can now read from our UART too! If you build the kernel and power on the RPi4 just like before, it'll say hello to the world again. But, after that, you can type into the terminal emulator (e.g. PuTTY) window and the RPi4 sends the characters right back to you.
 
 _Now we're communicating in two directions!_
 

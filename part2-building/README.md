@@ -48,7 +48,7 @@ Makefiles on other platforms
 
 If you're using clang on Mac OS X, the file already named _Makefile_ in the repo will be the one you need. Ensure the LLVMPATH is correctly set, of course. It doesn't look much different to the Arm gcc one, so the above explanation mostly applies.
 
-Similarly, if you're using Arm gcc natively on Windows, [part8-breakout-ble](../part8-breakout-ble) has a _Makefile.gcc.windows_ just as an example.
+Similarly, if you're using Arm gcc natively on Windows, part8-breakout-ble has a _Makefile.gcc.windows_ just as an example.
 
 Building
 --------

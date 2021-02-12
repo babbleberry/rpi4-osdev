@@ -34,6 +34,8 @@ Here's what my machine looks like:
 
 Make a note of the COMx number in brackets after the Prolific entry - in my case, that's **COM5**.
 
+The same cable will work on a Mac without the need to install any drivers. I'd recommend installing [Serial Tools](https://apps.apple.com/gb/app/serialtools/id611021963?mt=12) as an alternative to PuTTY before you read ahead. There's a good article on how to use it [here](https://www.w7ay.net/site/Applications/Serial%20Tools/).
+
 Now we need to look at the RPi4 to identify how to connect the other end of the cable. You'll be looking for the **GPIO pins**, all 40 of them, which are just above the Raspberry Pi copyright notice. 
 
 The diagram below shows where you need to make connections. The BLACK connecter hooks over Ground (Pin 6), the WHITE over TXD (GPIO 14/Pin 8) and the GREEN over RXD (GPIO 15/Pin 10). As we are powering the RPi4 using a dedicated power supply, make sure you **don't connect the RED connector**.
@@ -57,6 +59,8 @@ Setting up PuTTY
  * Click back to the "Session" category in the left-hand pane and you should see the changed settings
  * Save these settings by typing a name e.g. "Raspberry Pi 4" in the textbox under "Saved Sessions" and clicking Save
  * You can now start the connection by double-clicking on "Raspberry Pi 4" - if you do, all you will see for now is an empty black window
+
+If you're using a different terminal emulator, you'll need to use the same settings as above following the application vendor's instructions on how to use the software.
 
 A quick config.txt change
 -------------------------
