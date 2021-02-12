@@ -6,7 +6,7 @@ Making a makefile
 
 I could now just tell you the commands required to build this very simple kernel one after the other, but let's try to future-proof a little. I anticipate that our kernel will become more complex, with multiple C files needing to be built. It therefore makes sense to craft a **makefile**. A makefile is written in (yet another) language that automates the build process for us.
 
-Save the following as _Makefile_:
+If you're using Arm gcc on Linux, save the following as _Makefile_ (in the repo as _Makefile.gcc_):
 
 ```
 CFILES = $(wildcard *.c)
@@ -43,11 +43,17 @@ Carrying on, to build _kernel8.img_ we must first have built _boot.o_ and also e
 
 I would now hope that the "clean" and "all" targets are self-explanatory.
 
+Makefiles on other platforms
+----------------------------
+
+If you're using clang on Mac OS X, the file already named _Makefile_ in the repo will be the one you need. Ensure the LLVMPATH is correctly set, of course. It doesn't look much different to the Arm gcc one, so the above explanation mostly applies.
+
+Similarly, if you're using Arm gcc natively on Windows, [part8-breakout-ble](../part8-breakout-ble) has a _Makefile.gcc.windows_ just as an example.
+
 Building
 --------
 
 Now that we have our _Makefile_ in place, we simply type `make` to build our kernel image. Since "all" is the first target listed in our _Makefile_, `make` will build this unless you tell it otherwise. When building "all", it will first clean up any old builds and then make us a fresh build of _kernel8.img_.
-
 
 Copying our kernel image to the SD card
 ---------------------------------------
