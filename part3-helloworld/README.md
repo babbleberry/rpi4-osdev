@@ -20,6 +20,7 @@ You will need:
  * A [USB to serial TTL cable](https://www.amazon.co.uk/gp/product/B01N4X3BJB/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1)
  * To [download and install drivers for the cable](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers)
  * To [download and install PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) on your dev machine
+ * If you're using a Mac, I'd recommend [installing Serial Tools](https://apps.apple.com/gb/app/serialtools/id611021963?mt=12) as an alternative to PuTTY
 
 If you'd like to read up on serial communcation before we start, I recommend looking at the [SparkFun website](https://learn.sparkfun.com/tutorials/serial-communication/all).
 
@@ -60,7 +61,7 @@ Setting up PuTTY
  * Save these settings by typing a name e.g. "Raspberry Pi 4" in the textbox under "Saved Sessions" and clicking Save
  * You can now start the connection by double-clicking on "Raspberry Pi 4" - if you do, all you will see for now is an empty black window
 
-If you're using a different terminal emulator, you'll need to use the same settings as above following the application vendor's instructions on how to use the software.
+If you're using a different terminal emulator, you'll need to use the same settings as above following the application vendor's instructions on how to use the software. For example, Serial Tools on Mac is explained [here](https://www.w7ay.net/site/Applications/Serial%20Tools/).
 
 A quick config.txt change
 -------------------------
