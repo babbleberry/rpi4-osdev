@@ -6,10 +6,10 @@ GCCFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
 all: clean kernel8.img
 
 boot.o: boot.S
-	clang --target=aarch64-elf $(GCCFLAGS) -c boot.S -o boot.o
+	$(LLVMPATH)/clang --target=aarch64-elf $(GCCFLAGS) -c boot.S -o boot.o
 
 %.o: %.c
-	clang --target=aarch64-elf $(GCCFLAGS) -c $< -o $@
+	$(LLVMPATH)/clang --target=aarch64-elf $(GCCFLAGS) -c $< -o $@
 
 kernel8.img: boot.o $(OFILES)
 	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib boot.o $(OFILES) -T link.ld -o kernel8.elf

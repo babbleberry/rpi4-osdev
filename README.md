@@ -54,9 +54,21 @@ Don't proceed until you get Raspbian running!
 
 The RPi4 runs on an Arm Cortex-A72 processor. Your dev machine is likely running on an Intel processor. You'll therefore need some software that helps you build code to run on a different architecture. This is called a **cross-compiler**.
 
+Using Arm's compiler for Linux
+------------------------------
+
 Download and unpack [Arm's gcc compiler](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-a/downloads). For reasons that I won't go into here, you'll need to use the "AArch64 ELF bare-metal target". Since I'm using WSL on Windows 10 to emulate Ubuntu, I downloaded the x86_64 Linux hosted cross-compiler.
 
 I also advocate installing GNU make - you'll need it soon enough. Because I'm using WSL, for me that was simply a matter of typing `sudo apt install make` and entering my password.
+
+Using clang on Mac OS X (Apple Silicon or Intel)
+------------------------------------------------
+
+Download and install XCode from the App Store. This will give you a raft of developer tools for free, including `make`.
+
+I recommend using [Homebrew](https://docs.brew.sh/Installation) to install LLVM. For me, Homebrew was already installed, so this was a simple case of typing `brew install llvm`.
+
+LLVM will give you all you need to start building for Raspberry Pi bare metal on Mac. It even works on my M1 MacBook Pro with Apple Silicon, which runs an ARM processor rather than an Intel processsor.
 
 _Now you're ready to start writing your OS!_
 
