@@ -136,13 +136,13 @@ void bt_conn()
     unsigned char *buf;
 
     while ( (buf = hci_poll()) ) {
-       if (data_len >= 2) {
-          if (buf[0] == LE_CONNECT_CODE && !connected) {
-             connected = !buf[1];
-	     debughex(connected); debugstr(" ");
-	     connection_handle = buf[2] | (buf[3] << 8);
-	     debughex(connection_handle); debugstr(" ");
-	  }
+       if (!connected && data_len >= 2 && buf[0] == LE_CONNECT_CODE) {
+          connected = !*(buf+1);
+	  debughex(connected); debugstr(" ");
+	  connection_handle = *(buf+2) | (*(buf+3) << 8);
+	  debughex(connection_handle); debugstr(" ");
+
+	  if (connection_handle == 0) wait_msec(0x186A);
        }
     }
 }
@@ -157,13 +157,14 @@ void acl_poll()
 	  unsigned char length = bt_waitReadByte();
 	  for (int i=0;i<length;i++) bt_waitReadByte();
        } else if (byte == HCI_ACL_PKT) {
-	  bt_waitReadByte(); // handle1
-	  bt_waitReadByte(); // handle2
+	  unsigned char h1 = bt_waitReadByte(); // handle1
+	  unsigned char h2 = bt_waitReadByte(); // handle2
+          unsigned char thandle = h1 | (h2 << 8);
 
-	  unsigned char h1 = bt_waitReadByte();
-	  unsigned char h2 = bt_waitReadByte();
+	  unsigned char d1 = bt_waitReadByte();
+	  unsigned char d2 = bt_waitReadByte();
 
-	  unsigned int dlen = h1 | (h2 << 8);
+	  unsigned int dlen = d1 | (d2 << 8);
 	  unsigned char data[dlen];
 
 	  if (dlen > 7) {
@@ -173,9 +174,9 @@ void acl_poll()
 	     unsigned int channel = data[2] | (data[3] << 8);
 	     unsigned char opcode = data[4];
 
-	     if (length == 4 && opcode == 0x1b) {
+             if (thandle == connection_handle && length == 4 && opcode == 0x1b) {
 	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
-		   debugcrlf();
+                   debugcrlf();
                    debugstr("Got ACL packet... ");
                    debugch(data[7]); 
                 }
@@ -224,7 +225,7 @@ void run_eddystone(void) {
     // Start advertising
     debugstr("Setting event mask... ");
     setLEeventmask(0xff);
-    debugstr("Starting advertsing... ");
+    debugstr("Starting advertising... ");
     startActiveAdvertising();
 
     // Enter an infinite loop

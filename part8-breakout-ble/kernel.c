@@ -138,13 +138,13 @@ void bt_conn()
     unsigned char *buf;
 
     while ( (buf = hci_poll()) ) {
-       if (data_len >= 2) {
-          if (buf[0] == LE_CONNECT_CODE && !connected) {
-             connected = !buf[1];
-	     debughex(connected); debugstr(" ");
-	     connection_handle = buf[2] | (buf[3] << 8);
-	     debughex(connection_handle); debugstr(" ");
-	  }
+       if (!connected && data_len >= 2 && buf[0] == LE_CONNECT_CODE) {
+          connected = !*(buf+1);
+	  debughex(connected); debugstr(" ");
+	  connection_handle = *(buf+2) | (*(buf+3) << 8);
+	  debughex(connection_handle); debugstr(" ");
+
+	  if (connection_handle == 0) wait_msec(0x186A);
        }
     }
 }
@@ -182,13 +182,11 @@ enum {
     OBJ_BALL   = 3
 };
 
-#define OBJS_ADDRESS    0x02200000 // Somewhere safe to store a lot of data
-
 unsigned int numobjs = 0;
-struct Object *objects = (struct Object *)OBJS_ADDRESS;
+struct Object *objects = (struct Object *)SAFE_ADDRESS;
 struct Object *ball;
 struct Object *paddle;
-int paddlewidth = 80;
+const int paddlewidth = 80;
 
 void removeObject(struct Object *object)
 {
@@ -227,7 +225,7 @@ void initBricks()
     int brickwidth = 32;
     int brickheight = 8;
     int brickspacer = 20;
-    static int brickcols[] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
+    const int brickcols[] = { 0x11, 0x22, 0xEE, 0x44, 0x66 };
 
     int ybrick = MARGIN + brickheight;
 
@@ -305,13 +303,14 @@ void acl_poll()
 	  unsigned char length = bt_readByte();
 	  for (int i=0;i<length;i++) bt_readByte();
        } else if (byte == HCI_ACL_PKT) {
-	  bt_readByte(); // handle1
-	  bt_readByte(); // handle2
+	  unsigned char h1 = bt_readByte(); // handle1
+	  unsigned char h2 = bt_readByte(); // handle2
+          unsigned char thandle = h1 | (h2 << 8);
 
-	  unsigned char h1 = bt_readByte();
-	  unsigned char h2 = bt_readByte();
+	  unsigned char d1 = bt_readByte();
+	  unsigned char d2 = bt_readByte();
 
-	  unsigned int dlen = h1 | (h2 << 8);
+	  unsigned int dlen = d1 | (d2 << 8);
 	  unsigned char data[dlen];
 
 	  if (dlen > 7) {
@@ -321,7 +320,7 @@ void acl_poll()
 	     unsigned int channel = data[2] | (data[3] << 8);
 	     unsigned char opcode = data[4];
 
-	     if (length == 4 && opcode == 0x1b) {
+	     if (thandle == connection_handle && length == 4 && opcode == 0x1b) {
 	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
 	      	   dir = data[7];
                    moveObjectAbs(paddle, MARGIN + (dir * ((VIRTWIDTH - paddlewidth + MARGIN)/100)), paddle->y);
@@ -442,7 +441,7 @@ void main()
     // Connecting to echo
     debugstr("Connecting to echo: ");
     connect(echo_addr);
-    while (!connected) bt_conn();
+    while (!(connected && connection_handle)) bt_conn();
     debugstr("Connected!");
     debugcrlf();
 

@@ -1,8 +1,6 @@
 #include "io.h"
 #include "fb.h"
 
-volatile unsigned char *params = (unsigned char *)SAFE_ADDRESS;
-
 // UART0
 
 enum {
@@ -91,9 +89,7 @@ enum {
     LL_ADV_NONCONN_IND        = 0x03
 };
 
-unsigned char empty[] = {};
-
-int hciCommandBytes(volatile unsigned char *opcodebytes, volatile unsigned char *data, unsigned char length)
+int hciCommandBytes(unsigned char *opcodebytes, volatile unsigned char *data, unsigned char length)
 {
     unsigned char c=0;
 
@@ -139,11 +135,13 @@ int hciCommand(unsigned short ogf, unsigned short ocf, volatile unsigned char *d
 }
 
 void bt_reset() {
+    volatile unsigned char empty[] = {};
     if (hciCommand(OGF_HOST_CONTROL, COMMAND_RESET_CHIP, empty, 0)) uart_writeText("bt_reset() failed\n");
 }
 
 void bt_loadfirmware()
 {
+    volatile unsigned char empty[] = {};
     if (hciCommand(OGF_VENDOR, COMMAND_LOAD_FIRMWARE, empty, 0)) uart_writeText("loadFirmware() failed\n");
 
     extern unsigned char _binary_BCM4345C0_hcd_start[];
@@ -152,17 +150,23 @@ void bt_loadfirmware()
     unsigned int c=0;
     unsigned int size = (long)&_binary_BCM4345C0_hcd_size;
 
-    while (c < size) {
-        params[0] = _binary_BCM4345C0_hcd_start[c];
-        params[1] = _binary_BCM4345C0_hcd_start[c+1];
-        unsigned char length = _binary_BCM4345C0_hcd_start[c+2];
-        unsigned char *data = &(_binary_BCM4345C0_hcd_start[c+3]);
+    unsigned char opcodebytes[2];
+    unsigned char length;
+    unsigned char *data = &(_binary_BCM4345C0_hcd_start[0]);
 
-        if (hciCommandBytes(params, data, length)) {
+    while (c < size) {
+        opcodebytes[0] = *data;
+        opcodebytes[1] = *(data+1);
+        length =         *(data+2);
+        data += 3;
+
+        if (hciCommandBytes(opcodebytes, data, length)) {
 	   uart_writeText("Firmware data load failed\n");
 	   break;
 	}
-	c += 3 + length;
+
+	data += length;
+        c += 3 + length;
     }
 
     wait_msec(0x100000);
@@ -170,24 +174,14 @@ void bt_loadfirmware()
 
 void bt_setbaud()
 {
-    params[0] = 0;
-    params[1] = 0;
-    params[2] = 0x00;
-    params[3] = 0xc2;
-    params[4] = 0x01;
-    params[5] = 0x00; // little endian, 115200
-    if (hciCommand(OGF_VENDOR, COMMAND_SET_BAUD, params, 6)) uart_writeText("bt_setbaud() failed\n");
+    volatile unsigned char command[6] = { 0, 0, 0x00, 0xc2, 0x01, 0x00 }; // little endian, 115200
+    if (hciCommand(OGF_VENDOR, COMMAND_SET_BAUD, command, 6)) uart_writeText("bt_setbaud() failed\n");
 }
 
 void bt_setbdaddr()
 {
-    params[0] = 0xee;
-    params[1] = 0xff;
-    params[2] = 0xc0;
-    params[3] = 0xee;
-    params[4] = 0xff;
-    params[5] = 0xc0; // reversed
-    if (hciCommand(OGF_VENDOR, COMMAND_SET_BDADDR, params, 6)) uart_writeText("bt_setbdaddr() failed\n");
+    volatile unsigned char command[6] = { 0xee, 0xff, 0xc0, 0xee, 0xff, 0xc0 }; // reversed
+    if (hciCommand(OGF_VENDOR, COMMAND_SET_BDADDR, command, 6)) uart_writeText("bt_setbdaddr() failed\n");
 }
 
 void bt_getbdaddr(unsigned char *bdaddr) {
@@ -226,85 +220,72 @@ void sendACLsubscribe(unsigned int handle)
     bt_writeByte(lo(channel));
     bt_writeByte(hi(channel));
 
-    params[0] = 0x12;
-    params[1] = 0x2b;
-    params[2] = 0x00;
-    params[3] = 0x01;
-    params[4] = 0x00;
+    volatile unsigned char command[5] = { 0x12, 0x2b, 0x00, 0x01, 0x00 };
 
     unsigned int c=0;
-
-    while (c++<data_length) bt_writeByte(params[c-1]);
+    while (c++<data_length) bt_writeByte(command[c-1]);
 }
 
 void setLEeventmask(unsigned char mask)
 {
-    params[0] = mask;
-    params[1] = 0;
-    params[2] = 0;
-    params[3] = 0;
-    params[4] = 0;
-    params[5] = 0;
-    params[6] = 0;
-    params[7] = 0;
-    if (hciCommand(OGF_LE_CONTROL, 0x01, params, 8)) uart_writeText("setLEeventmask failed\n");
+    volatile unsigned char command[8] = { 0 };
+    command[0] = mask;
+
+    if (hciCommand(OGF_LE_CONTROL, 0x01, command, 8)) uart_writeText("setLEeventmask failed\n");
 }
 
 void setLEscanenable(unsigned char state, unsigned char duplicates) {
-    params[0] = state;
-    params[1] = duplicates;
-    if (hciCommand(OGF_LE_CONTROL, 0x0c, params, 2)) uart_writeText(" setLEscanenable failed\n");
+    volatile unsigned char command[2];
+    command[0] = state;
+    command[1] = duplicates;
+    if (hciCommand(OGF_LE_CONTROL, 0x0c, command, 2)) uart_writeText(" setLEscanenable failed\n");
 }
 
 void setLEscanparameters(unsigned char type, unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy) {
-    params[0] = type;
-    params[1] = linterval;
-    params[2] = hinterval;
-    params[3] = lwindow;
-    params[4] = hwindow;
-    params[5] = own_address_type;
-    params[6] = filter_policy;
-    if (hciCommand(OGF_LE_CONTROL, 0x0b, params, 7)) uart_writeText("setLEscanparameters failed\n");
+    volatile unsigned char command[7];
+    command[0] = type;
+    command[1] = linterval;
+    command[2] = hinterval;
+    command[3] = lwindow;
+    command[4] = hwindow;
+    command[5] = own_address_type;
+    command[6] = filter_policy;
+    if (hciCommand(OGF_LE_CONTROL, 0x0b, command, 7)) uart_writeText("setLEscanparameters failed\n");
 }
 
 void setLEadvertenable(unsigned char state) {
-    params[0] = state;
-    if (hciCommand(OGF_LE_CONTROL, 0x0a, params, 1)) uart_writeText("setLEadvertenable failed\n");
+    volatile unsigned char command[1];
+    command[0] = state;
+    if (hciCommand(OGF_LE_CONTROL, 0x0a, command, 1)) uart_writeText("setLEadvertenable failed\n");
 }
 
 void setLEadvertparameters(unsigned char type, unsigned char linterval_min, unsigned char hinterval_min, unsigned char linterval_max, unsigned char hinterval_max, unsigned char own_address_type, unsigned char filter_policy) {
-    params[0] = linterval_min;
-    params[1] = hinterval_min;
-    params[2] = linterval_max;
-    params[3] = hinterval_max;
-    params[4] = type;
-    params[5] = own_address_type;
-    params[6] = 0;
-    params[7] = 0;
-    params[8] = 0;
-    params[9] = 0;
-    params[10] = 0;
-    params[11] = 0;
-    params[12] = 0;
-    params[13] = 0x07;
-    params[14] = filter_policy;
-    if (hciCommand(OGF_LE_CONTROL, 0x06, params, 15)) uart_writeText("setLEadvertparameters failed\n");
+    volatile unsigned char command[15] = { 0 };
+
+    command[0] = linterval_min;
+    command[1] = hinterval_min;
+    command[2] = linterval_max;
+    command[3] = hinterval_max;
+    command[4] = type;
+    command[5] = own_address_type;
+    command[13] = 0x07;
+    command[14] = filter_policy;
+
+    if (hciCommand(OGF_LE_CONTROL, 0x06, command, 15)) uart_writeText("setLEadvertparameters failed\n");
 }
 
 void setLEadvertdata() {
-    params[0] = 0x19;
-    params[1] = 0x02; params[2] = 0x01; params[3] = 0x06;
-    params[4] = 0x03; params[5] = 0x03; params[6] = 0xAA; params[7] = 0xFE;
-    params[8] = 0x11; params[9] = 0x16; params[10] = 0xAA; params[11] = 0xFE; params[12] = 0x10; params[13] = 0x00; params[14] = 0x03;
-    params[15] = 0x69; params[16] = 0x73; params[17] = 0x6f; params[18] = 0x6d; params[19] = 0x65; params[20] = 0x74; params[21] = 0x69; params[22] = 0x6d;
-    params[23] = 0x2e; params[24] = 0x65; params[25] = 0x73;
-    params[26] = 0x00;
-    params[27] = 0x00;
-    params[28] = 0x00;
-    params[29] = 0x00;
-    params[30] = 0x00;
-    params[31] = 0x00;
-    if (hciCommand(OGF_LE_CONTROL, 0x08, params, 32)) uart_writeText("setLEadvertdata failed\n");
+    volatile unsigned char command[32] = { 
+       0x19,
+       0x02, 0x01, 0x06,
+       0x03, 0x03, 0xAA, 0xFE,
+       0x11, 0x16, 0xAA, 0xFE, 0x10, 0x00, 0x03,
+       0x69, 0x73, 0x6f, 0x6d, 0x65, 0x74, 0x69, 0x6d,
+       0x2e, 0x65, 0x73,
+       0, 0, 0, 0, 0, 0
+    };
+
+    if (hciCommand(OGF_LE_CONTROL, 0x08, command, 32)) uart_writeText("setLEadvertdata failed\n");
 }
 
 void stopScanning() {
@@ -351,44 +332,25 @@ void connect(unsigned char *addr)
     float BleGranularity = 1.25;
 
     unsigned int p = BleScanInterval / BleScanDivisor;
-    unsigned char lp = lo(p);
-    unsigned char hp = hi(p);
     unsigned int q = BleScanWindow / BleScanDivisor;
-    unsigned char lq = lo(q);
-    unsigned char hq = hi(q);
 
     unsigned int min_interval = connMinFreq / BleGranularity;
-    unsigned char lmini = lo(min_interval);
-    unsigned char hmini = hi(min_interval);
     unsigned int max_interval = connMaxFreq / BleGranularity;
-    unsigned char lmaxi = lo(max_interval);
-    unsigned char hmaxi = hi(max_interval);
 
-    params[0] = lp;
-    params[1] = hp;
-    params[2] = lq;
-    params[3] = hq;
-    params[4] = 0;
-    params[5] = 0;
-    params[6] = addr[5];
-    params[7] = addr[4];
-    params[8] = addr[3];
-    params[9] = addr[2];
-    params[10] = addr[1];
-    params[11] = addr[0];
-    params[12] = 0;
-    params[13] = lmini;
-    params[14] = hmini;
-    params[15] = lmaxi;
-    params[16] = hmaxi;
-    params[17] = 0;
-    params[18] = 0;
-    params[19] = 0x2a;
-    params[20] = 0x00;
-    params[21] = 0;
-    params[22] = 0;
-    params[23] = 0;
-    params[24] = 0;
+    volatile unsigned char command[25] = { 0 };
 
-    if (hciCommand(OGF_LE_CONTROL, 0x0d, params, 25)) uart_writeText("createLEconnection failed\n");
+    command[0] = lo(p);
+    command[2] = lo(q);
+    command[6] = *(addr+5);
+    command[7] = *(addr+4);
+    command[8] = *(addr+3);
+    command[9] = *(addr+2);
+    command[10] = *(addr+1);
+    command[11] = *addr;
+    command[13] = lo(min_interval);
+    command[15] = lo(max_interval);
+    command[19] = 0x2a;
+    command[20] = 0x00;
+
+    if (hciCommand(OGF_LE_CONTROL, 0x0d, command, 25)) uart_writeText("createLEconnection failed\n");
 }

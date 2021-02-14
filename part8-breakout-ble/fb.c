@@ -2,7 +2,7 @@
 #include "mb.h"
 #include "terminal.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 unsigned int width, height, pitch, isrgb;
 unsigned char *fb;
