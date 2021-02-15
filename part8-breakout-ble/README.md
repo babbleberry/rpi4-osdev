@@ -57,7 +57,7 @@ And we have ourselves a working, albeit a bit hacky, Bluetooth game controller! 
 
 Connecting to our Breakout controller from the Raspberry Pi
 -----------------------------------------------------------
-main.js, when running, is sitting there broadcasting the Breakout controller's availability publicly using exactly the same techniques that our Eddystone beacon used. Our tasks on the Pi are now:
+_main.js_, when running, is sitting there broadcasting the Breakout controller's availability publicly, using exactly the same techniques that our Eddystone beacon used. Our tasks on the Pi are now:
 
  * to start listening (called "scanning") for these adverts so we know where the echo service can be found
  * to connect to the echo service, having found it
@@ -72,10 +72,12 @@ We send a `connect()` request to that address (LE Create Connection in the TI do
 
 Next we send a subscription request to the service using that handle in `sendACLsubscribe()` in _bt.c_. We tell it that we're interested in receiving updates to its stored value (or "characteristic"). I actually did a lot of reverse-engineering to get to this code. ACL data packets over HCI are not widely documented. Have a read of [this forum thread](https://www.raspberrypi.org/forums/viewtopic.php?t=233140) to see the kind of things I did to succeed. `gatttool` and `hcitool` on Raspbian turned out to be very my good friends!
 
-Finally, we call acl_poll() repeatedly to see if there are any updates waiting. The data comes in the form of an ACL packet which identifies, amongst other things, the connection handle it was sent to/using (worth checking against our recorded handle so we know it's for us) as well as data length and an opcode. The opcode 0x1B represents a "ATT handle value notification". Those are the updates we're looking for. In part7 we simply print the update to debug to show it's been received.
+Finally, we call `acl_poll()` repeatedly to see if there are any updates waiting. The data comes to us in the form of an ACL packet, which identifies, amongst other things, the connection handle it was sent to/using (worth checking against our recorded handle so we know it's for us) as well as data length and an opcode. 
+
+The opcode 0x1B represents a "ATT handle value notification" (ATT_HandleValueNoti in the TI docs). Those are the updates we're looking for. In part7 we simply print the update to debug to show it's been received.
 
 The last mile
 -------------
-With this, it's a good task to take part6 and part7 code and merge them to form a working Breakout implementation that's controlled via Bluetooth! After all, that's exactly how I ended up with the part8 code...
+With this, it's a good exercise to take part6 and part7 code and merge them to form a working Breakout implementation that's controlled via Bluetooth! After all, that's exactly how I ended up with the part8 code... If you get stuck, it's all in my repo.
 
 Good luck!
