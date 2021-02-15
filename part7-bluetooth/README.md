@@ -70,7 +70,8 @@ Now the device is waiting. We need to send it the firmware bytes we included in 
 ```c
 void bt_loadfirmware()
 {
-    if (!hciCommand(OGF_VENDOR, COMMAND_LOAD_FIRMWARE, empty, 0)) uart_writeText("loadFirmware() failed\n");
+    volatile unsigned char empty[] = {};
+    if (hciCommand(OGF_VENDOR, COMMAND_LOAD_FIRMWARE, empty, 0)) uart_writeText("loadFirmware() failed\n");
 
     extern unsigned char _binary_BCM4345C0_hcd_start[];
     extern unsigned char _binary_BCM4345C0_hcd_size[];
@@ -78,16 +79,23 @@ void bt_loadfirmware()
     unsigned int c=0;
     unsigned int size = (long)&_binary_BCM4345C0_hcd_size;
 
-    while (c < size) {
-        unsigned char opcodebytes[] = { _binary_BCM4345C0_hcd_start[c], _binary_BCM4345C0_hcd_start[c+1] };
-        unsigned char length = _binary_BCM4345C0_hcd_start[c+2];
-        unsigned char *data = &(_binary_BCM4345C0_hcd_start[c+3]);
+    unsigned char opcodebytes[2];
+    unsigned char length;
+    unsigned char *data = &(_binary_BCM4345C0_hcd_start[0]);
 
-        if (!hciCommandBytes(opcodebytes, data, length)) {
-	   uart_writeText("Firmware data load failed\n");
-	   break;
-	}
-	c += 3 + length;
+    while (c < size) {
+        opcodebytes[0] = *data;
+        opcodebytes[1] = *(data+1);
+        length =         *(data+2);
+        data += 3;
+
+        if (hciCommandBytes(opcodebytes, data, length)) {
+           uart_writeText("Firmware data load failed\n");
+           break;
+        }
+
+        data += length;
+        c += 3 + length;
     }
 
     wait_msec(0x100000);
