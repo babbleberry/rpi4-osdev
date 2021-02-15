@@ -3,9 +3,9 @@ Writing a "bare metal" operating system for Raspberry Pi 4 (Part 8)
 
 Receiving Bluetooth data
 ------------------------
-So we've mastered advertising, and we're broadcasting data out into the World. But that's only half the story! In this part we'll be exploring how to receive data from an external source. This is much more exciting as we can begin to use other devices as controllers.
+So we've mastered advertising and we're broadcasting data out into the World. But that's only half the story! In this part, we'll be exploring how to receive data from an external source. This is much more exciting as we can begin to use other devices as remote controllers.
 
-In fact, my idea was to control the Breakout game in part6 by receiving data from trackpad on my MacBook Pro over Bluetooth! Neat, eh?
+In fact, my idea for this part is to control the Breakout game we wrote in part6 by receiving data from the trackpad on my MacBook Pro over Bluetooth! Neat, eh?
 
 Building a Bluetooth Breakout controller
 ----------------------------------------
@@ -19,14 +19,14 @@ Once you've got Node.js installed, use `npm` to install Bleno with `npm install 
  * `npm install github:notjosh/bleno-mac`
  * `npm install github:sandeepmistry/node-xpc-connection#pull/26/head`
 
-I made some simple modifications to the [echo example](https://github.com/noble/bleno/tree/master/examples/echo) in the Bleno repository. This example implements a Bluetooth peripheral, exposing a service which:
+I used the [echo example](https://github.com/noble/bleno/tree/master/examples/echo) in the Bleno repository as my base code. This example implements a Bluetooth peripheral, exposing a service which:
 
  * lets a connected device read a locally stored byte value
  * lets a connected device update the locally stored byte value (it can be changed locally too...!)
  * lets a connected device subscribe to receive updates when the locally stored byte value changes
  * lets a connected device unsubscribe from receiving updates
 
-You won't be surprised to know that my design is for our Raspberry Pi to subscribe to receive updates from this service. That locally stored byte value will be updated locally to reflect the current mouse cursor position as it changes. Our Raspberry Pi will then be notified every time I move the mouse on my MacBook Pro as if by magic!
+You won't be surprised to know that my design is for our Raspberry Pi to subscribe to receive updates from this service running on my laptop. That locally stored byte value will be updated locally to reflect the current mouse cursor position as it changes. Our Raspberry Pi will then be notified every time I move the mouse on my MacBook Pro as if by magic!
 
 You can see the changes I made to the Bleno echo example to implement this in the _controller_ subdirectory of this part8-breakout-ble. They boil down to making use of [iohook](https://github.com/wilix-team/iohook), which I installed using `npm install iohook`. Here's the interesting bit (the rest is just plumbing):
 
@@ -51,7 +51,7 @@ ioHook.on( 'mousemove', event => {
 ioHook.start();
 ```
 
-Here I'm capturing the x coordinate of the mouse cursor and translating it into a number between 0 (far left of the screen) and 100 (far right of the screen). If it changes from the previous value, we update the callback value (our Raspberry Pi only needs to know when the position has changed). As the callback value is updated, so any subscribed devices will be notified.
+Here, I'm capturing the x coordinate of the mouse cursor and translating it into a number between 0 (far left of the screen) and 100 (far right of the screen). If it changes from the previous value we saw, we update the callback value (our Raspberry Pi only needs to know when the position has changed). As the callback value is updated, so any subscribed devices will be notified.
 
 And we have ourselves a working, albeit a bit hacky, Bluetooth game controller!
 
