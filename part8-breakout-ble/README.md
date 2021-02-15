@@ -53,11 +53,29 @@ ioHook.start();
 
 Here, I'm capturing the x coordinate of the mouse cursor and translating it into a number between 0 (far left of the screen) and 100 (far right of the screen). If it changes from the previous value we saw, we update the callback value (our Raspberry Pi only needs to know when the position has changed). As the callback value is updated, so any subscribed devices will be notified.
 
-And we have ourselves a working, albeit a bit hacky, Bluetooth game controller!
+And we have ourselves a working, albeit a bit hacky, Bluetooth game controller! You can run it with the command `node main.js`, but it won't do much without something to connect to it.
 
-Todo
-----
+Connecting to our Breakout controller from the Raspberry Pi
+-----------------------------------------------------------
+main.js, when running, is sitting there broadcasting the Breakout controller's availability publicly using exactly the same techniques that our Eddystone beacon used. Our tasks on the Pi are now:
 
- * Write up scanning implementation (receiving advertising reports)
- * Write up device detection (service UUID & name matching)
- * Write up ACL notification of characteristic change (using [bleno echo example](https://github.com/noble/bleno))
+ * to start listening (called "scanning") for these adverts so we know where the echo service can be found
+ * to connect to the echo service, having found it
+ * to subscribe to receive its updates on cursor position
+ * to listen for these updates and do something upon receipt
+
+Remember I mentioned that we'd discuss the `run_search()` function in part7-bluetooth? Well, this is exactly what it does. This time comment out the `run_eddystone()` function and let `run_search()` run whilst your echo service is running on the laptop. As you wiggle your finger on the trackpad, you should see the updates coming through on the Pi!
+
+Instead of advertising, `run_search()` puts the Bluetooth controller into scanning mode (see links in part7-bluetooth to learn more about how this is done). `bt_search()` in _kernel.c_ is then called repeatedly until it receives some specific advertising data - namely a notification of the availability of the echo service's Service ID (hexadecimal number 0xEC00), as well as its broadcast name 'echo'. If it sees both in the same advertising report then it assumes it's found what it's looking for. The originating Bluetooth Device Address is noted.
+
+We send a `connect()` request to that address (LE Create Connection in the TI docs) and now call `bt_conn()` repeatedly until we're notified that the connection has completed successfully. When this happens, we get a non-zero `connection_handle`. We'll use this to identify communications from/to the echo service from now on.
+
+Next we send a subscription request to the service using that handle in `sendACLsubscribe()` in _bt.c_. We tell it that we're interested in receiving updates to its stored value (or "characteristic"). I actually did a lot of reverse-engineering to get to this code. ACL data packets over HCI are not widely documented. Have a read of [this forum thread](https://www.raspberrypi.org/forums/viewtopic.php?t=233140) to see the kind of things I did to succeed. `gatttool` and `hcitool` on Raspbian turned out to be very my good friends!
+
+Finally, we call acl_poll() repeatedly to see if there are any updates waiting. The data comes in the form of an ACL packet which identifies, amongst other things, the connection handle it was sent to/using (worth checking against our recorded handle so we know it's for us) as well as data length and an opcode. The opcode 0x1B represents a "ATT handle value notification". Those are the updates we're looking for. In part7 we simply print the update to debug to show it's been received.
+
+The last mile
+-------------
+With this, it's a good task to take part6 and part7 code and merge them to form a working Breakout implementation that's controlled via Bluetooth! After all, that's exactly how I ended up with the part8 code...
+
+Good luck!
