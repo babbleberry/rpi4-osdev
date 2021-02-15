@@ -257,6 +257,9 @@ void main()
     for (int c=5;c>=0;c--) debugch(local_addr[c]);
     debugcrlf();
 
+    // Test out the advertising
+    // run_eddystone();
+
     // Test out the scanning
     run_search();
 }

@@ -1,5 +1,4 @@
 #define PERIPHERAL_BASE 0xFE000000
-#define SAFE_ADDRESS    0x00210000 // Somewhere safe to store a lot of data
 
 void uart_init();
 void uart_writeText(char *buffer);
