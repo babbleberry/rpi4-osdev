@@ -60,7 +60,13 @@ The Bluetooth spec is massive, and to implement a full driver would take a long 
 
 We talk to the Bluetooth modem using **HCI commands**. I enjoyed reading the [TI HCI docs](http://software-dl.ti.com/simplelink/esd/simplelink_cc13x2_sdk/1.60.00.29_new/exports/docs/ble5stack/vendor_specific_guide/BLE_Vendor_Specific_HCI_Guide/hci_interface.html) as an intro to this.
 
-`bt_reset()` simply calls `hci_Command`, which in turn called `hci_CommandBytes` to write the bytes out to the UART that tell the Bluetooth chip to reset and await firmware. This is a vendor-specific call, so you won't find it documented anywhere. `hci_CommandBytes` then waits for a very specific response before it returns successfully - the "command complete" response.
+`bt_reset()` simply calls `hci_Command`, which in turn called `hci_CommandBytes` to write the bytes out to the UART that tell the Bluetooth chip to reset and await firmware. This is a vendor-specific call, so you won't find it documented anywhere. I reverse-engineered the calls using the following files from the Raspberry Pi Linux distribution:
+
+* https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/bluetooth/btbcm.c
+* https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/bluetooth/hci_bcm.c
+* https://github.com/raspberrypi/linux/blob/rpi-5.10.y/include/net/bluetooth/hci.h
+
+`hci_CommandBytes` then waits for a very specific response before it returns successfully - the "command complete" response.
 
 Loading the firmware
 --------------------
@@ -110,15 +116,29 @@ The firmware is simply a sequence of HCI commands following this format:
  * 1 byte that tells us the length of the data to follow
  * _length_ bytes of data
 
-We check each HCI command succeeds as we go, wait a second and then return. If it runs without error then we've loaded our firmware and we're ready to start some Bluetooth communications!
+We check each HCI command succeeds as we go, wait a second and then return. If it runs without error then we've loaded our firmware and we're ready to start some Bluetooth communications.
 
-Todo
-----
+I've then chosen to implement `bd_setbaud()` and `bt_setbdaddr()`. This sets the speed at which the Bluetooth modem will talk (much like we did in our UART examples) and also its unique [Bluetooth Device Address](https://macaddresschanger.com/what-is-bluetooth-address-BD_ADDR).
 
- * Write up scanning implementation (receiving advertising reports)
- * Write up advertising implementation (simple Eddystone Beacon)
- * Write up device detection (service UUID & name matching)
- * Write up ACL notification of characteristic change (using [bleno echo example](https://github.com/noble/bleno))
+Building an Eddystone beacon
+----------------------------
+
+Perhaps the simplest Bluetooth device to build is a "beacon". It simply advertises a small amount of data publicly, such that any passing receivers can view the data. A typical use case is to advertise a web URL for location-based marketing purposes.
+
+Google defined the [Eddystone format](https://en.wikipedia.org/wiki/Eddystone_(Google)), which was reasonably widely adopted. We'll iomplement this as our example. Here's what we need to achieve:
+
+ * Set the LE event mask to ensure that the Bluetooth controller is interrupted by all incoming traffic
+ * Set advertising parameters
+ * Set advertising data
+ * Enable advertising
+
+Much of my learning was advanced by [markfirmware's code](https://github.com/markfirmware/zig-bare-metal-raspberry-pi/blob/master/src/ble.zig). Rather than just blindly copying code into my _bt.c_, I read this alongside relevant sections of the weighty [Bluetooth specification](https://www.bluetooth.com/specifications/specs/core-specification-5-2/). I recommend you do the same if you're interested in truly understanding what's going on here.
+
+When constructing the advertising data, I also referred to [PiMyLifeUp's article on Eddystone](https://pimylifeup.com/raspberry-pi-eddystone-beacon/).
+
+To test the code, ensure `run_eddystone()` is uncommented in _kernel.c_ instead of `run_search()` (we'll talk about `run_search()` in more detail in part8-breakout-ble).
+
+Once built and running, I used the [eBeacon iPhone application](https://apps.apple.com/us/app/ebeacon-ble-scanner/id730279939) to check that my Eddystone beacon was broadcasting. The screenshots below show my URL proudly advertised as intended:
 
 ![Working Eddystone Beacon on RPi4](images/7-eddystone-beacon.png)
 
