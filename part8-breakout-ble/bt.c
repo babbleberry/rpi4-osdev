@@ -275,7 +275,7 @@ void setLEadvertparameters(unsigned char type, unsigned char linterval_min, unsi
 }
 
 void setLEadvertdata() {
-    volatile unsigned char command[32] = { 
+    static unsigned char command[32] = { 
        0x19,
        0x02, 0x01, 0x06,
        0x03, 0x03, 0xAA, 0xFE,
