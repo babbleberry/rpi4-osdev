@@ -74,6 +74,8 @@ Next we send a subscription request to the service using that handle in `sendACL
 
 Finally, we call `acl_poll()` repeatedly to see if there are any updates waiting. The data comes to us in the form of an ACL packet, which identifies, amongst other things, the connection handle it was sent to/using (worth checking against our recorded handle so we know it's for us) as well as data length and an opcode. 
 
+![ATT handle value notification opcode 1b](images/8-opcode-1b.png)
+
 The opcode 0x1B represents a "ATT handle value notification" (ATT_HandleValueNoti in the TI docs). Those are the updates we're looking for. In part7 we simply print the update to debug to show it's been received.
 
 The last mile
