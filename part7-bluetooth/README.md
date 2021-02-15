@@ -125,7 +125,7 @@ Building an Eddystone beacon
 
 Perhaps the simplest Bluetooth device to build is a "beacon". It simply advertises a small amount of data publicly, such that any passing receivers can view the data. A typical use case is to advertise a web URL for location-based marketing purposes.
 
-Google defined the [Eddystone format](https://en.wikipedia.org/wiki/Eddystone_(Google)), which was reasonably widely adopted. We'll iomplement this as our example. Here's what we need to achieve:
+Google defined the [Eddystone format](https://en.wikipedia.org/wiki/Eddystone_(Google)), which was reasonably widely adopted. We'll implement this as our example. Here's what we need to achieve:
 
  * Set the LE event mask to ensure that the Bluetooth controller is interrupted by all incoming traffic
  * Set advertising parameters

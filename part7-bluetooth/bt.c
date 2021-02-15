@@ -238,7 +238,7 @@ void setLEscanenable(unsigned char state, unsigned char duplicates) {
     volatile unsigned char command[2];
     command[0] = state;
     command[1] = duplicates;
-    if (hciCommand(OGF_LE_CONTROL, 0x0c, command, 2)) uart_writeText(" setLEscanenable failed\n");
+    if (hciCommand(OGF_LE_CONTROL, 0x0c, command, 2)) uart_writeText("setLEscanenable failed\n");
 }
 
 void setLEscanparameters(unsigned char type, unsigned char linterval, unsigned char hinterval, unsigned char lwindow, unsigned char hwindow, unsigned char own_address_type, unsigned char filter_policy) {
