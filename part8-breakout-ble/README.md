@@ -82,4 +82,6 @@ The last mile
 -------------
 With this, it's a good exercise to take part6 and part7 code and merge them to form a working Breakout implementation that's controlled via Bluetooth! After all, that's exactly how I ended up with the part8 code... If you get stuck, it's all in my repo.
 
-Good luck!
+Good luck! Next time, we'll look at adding sound to the gameplay...
+
+[Go to part9-sound >](../part9-sound)
