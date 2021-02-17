@@ -10,5 +10,5 @@ This code was derived from [Peter Lemon's work](https://github.com/PeterLemon/Ra
 Todo
 ----
  * Write-up the CPU-driven `playaudio_cpu()` code, explaining clocks/PWM etc.
- * Code the DMA version so we don't have to tie up the CPU
+ * Write-up the DMA version `playaudio_dma()` version, which doesn't tie up the CPU but still plays sound!
  * Add a Makefile.gcc (I'm using LLVM Clang these days, so not a priority)
