@@ -7,8 +7,8 @@ One thing our game is missing is the excitement of sound! Some beeps and squeaks
 
 I wrote this code as I referenced [Peter Lemon's work](https://github.com/PeterLemon/RaspberryPi/tree/master/Sound/PWM/8BIT/44100Hz/Stereo/CPU), for which I am very grateful. It did need some significant modification to work on the Raspberry Pi 4 hardware.
 
-Design goals
-------------
+Design goal
+-----------
 Perhaps most importantly, we must be able to play sounds in the background. If our audio playback ties up the CPU, then gameplay will stop whilst the sound is playing. I think any player would be immediately put off by the rude intrusion into their adventure!
 
 One solution for this is to implement multi-tasking, thereby making use of the four CPU cores (so far we've only used one). This is no small feat, and a big commitment for a fews beeps and squeaks.
@@ -40,7 +40,7 @@ To convert back to our binary format, do this:
 
 `ffmpeg -i audio.wav -f u8 -ar 44.1k -ac 2 audio.bin`
 
-This should help you try the code with your own audio samples!
+This should help you try the code with your own audio samples! This one is a short excerpt of [me](https://isometim.es) singing (argh!), with my wife playing woodwind. As an aside, I highly recommend checking out [the original track](https://www.youtube.com/watch?v=k1UoUNC3Wj0).
 
 Testing playback using the CPU and PWM module
 ---------------------------------------------
@@ -62,7 +62,16 @@ The code is fairly self-documenting. We essentially check the FIFO buffer isn't 
 
 And that's it... The PWM will pick up the digital data in the buffer and send it, PWM-style (faking an analogue signal), at the right speed (thanks to our clock divisor/PWM range mastery), to the audio jack.
 
-Todo
-----
- * Write-up the DMA version `playaudio_dma()` version, which doesn't tie up the CPU but still plays sound!
- * Add a Makefile.gcc (I'm using LLVM Clang these days, so not a priority)
+Doing it with DMA
+-----------------
+Our first challenge is that DMA transfers and FIFO registers are 4 bytes wide, so our single byte samples need some zero-padding. Because `data` is an `unsigned char *` and `safe` is (technically) an `unsigned int *`, we can do this in C with a simple for loop. You'll notice that `safe` is a memory location in RAM which we know to be beyond our program code (`SAFE_ADDRESS` is defined in _io.h_).
+
+We then set up the DMA Control Block. This is an in-memory structure that will tell the DMA engine everything it needs to know to perform the transfer. This is very well-documented already, but worth pointing out is `DMA_DEST_DREQ` and `DMA_PERMAP_1`. These settings ensure we use our previously-set hardware clock to 'pace' the transfer. If we didn't do this, the DMA engine would just get it done as fast as it could (and our audio wouldn't sound great!). `SRC_INC` simply tells the DMA engine to increment the source address throughout the transfer. We'll be keeping the destination address constant since we want it to always point to the PWM module's FIFO input. Note also the use of `PWM_LEGACY_BASE` rather than `PWM_BASE` to address this peripheral memory. This is another quirk of the Raspberry Pi 4 hardware!
+
+Note finally how we set `.nextconbk` to 0x00. This tells the DMA engine that there is no more work to do after this job is complete. If we wanted to loop the audio sample infinitely, we could simply set this to address the same control block structure again!
+
+As we enable the DMA engine, playback begins. Notably, however, we're returned to `main()` immediately and the CPU can get on with other things, thereby meeting our design goal.
+
+Conclusion
+----------
+We're now ready to integrate sound into our Breakout game using background DMA transfers! Coming soon...

@@ -69,23 +69,26 @@ static void playaudio_dma(void)
     unsigned char *data = &(_binary_audio_bin_start[0]);
 
     // Convert data
+
     for (int i=0;i<size;i++) *(safe+i) = *(data+i);
 
     wait_msec(2);
 
     // Set up control block
+
     playback_cb.ti = DMA_DEST_DREQ + DMA_PERMAP_1 + DMA_SRC_INC;
     playback_cb.source_ad = SAFE_ADDRESS;
-    playback_cb.dest_ad = PWM_LEGACY_BASE + 0x18; // Should be PWM_FIFO but it's an absolute offset so...
+    playback_cb.dest_ad = PWM_LEGACY_BASE + 0x18; // Points to PWM_FIFO
     playback_cb.txfr_len = size * 4; // They're unsigned ints now, not unsigned chars
     playback_cb.stride = 0x00;
-    playback_cb.nextconbk = 0x00;
+    playback_cb.nextconbk = 0x00; // Don't loop
     playback_cb.null1 = 0x00;
     playback_cb.null2 = 0x00;
 
     wait_msec(2);
 
     // Enable DMA
+
     *(pwm+BCM2711_PWM_DMAC) = 
           BCM2711_PWM_ENAB + 0x0707; // Bits 0-7 Threshold For DREQ Signal = 1, Bits 8-15 Threshold For PANIC Signal = 0
     *dmae = DMA_EN1;
@@ -109,7 +112,7 @@ static void audio_init(void)
 
     int idiv = 2;
     *(clk + BCM2711_PWMCLK_DIV)  = PM_PASSWORD | (idiv<<12);
-    *(clk + BCM2711_PWMCLK_CNTL) = PM_PASSWORD | 16 | 1;  // osc + enable
+    *(clk + BCM2711_PWMCLK_CNTL) = PM_PASSWORD | 16 | 1;  // Osc + Enable
     wait_msec(2);
 
     // Setup PWM
