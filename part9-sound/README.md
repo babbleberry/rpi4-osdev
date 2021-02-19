@@ -11,7 +11,7 @@ Design goal
 -----------
 Perhaps most importantly, we must be able to play sounds in the background. If our audio playback ties up the CPU, then gameplay will stop whilst the sound is playing. I think any player would be immediately put off by the rude intrusion into their adventure!
 
-One solution for this is to implement multi-tasking, thereby making use of the four CPU cores (so far we've only used one). This is no small feat, and a big commitment for a fews beeps and squeaks.
+One solution for this is to implement multi-tasking, thereby making use of the four CPU cores (so far we've only used one). This is no small feat, and a big commitment for a few beeps and squeaks.
 
 Fortunately, the Raspberry Pi 4's hardware allows us to avoid this pain (for now), using something called DMA. This allows specific hardware subsystems to access main system memory completely independently of the CPU.
 
