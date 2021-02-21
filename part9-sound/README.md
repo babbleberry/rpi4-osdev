@@ -74,4 +74,6 @@ As we enable the DMA engine, playback begins. Notably, however, we're returned t
 
 Conclusion
 ----------
-We're now ready to integrate sound into our Breakout game using background DMA transfers! Coming soon...
+We're now ready to integrate sound into our Breakout game. But rather than do that, let's go down a rabbit hole and see if we can't get CPU playback running on a separate core! I said it was hard, but I love a challenge.
+
+[Go to part10-multicore >](../part10-multicore)
