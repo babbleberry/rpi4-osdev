@@ -25,7 +25,7 @@ It also won't lock the secondary cores for us on boot, so we will still be able 
 
 Setting up the main timer
 -------------------------
-There is one other important piece of setup that we'll need to take care of ourselves now - setting up the main timer. We add the following `#define` block to the top of _boot.S_:
+There is one other important piece of setup that we'll need to take care of ourselves now - establishing the main timer. We add the following `#define` block to the top of _boot.S_:
 
 ```c
 #define LOCAL_CONTROL   0xff800000
@@ -34,7 +34,7 @@ There is one other important piece of setup that we'll need to take care of ours
 #define MAIN_STACK      0x400000
 ```
 
-`LOCAL_CONTROL` is the address of the ARM_CONTROL register. At the top of our `_start:` section we'll set this to zero, effectively telling the ARM main timer to use the crystal clock as a source, and to set the increment value to 1:
+`LOCAL_CONTROL` is the address of the ARM_CONTROL register. At the top of our `_start:` section we'll set this to zero, effectively telling the ARM main timer to use the crystal clock as a source and set the increment value to 1:
 
 ```c
 ldr     x0, =LOCAL_CONTROL   // Sort out the timer
@@ -56,6 +56,8 @@ msr     cntfrq_el0, x0
 msr     cntvoff_el2, xzr
 ```
 
+Our timer is now as we need it.
+
 Spinning up the cores
 ---------------------
 We go on to check the processor ID as we always have. If it's zero then we're on the main core and we jump forward to label `2:`. This time, we have to set our stack pointer slightly differently. We can't set it below our code, because it's at 0x00000 now! Instead, we use the address we defined earlier as `MAIN_STACK` at the top:
@@ -65,11 +67,11 @@ We go on to check the processor ID as we always have. If it's zero then we're on
 mov     sp, #MAIN_STACK
 ```
 
-We then continue to clear the BSS as always, and jump to our `main()` function in C code. If it does happen to return, we branch back to halt the core.
+We then continue to clear the BSS as always, and jump to our `main()` function in C code. If it does happen to return, we branch back to `1:` to halt the core.
 
 Waking the secondary cores
 --------------------------
-Previously, we've halted the other cores by spinning them in an infinite loop at label `1:`. Instead, each core will now watch a value at its own unique memory address, initialised to zero at the bottom of _boot.S_, and named as `spin_cpu0-3`. If this value goes non-zero, then that's a signal to wake up and jump to that memory location, executing whatever code is there. Once that code returns, we start watching again.
+Previously, we've unequivocally halted the other cores by spinning them in an infinite loop at label `1:`. Instead, each core will now watch a value at its own designated memory address, initialised to zero at the bottom of _boot.S_, and named as `spin_cpu0-3`. If this value goes non-zero, then that's a signal to wake up and jump to that memory location, executing whatever code is there. Once that code returns, we start looping and watching all over again.
 
 ```c
     adr     x5, spin_cpu0        // Base watch address
@@ -99,7 +101,9 @@ You'll notice that we've set our stack pointer elsewhere for this secondary core
 }
 ```
 
-And that's it for the bootloader code. If you use this new bootloader with no further code changes, it should work as before. But we need to go on to implement the signalling required to execute code on the secondary cores.
+Phew! That's it for the bootloader code. If you use this new bootloader with no further code changes, it should work as before. But we need to go on to implement the signalling required to execute code on the secondary cores.
+
+_Note: this is not particularly robust/safe right now e.g. all secondary cores will share the same stack - BEWARE!_
 
 Signalling to the secondary cores from C
 ----------------------------------------
