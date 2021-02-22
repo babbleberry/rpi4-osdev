@@ -27,3 +27,18 @@ void start_core3(void (*func)(void))
     store32((unsigned long)&spin_cpu3, (unsigned long)func);
     asm volatile ("sev");
 }
+
+void clear_core1(void) 
+{
+    store32((unsigned long)&spin_cpu1, 0);
+}
+
+void clear_core2(void) 
+{
+    store32((unsigned long)&spin_cpu2, 0);
+}
+
+void clear_core3(void) 
+{
+    store32((unsigned long)&spin_cpu3, 0);
+}

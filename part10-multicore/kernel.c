@@ -94,6 +94,8 @@ void playaudio_cpu()
 
 void core1_main(void)
 {
+    clear_core1(); // Only run once
+
     debugstr("Playing on CPU Core #1... ");
     playaudio_cpu();
     debugstr(" done"); debugcrlf();

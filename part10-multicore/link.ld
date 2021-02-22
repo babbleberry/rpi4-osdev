@@ -17,8 +17,8 @@ SECTIONS
         . = ALIGN(16);
         . = . + 512;
         __test_stack  = .;
-        *(.testStack)
     }
     _end = .;
+
    /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
 }
