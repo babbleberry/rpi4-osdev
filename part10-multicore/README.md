@@ -19,7 +19,7 @@ For now, I'll signpost the following points of interest in the code:
 
  * The new _boot.S_ loader
  * The new _multicore.c_ library and related _multicore.h_ header
- * A slimmed down _io.h_ and _kernel.c_ (DMA sound removed), with a new multicore approach to `main()`
+ * A revised _kernel.c_ with a new multicore approach to `main()`
  * A revised _link.ld_ adding provisions for a secondary core's stack and the 0x00000 entry point (a result of setting `kernel_old=1`)
 
 I will write more soon to attempt to explain what's going on here.
