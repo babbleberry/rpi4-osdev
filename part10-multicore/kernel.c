@@ -92,13 +92,24 @@ void playaudio_cpu()
     }
 }
 
+void core2_main(void)
+{
+    clear_core2();           // Only run once
+
+    debugstr("Playing on CPU Core #2... ");
+    playaudio_cpu();
+    debugstr(" done"); debugcrlf();
+}
+
 void core1_main(void)
 {
-    clear_core1(); // Only run once
+    clear_core1();           // Only run once
 
     debugstr("Playing on CPU Core #1... ");
     playaudio_cpu();
     debugstr(" done"); debugcrlf();
+
+    start_core2(core2_main); // Kick it off on core 2
 }
 
 void core0_main(void)
@@ -117,6 +128,6 @@ void main(void)
     audio_init();
     debugstr("done"); debugcrlf();
 
-    start_core1(core1_main);
-    core0_main();
+    start_core1(core1_main); // Kick it off on core 1
+    core0_main();            // Loop endlessly, printing x's
 }
