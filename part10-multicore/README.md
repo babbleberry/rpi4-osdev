@@ -101,7 +101,7 @@ You'll notice that we've set our stack pointer elsewhere for this secondary core
 }
 ```
 
-Phew! That's it for the bootloader code. If you use this new bootloader with no further code changes, it should work as before. But we need to go on to implement the signalling required to execute code on the secondary cores.
+Phew! That's it for the bootloader code. If you use this new bootloader with your existing code, the RPi4 should boot and run as before. We now need to go on to implement the signalling required to execute code on these secondary cores which are now at our disposal.
 
 _Note: this is not particularly robust/safe right now e.g. all secondary cores will share the same stack - BEWARE!_
 
