@@ -187,16 +187,26 @@ struct Object *objects = (struct Object *)SAFE_ADDRESS;
 struct Object *ball;
 struct Object *paddle;
 const int paddlewidth = 80;
+const int ballradius = 15;
 
 void removeObject(struct Object *object)
 {
-    drawRect(object->x, object->y, object->x + object->width, object->y + object->height, 0, 1);
+    if (object->type == OBJ_BALL) {
+       drawCircle(object->x + ballradius, object->y + ballradius, ballradius, 0, 1);
+    } else {
+       drawRect(object->x, object->y, object->x + object->width, object->y + object->height, 0, 1);
+    }
     object->alive = 0;
 }
 
 void moveObjectAbs(struct Object *object, int x, int y)
 {
-    moveRectAbs(object->x, object->y, object->width, object->height, x, y, 0x00);
+    if (object->type == OBJ_BALL) {
+       drawCircle(object->x + ballradius, object->y + ballradius, ballradius, 0, 1);
+       drawCircle(x + ballradius, y + ballradius, ballradius, 0x55, 1);
+    } else {
+       moveRectAbs(object->x, object->y, object->width, object->height, x, y, 0x00);
+    }
     object->x = x;
     object->y = y;
 }
@@ -251,8 +261,6 @@ void initBricks()
 
 void initBall()
 {
-    int ballradius = 15;
-
     drawCircle(WIDTH/2, HEIGHT/2, ballradius, 0x55, 1);
 
     objects[numobjs].type = OBJ_BALL;
