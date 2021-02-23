@@ -124,3 +124,5 @@ For now, I'll signpost the following additional points of interest in the code:
  * A revised _kernel.c_ with a new multicore approach to `main()`
 
 I will write more soon to attempt to explain what's going on here.
+
+![Code now running on all four cores of the Raspberry Pi 4](images/10-multicore-running.jpg)
