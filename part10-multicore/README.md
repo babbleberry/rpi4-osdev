@@ -58,7 +58,7 @@ msr     cntvoff_el2, xzr
 
 Our timer is now as we need it.
 
-Spinning up the cores
+Booting the main core
 ---------------------
 We go on to check the processor ID as we always have. If it's zero then we're on the main core and we jump forward to label `2:`. This time, we have to set our stack pointer slightly differently. We can't set it below our code, because it's at 0x00000 now! Instead, we use the address we defined earlier as `MAIN_STACK` at the top:
 
@@ -69,8 +69,8 @@ mov     sp, #MAIN_STACK
 
 We then continue to clear the BSS as always, and jump to our `main()` function in C code. If it does happen to return, we branch back to `1:` to halt the core.
 
-Waking the secondary cores
---------------------------
+Setting up the secondary cores
+------------------------------
 Previously, we've unequivocally halted the other cores by spinning them in an infinite loop at label `1:`. Instead, each core will now watch a value at its own designated memory address, initialised to zero at the bottom of _boot.S_, and named as `spin_cpu0-3`. If this value goes non-zero, then that's a signal to wake up and jump to that memory location, executing whatever code is there. Once that code returns, we start looping and watching all over again.
 
 ```c
@@ -116,13 +116,40 @@ You'll notice that we've set our stack pointer elsewhere, and each core has its 
 
 Phew! That's it for the bootloader code. If you use this new bootloader with your existing code, the RPi4 should boot and run as before. We now need to go on to implement the signalling required to execute code on these secondary cores which are now at our disposal.
 
-Signalling to the secondary cores from C
-----------------------------------------
-For now, I'll signpost the following additional points of interest in the code:
+Waking the secondary cores from C
+---------------------------------
+Check out _multicore.c_.
 
- * The new _multicore.c_ library and related _multicore.h_ header
- * A revised _kernel.c_ with a new multicore approach to `main()`
+Here we essentially duplicate two functions for each core:
 
-I will write more soon to attempt to explain what's going on here.
+```c
+void start_core1(void (*func)(void))
+{
+    store32((unsigned long)&spin_cpu1, (unsigned long)func);
+    asm volatile ("sev");
+}
+
+void clear_core1(void) 
+{
+    store32((unsigned long)&spin_cpu1, 0);
+}
+```
+
+The first, `start_core1()`, uses the `store32()` function (also in _multicore.c_) to write an address to our predefined `spin_cpu1` memory location. This takes it non-zero, telling core 1 where to jump to when it wakes. Since we put it to sleep with a `wfe` (Wait For Event) instruction, we use a `sev` (Set Event) instruction to wake it again.
+
+The second, `clear_core1()`, can be used by an executing function to reset `spin_cpu1` to zero, so the core won't jump again when the executing code returns.
+
+More main()'s please!
+---------------------
+Finally, we look at _kernel.c_, where we now have a single `main()`, but also:
+
+ * `core0_main()` - increments a progress bar every 1 second (roughly)
+ * `core1_main()` - has a two-step progress bar, playing an audio sample using the CPU at 50%, jumping straight to 100% when done
+ * `core2_main()` - sets a DMA audio transfer, then increments a progress bar every half second (roughly), jumping to 100% as playback finishes
+ * ... and `core3_main()` - increments a progress bar every quarter second (roughly)
+
+`main()` is core 0's entry point, which ultimately falls through to `core0_main()`, but not before it kicks off `core3_main()` and `core1_main()` by passing them to their respective start functions. When `core1_main()` finishes, it kicks off `core2_main()`.
+
+_As you run this, you'll see that these functions run in parallel on their respective cores. Welcome to symmetric multi-processing!_
 
 ![Code now running on all four cores of the Raspberry Pi 4](images/10-multicore-running.jpg)
