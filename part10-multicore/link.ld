@@ -21,13 +21,11 @@ SECTIONS
     }
     .cpu2Stack :
     {
-        . = ALIGN(16);
         . = . + 512;
         __cpu2_stack  = .;
     }
     .cpu3Stack :
     {
-        . = ALIGN(16);
         . = . + 512;
         __cpu3_stack  = .;
     }
