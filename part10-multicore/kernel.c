@@ -174,9 +174,24 @@ void initProgress(void)
 }
 
 void drawProgress(unsigned int core, unsigned int val) {
+    unsigned char col = (core + 1) + ((core + 1) << 4);
+
     // val should be 0-100
     if (val == 0) drawRect(1, (60 * core) + 1, 300, (60 * core) + 49, 0x00, 1);
-    if (val > 0) drawRect(1, (60 * core) + 1, (val * 3), (60 * core) + 49, 0x33, 1);
+    if (val > 0) drawRect(1, (60 * core) + 1, (val * 3), (60 * core) + 49, col, 1);
+}
+
+void core3_main(void)
+{
+    unsigned int core3_val = 0;
+
+    clear_core3();                // Only run once
+
+    while (1) {
+       wait_msec(0x3FFFF);
+       drawProgress(3, core3_val);
+       if (core3_val < 100) core3_val++;
+    }
 }
 
 void core2_main(void)
@@ -237,6 +252,7 @@ void main(void)
     audio_init();
     debugstr("done"); debugcrlf();
 
+    start_core3(core3_main);      // Kick it off on core 3
     start_core1(core1_main);      // Kick it off on core 1
-    core0_main();                 // Loop endlessly, printing x's
+    core0_main();                 // Loop endlessly
 }
