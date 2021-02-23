@@ -158,8 +158,31 @@ void playaudio_cpu()
     }
 }
 
+void initProgress(void)
+{
+    drawRect(0, 0, 301, 50, 0x0f, 0);
+    drawString(309, 21, "Core 0", 0x0f, 1);
+
+    drawRect(0, 60, 301, 110, 0x0f, 0);
+    drawString(309, 81, "Core 1", 0x0f, 1);
+
+    drawRect(0, 120, 301, 170, 0x0f, 0);
+    drawString(309, 141, "Core 2", 0x0f, 1);
+
+    drawRect(0, 180, 301, 230, 0x0f, 0);
+    drawString(309, 201, "Core 3", 0x0f, 1);
+}
+
+void drawProgress(unsigned int core, unsigned int val) {
+    // val should be 0-100
+    if (val == 0) drawRect(1, (60 * core) + 1, 300, (60 * core) + 49, 0x00, 1);
+    if (val > 0) drawRect(1, (60 * core) + 1, (val * 3), (60 * core) + 49, 0x33, 1);
+}
+
 void core2_main(void)
 {
+    unsigned int core2_val = 0;
+
     clear_core2();                // Only run once
 
     debugstr("Playing on CPU Core #2 using DMA... ");
@@ -168,34 +191,47 @@ void core2_main(void)
 
     debugstr("core2_main() running still... ");
     while (*(dma+DMA_CS) & 0x1) { // Wait for DMA transfer to finish - we could do anything here instead!
-       wait_msec(0x47FFFF);
-       debugstr("o");             // Print an o roughly every 4.5 seconds
+       wait_msec(0x7FFFF);
+       drawProgress(2, core2_val);
+       if (core2_val < 100) core2_val++;
     }
-    debugstr(" ----> finished");
+    debugstr("done");
 }
 
 void core1_main(void)
 {
+    unsigned int core1_val = 0;
+
     clear_core1();                // Only run once
 
     debugstr("Playing on CPU Core #1... ");
     playaudio_cpu();
-    debugstr(" done"); debugcrlf();
+    debugstr("done"); debugcrlf();
+
+    core1_val = 100;
+    drawProgress(1, core1_val);
 
     start_core2(core2_main);      // Kick it off on core 2
 }
 
 void core0_main(void)
 {
+    unsigned int core0_val = 0;
+
     while (1) {
        wait_msec(0x100000);
-       debugstr("x");             // Print an x roughly every 1 second
+       drawProgress(0, core0_val);
+       if (core0_val < 100) core0_val++;
     }
 }
 
 void main(void)
 {
     fb_init();
+    initProgress();
+
+    unsigned int i=0;
+    while (i++<30) debugcrlf();
 
     debugstr("Initialising audio unit... ");
     audio_init();
