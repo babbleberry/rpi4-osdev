@@ -79,8 +79,10 @@ Previously, we've unequivocally halted the other cores by spinning them in an in
     ldr     x4, [x5, x1, lsl #3] // Add (8 * core_number) to the base address and load what's there into x4
     cbz     x4, 1b               // Loop if zero, otherwise continue
 
-    ldr     x1, =__test_stack    // Get ourselves a fresh stack
-    mov     sp, x1
+    ldr     x2, =__stack_start   // Get ourselves a fresh stack - location depends on CPU core asking
+    lsl     x1, x1, #9           // Multiple core_number by 512
+    add     x3, x2, x1           // Add to the address
+    mov     sp, x3
 
     mov     x0, #0               // Zero registers x0-x3, just in case
     mov     x1, #0
@@ -90,20 +92,29 @@ Previously, we've unequivocally halted the other cores by spinning them in an in
     b       1b
 ```
 
-You'll notice that we've set our stack pointer elsewhere for this secondary core. This is to avoid it conflicting with the main core activity. We establish this pointer to a safe 512-bytes by adding the following to our _link.ld_:
+You'll notice that we've set our stack pointer elsewhere, and each core has its own designated stack address. This is to avoid it conflicting with activity on the other cores. We establish the necessary pointers to a safe memory area by adding the following to our _link.ld_:
 
 ```c
-.testStack :
+.cpu1Stack :
 {
     . = ALIGN(16);               // 16 bit aligned
+    __stack_start  = .;          // Pointer to the start
     . = . + 512;                 // 512 bytes long
-    __test_stack  = .;           // Pointer to the end (stack grows down)
+    __cpu1_stack  = .;           // Pointer to the end (stack grows down)
+}
+.cpu2Stack :
+{
+    . = . + 512;
+    __cpu2_stack  = .;
+}
+.cpu3Stack :
+{
+    . = . + 512;
+    __cpu3_stack  = .;
 }
 ```
 
 Phew! That's it for the bootloader code. If you use this new bootloader with your existing code, the RPi4 should boot and run as before. We now need to go on to implement the signalling required to execute code on these secondary cores which are now at our disposal.
-
-_Note: this is not particularly robust/safe right now e.g. all secondary cores will share the same stack - BEWARE!_
 
 Signalling to the secondary cores from C
 ----------------------------------------

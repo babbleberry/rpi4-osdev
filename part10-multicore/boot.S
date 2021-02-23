@@ -28,8 +28,10 @@ _start:
     ldr     x4, [x5, x1, lsl #3]
     cbz     x4, 1b
 
-    ldr     x1, =__test_stack    // Get ourselves a fresh stack
-    mov     sp, x1
+    ldr     x2, =__stack_start   // Get ourselves a fresh stack - location depends on CPU core asking
+    lsl     x1, x1, #9           // Multiple core_number by 512
+    add     x3, x2, x1           // Add to the address
+    mov     sp, x3
 
     mov     x0, #0
     mov     x1, #0
