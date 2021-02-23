@@ -211,20 +211,21 @@ void core2_main(void)
        if (core2_val < 100) core2_val++;
     }
     debugstr("done");
+
+    drawProgress(2, 100);
 }
 
 void core1_main(void)
 {
-    unsigned int core1_val = 0;
-
     clear_core1();                // Only run once
+
+    drawProgress(1, 50);
 
     debugstr("Playing on CPU Core #1... ");
     playaudio_cpu();
     debugstr("done"); debugcrlf();
 
-    core1_val = 100;
-    drawProgress(1, core1_val);
+    drawProgress(1, 100);
 
     start_core2(core2_main);      // Kick it off on core 2
 }
