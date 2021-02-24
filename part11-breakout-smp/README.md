@@ -23,3 +23,5 @@ There's a lot more signalling/semaphores, so the cores can be sure they're doing
 You're no longer "dry-running" a single, sequential thread. You're having to spot the potential for bugs/unexpected behaviour from the interplay of four concurrent threads!
 
 _Good luck as you explore the code!_
+
+[!A video of the Breakout game in action](https://img.youtube.com/vi/W6fE2q_1voM/0.jpg)](https://www.youtube.com/watch?v=W6fE2q_1voM)
