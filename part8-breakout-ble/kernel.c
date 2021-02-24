@@ -407,7 +407,9 @@ void breakout()
     else drawString((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), "Game over!", 0x04, zoom);
 
     wait_msec(0x500000); // Wait 5 seconds
+
     drawRect((WIDTH/2)-(strwidth/2), (HEIGHT/2)-(strheight/2), (WIDTH/2)+(strwidth/2), (HEIGHT/2)+(strheight/2), 0, 1);
+    numobjs = 0;
 }
 
 void main()

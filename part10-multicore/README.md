@@ -153,3 +153,7 @@ Finally, we look at _kernel.c_, where we now have a single `main()`, but also:
 _As you run this, you'll see that these functions run in parallel on their respective cores. Welcome to symmetric multi-processing!_
 
 ![Code now running on all four cores of the Raspberry Pi 4](images/10-multicore-running.jpg)
+
+Coming up in part 11, we'll put all of this work together for a multi-core version of our Breakout game.
+
+[Go to part11-breakout-smp>](../part11-breakout-smp)
