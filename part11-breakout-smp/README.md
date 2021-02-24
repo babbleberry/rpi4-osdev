@@ -24,6 +24,11 @@ You're no longer "dry-running" a single, sequential thread. You're having to spo
 
 _Good luck as you explore the code!_
 
-Click on the picture below to watch a quick video of the game in action. Sorry for the bad audio quality - the game itself sounds great in real life, I promise!
+Progress video
+--------------
+Click on the picture below to watch a quick video of the game in action.
 
 [![A video of the Breakout game in action](https://img.youtube.com/vi/W6fE2q_1voM/0.jpg)](https://www.youtube.com/watch?v=W6fE2q_1voM)
+
+PS: Sorry for the bad audio quality - the game itself sounds great in real life, I promise!
+
