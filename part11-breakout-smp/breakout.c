@@ -156,7 +156,7 @@ void moveObject(volatile struct Object *object, int x, int y)
 const int ballradius = 15;
 const int paddlewidth = 80;
 
-volatile unsigned char dir;
+volatile unsigned char dir = 50;
 volatile unsigned int numobjs;
 
 volatile struct Object *objects = (struct Object *)HEAP_ADDRESS;
@@ -168,7 +168,6 @@ volatile struct Object *endgame;
 void breakout_init()
 {
     numobjs = 0;
-    dir = 50;
 
     initBricks();
     initBall();
@@ -243,6 +242,8 @@ void breakout()
 
     // Clear endgame state
     updateEndgame(0, 0);
+
+    wait_msec(0x100000); // Wait 1 second
 }
 
 void main()
