@@ -156,10 +156,10 @@ void moveObject(volatile struct Object *object, int x, int y)
 const int ballradius = 15;
 const int paddlewidth = 80;
 
-volatile unsigned char dir = 50;
-volatile unsigned int numobjs = 0;
+volatile unsigned char dir;
+volatile unsigned int numobjs;
 
-volatile struct Object *objects = (struct Object *)SAFE_ADDRESS;
+volatile struct Object *objects = (struct Object *)HEAP_ADDRESS;
 volatile struct Object *ball;
 volatile struct Object *paddle;
 volatile struct Object *scoreboard;
@@ -167,6 +167,9 @@ volatile struct Object *endgame;
 
 void breakout_init()
 {
+    numobjs = 0;
+    dir = 50;
+
     initBricks();
     initBall();
     initPaddle();

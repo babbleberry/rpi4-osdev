@@ -1,5 +1,5 @@
 // Heap memory allocation
-#define SAFE_ADDRESS  0x00400000 // Somewhere safe to store a lot of data
+#define HEAP_ADDRESS  0x00400000 // Somewhere safe to store a lot of data
 
 // The screen
 #define WIDTH         1920
