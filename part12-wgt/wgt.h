@@ -79,3 +79,4 @@ void wtextcolor (unsigned int col);
 void wtextbackground (unsigned int col);
 void wtexttransparent (short transparent);
 void wtextgrid (short onoff);
+void wregionfill (short x, short y);
