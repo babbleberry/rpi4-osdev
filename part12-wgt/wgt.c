@@ -16,6 +16,15 @@ void *memset(void *dest, int val, unsigned len)
     return dest;
 }
 
+void *memcpy(void *dest, const void *src, unsigned len)
+{
+    char *d = dest;
+    const char *s = src;
+    while (len--)
+       *d++ = *s++;
+    return dest;
+}
+
 int abs(int i)
 {
     return i < 0 ? -i : i;

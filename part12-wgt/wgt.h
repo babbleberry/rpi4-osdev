@@ -47,6 +47,7 @@ extern short bx,by,tx,ty;
 // ######## HELPER FUNCTIONS ########
 
 void *memset(void *dest, int val, unsigned len);
+void *memcpy(void *dest, const void *src, unsigned len);
 int abs(int i);
 int strlen(const char *str);
 
@@ -80,3 +81,8 @@ void wtextbackground (unsigned int col);
 void wtexttransparent (short transparent);
 void wtextgrid (short onoff);
 void wregionfill (short x, short y);
+void wfreeblock (block ptr);
+short wgetblockwidth (block ptr);
+short wgetblockheight (block ptr);
+block wnewblock (short x, short y, short x2, short y2);
+block wallocblock (short width, short height);
