@@ -1,8 +1,9 @@
 #include "wgt.h"
 
 short xc, yc, cstart, cend, curspeed;
-short grid, trans, fore, back;
+short grid, trans;
 short wfontsize;
+unsigned int fore, back;
 
 void wouttextxy (short x, short y, wgtfont font, char *string)
 {
