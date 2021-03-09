@@ -19,6 +19,8 @@ void mem_init()
       HEAP_START += 8 - ((long)&HEAP_START % 8);
    }
    HEAP_END = (unsigned char *)(HEAP_START + HEAP_SIZE);
+
+   freeptr = HEAP_START;
 }
 
 void *malloc(unsigned int size)

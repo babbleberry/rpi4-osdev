@@ -1,4 +1,5 @@
 #include "wgt.h"
+#include "include/mem.h"
 
 // ######## REQUIRED FUNCTIONS ########
 
@@ -51,47 +52,48 @@ void getch(void) {
 
 void wgt08()
 {
-  short x;
+    short x;
 
-  vga256 ();
-  wcls (vgapal[0]);
+    mem_init();
+    vga256 ();
+    wcls (vgapal[0]);
 
-  wsetcolor (vgapal[1]);
-  wcircle (960, 540, 270);               /* try filling a circle */
-  getch ();
+    wsetcolor (vgapal[1]);
+    wcircle (960, 540, 270);           /* try filling a circle */
+    getch ();
 
-  wsetcolor (vgapal[40]);
-  wregionfill (960, 540);
-  wsetcolor (vgapal[170]);
-  wregionfill (0, 0);
+    wsetcolor (vgapal[40]);
+    wregionfill (960, 540);
+    wsetcolor (vgapal[170]);
+    wregionfill (0, 0);
 
-  getch ();
+    getch ();
 
-  wcls (0);
-  for (x = 1; x < 10000; x++)     /* try filling 10,000 random pixels */
-  {
-    wsetcolor (vgapal[rand() % 255]);
-    wputpixel (rand() % 1920, rand() % 1080);
-  }
+    wcls (0);
+    for (x = 1; x < 10000; x++)        /* try filling 10,000 random pixels */
+    {
+        wsetcolor (vgapal[rand() % 255]);
+        wputpixel (rand() % 1920, rand() % 1080);
+    }
 
-  getch ();
-  wsetcolor (vgapal[40]);
-  wclip (300, 270, 1500, 810);       /* fill works with clipping too! */
-  wregionfill (960, 540);
+    getch ();
+    wsetcolor (vgapal[40]);
+    wclip (300, 270, 1500, 810);       /* fill works with clipping too! */
+    wregionfill (960, 540);
 
-  wsetcolor (vgapal[7]);
-  wclip (60, 54, 240, 216);
-  wregionfill (120, 108);
+    wsetcolor (vgapal[7]);
+    wclip (60, 54, 240, 216);
+    wregionfill (120, 108);
 
-  wsetcolor (vgapal[9]);
-  wclip (1560, 864, 1800, 1026);
-  wregionfill (1620, 918);
+    wsetcolor (vgapal[9]);
+    wclip (1560, 864, 1800, 1026);
+    wregionfill (1620, 918);
 
-  wsetcolor (vgapal[10]);
-  wclip (0, 0, 1919, 1079);
-  wregionfill (0, 0);
+    wsetcolor (vgapal[10]);
+    wclip (0, 0, 1919, 1079);
+    wregionfill (0, 0);
 
-  getch ();
+    getch ();
 }
 
 void main()
