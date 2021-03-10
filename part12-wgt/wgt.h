@@ -86,3 +86,8 @@ short wgetblockwidth (block ptr);
 short wgetblockheight (block ptr);
 block wnewblock (short x, short y, short x2, short y2);
 block wallocblock (short width, short height);
+void wdonetimer (void);
+void winittimer (void);
+void wsettimerspeed (int speed);
+void wstarttimer (void (*rout)(), int speed);
+void wstoptimer (void);

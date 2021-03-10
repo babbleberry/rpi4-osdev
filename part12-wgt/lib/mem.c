@@ -3,7 +3,7 @@ extern unsigned char _end[];
 // Define the heap
 
 unsigned char *HEAP_START = &_end[0];
-unsigned int   HEAP_SIZE  = 0x40000000; // Max heap size is 1Gb
+unsigned int   HEAP_SIZE  = 0x30000000; // Max heap size is 768Mb
 unsigned char *HEAP_END;
 
 // Set up some globals

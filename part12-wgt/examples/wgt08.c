@@ -69,7 +69,7 @@ void wgt08()
 
     getch ();
 
-    wcls (0);
+    wcls (vgapal[0]);
     for (x = 1; x < 10000; x++)        /* try filling 10,000 random pixels */
     {
         wsetcolor (vgapal[rand() % 255]);
