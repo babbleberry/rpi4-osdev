@@ -1,5 +1,4 @@
 #include "wgt.h"
-#include "include/mem.h"
 #include "include/mb.h"
 
 // ######## REQUIRED FUNCTIONS ########
@@ -165,7 +164,6 @@ void timer_routine (void)
 
 void wgt03()
 {
-  mem_init();
   vga256 ();                     /* Initialize WGT system        */
 
   debugstr ("WGT Example #3"); debugcrlf(); debugcrlf(); 
