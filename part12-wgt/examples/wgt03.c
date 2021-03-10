@@ -1,4 +1,6 @@
 #include "wgt.h"
+#include "include/mem.h"
+#include "include/mb.h"
 
 // ######## REQUIRED FUNCTIONS ########
 
@@ -57,6 +59,8 @@ int clearcount;           /* Counts the number of screen clears. */
 int curx = 0;
 int cury = 0;
 
+extern int get_el(void);
+
 void debugstr(char *str) {
     if (curx + (strlen(str) * 8)  >= 1920) {
        curx = 0; cury += 8;
@@ -96,6 +100,64 @@ void debughex(unsigned int d) {
     debugstr(" ");
 }
 
+int get_max_clock()
+{
+    mbox[0] = 8*4; // Length of message in bytes
+    mbox[1] = MBOX_REQUEST;
+    mbox[2] = MBOX_TAG_GETCLKMAXM; // Tag identifier
+    mbox[3] = 8; // Value size in bytes
+    mbox[4] = 0; // Value size in bytes
+    mbox[5] = 0x3; // Value
+    mbox[6] = 0; // Rate
+    mbox[7] = MBOX_TAG_LAST;
+
+    if (mbox_call(MBOX_CH_PROP)) {
+        if (mbox[5] == 0x3) {
+           return mbox[6];
+        }
+    }
+    return 0;
+}
+
+int get_clock_rate()
+{
+    mbox[0] = 8*4; // Length of message in bytes
+    mbox[1] = MBOX_REQUEST;
+    mbox[2] = MBOX_TAG_GETCLKRATE; // Tag identifier
+    mbox[3] = 8; // Value size in bytes
+    mbox[4] = 0; // Value size in bytes
+    mbox[5] = 0x3; // Value
+    mbox[6] = 0; // Rate
+    mbox[7] = MBOX_TAG_LAST;
+
+    if (mbox_call(MBOX_CH_PROP)) {
+        if (mbox[5] == 0x3) {
+           return mbox[6];
+        }
+    }
+    return 0;
+}
+
+int set_clock_rate(unsigned int rate)
+{
+    mbox[0] = 9*4;  // Length of message in bytes
+    mbox[1] = MBOX_REQUEST;
+    mbox[2] = MBOX_TAG_SETCLKRATE; // Tag identifier
+    mbox[3] = 12;   // Value size in bytes
+    mbox[4] = 0;    // Value size in bytes
+    mbox[5] = 0x3;  // Value
+    mbox[6] = rate; // Rate
+    mbox[7] = 0;    // Rate
+    mbox[8] = MBOX_TAG_LAST;
+
+    if (mbox_call(MBOX_CH_PROP)) {
+        if (mbox[5] == 0x3 && mbox[6] == rate) {
+           return 1;
+        }
+    }
+    return 0;
+}
+
 void timer_routine (void)
 {
   timer++;
@@ -103,13 +165,20 @@ void timer_routine (void)
 
 void wgt03()
 {
+  mem_init();
   vga256 ();                     /* Initialize WGT system        */
 
   debugstr ("WGT Example #3"); debugcrlf(); debugcrlf(); 
   debugstr ("This program will use the wcls routine to clear the screen"); debugcrlf();
   debugstr ("using random colors as fast as it can until you press a key."); debugcrlf();
   debugstr ("It will then report the highest frame rate possible on your computer."); debugcrlf(); debugcrlf(); debugcrlf();
-  debugstr ("Press any key to continue."); debugcrlf();
+
+  int el = get_el();
+  debugstr("Exception level: "); debughex(el); debugcrlf();
+  int setter = set_clock_rate(get_max_clock());
+  debugstr("Set clock returned "); debughex(setter); debugcrlf(); debugcrlf(); debugcrlf();
+
+  debugstr ("Press any key to continue.");
   getch ();
 
   clearcount = 0;
@@ -134,10 +203,17 @@ void wgt03()
 
   wcls(vgapal[0]);
 
+  int clock = get_clock_rate();
+  debugstr("Clock rate: "); debughex(clock); debugcrlf();
+
+  int maxclock = get_max_clock();
+  debugstr("Max clock rate: "); debughex(maxclock); debugcrlf();
+
   unsigned int fps = clearcount / (timer / TIMERSPEED);
-  debughex(fps); debugstr("frames per second"); debugcrlf();
+  debughex(fps); debugstr("frames per second"); debugcrlf(); debugcrlf(); debugcrlf();
+
   debugstr ("This is the highest frame rate your computer can produce for full screen\n"); debugcrlf();
-  debugstr ("animation."); debugcrlf();
+  debugstr ("animation.");
 }
 
 void main()

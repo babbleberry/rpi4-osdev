@@ -1,3 +1,5 @@
+#include "sysregs.h"
+
 #define LOCAL_CONTROL   0xff800000
 #define LOCAL_PRESCALER 0xff800008
 #define OSC_FREQ        54000000
@@ -40,10 +42,23 @@ _start:
     br      x4
     b       1b
 2:  // We're on the main core!
+    ldr     x0, =SCTLR_VALUE_MMU_DISABLED
+    msr	    sctlr_el1, x0		
 
-    // Set stack to start somewhere safe
-    mov     sp, #MAIN_STACK
+    ldr     x0, =HCR_VALUE
+    msr     hcr_el2, x0
 
+    ldr     x0, =SCR_VALUE
+    msr     scr_el3, x0
+
+    ldr     x0, =SPSR_VALUE
+    msr     spsr_el3, x0
+    
+    adr     x0, el1_entry		
+    msr     elr_el3, x0
+
+    eret			
+el1_entry:
     // Clean the BSS section
     ldr     x1, =__bss_start     // Start address
     ldr     w2, =__bss_size      // Size of the section
@@ -51,6 +66,9 @@ _start:
     str     xzr, [x1], #8
     sub     w2, w2, #1
     cbnz    w2, 3b               // Loop if non-zero
+
+    // Set stack to start somewhere safe
+    mov     sp, #MAIN_STACK
 
     // Jump to our main() routine in C (make sure it doesn't return)
 4:  bl      main
@@ -78,3 +96,9 @@ spin_cpu2:
 .globl spin_cpu3
 spin_cpu3:
         .quad 0
+
+.globl get_el
+get_el:
+	mrs x0, CurrentEL
+	lsr x0, x0, #2
+	ret

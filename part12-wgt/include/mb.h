@@ -1,3 +1,5 @@
+#pragma once
+
 extern volatile unsigned int mbox[36];
 
 enum {
@@ -18,6 +20,9 @@ enum {
 
 enum {
     MBOX_TAG_SETPOWER   = 0x28001,
+
+    MBOX_TAG_GETCLKRATE = 0x30002,
+    MBOX_TAG_GETCLKMAXM = 0x30004,
     MBOX_TAG_SETCLKRATE = 0x38002,
 
     MBOX_TAG_SETPHYWH   = 0x48003,

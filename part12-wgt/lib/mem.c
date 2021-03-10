@@ -2,8 +2,9 @@ extern unsigned char _end[];
 
 // Define the heap
 
-unsigned char *HEAP_START = &_end[0];
-unsigned int   HEAP_SIZE  = 0x30000000; // Max heap size is 768Mb
+// unsigned char *HEAP_START = &_end[0]; // End of kernel
+unsigned char *HEAP_START = (unsigned char *)0x400000; // Top of stack
+unsigned int   HEAP_SIZE  = 0x30000000; // Max heap size is 764Mb
 unsigned char *HEAP_END;
 
 // Set up some globals
