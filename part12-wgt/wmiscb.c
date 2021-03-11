@@ -10,11 +10,11 @@ void wfreeblock (block ptr)
 
 short wgetblockwidth (block ptr)
 {
-  return *(short *)ptr;                  /* Width is first 2 bytes of data */
+  return *ptr;                  /* Width is first 2 bytes of data */
 }
 
 short wgetblockheight (block ptr)
 {
-  ptr += 2;                              /* Skip width */
-  return *(short *)ptr;                  /* Height is second 2 bytes of data */
+  ptr ++;                       /* Skip width */
+  return *ptr;                  /* Height is second 2 bytes of data */
 }

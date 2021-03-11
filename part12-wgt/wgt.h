@@ -98,3 +98,4 @@ void winittimer (void);
 void wsettimerspeed (int speed);
 void wstarttimer (void (*rout)(), int speed);
 void wstoptimer (void);
+void wflipblock (block image, short direction);
