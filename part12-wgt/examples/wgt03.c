@@ -55,107 +55,7 @@ void getch(void) {
 int timer;                /* Counts how many times it has been called */ 
 int clearcount;           /* Counts the number of screen clears. */
 
-int curx = 0;
-int cury = 0;
-
 extern int get_el(void);
-
-void debugstr(char *str) {
-    if (curx + (strlen(str) * 8)  >= 1920) {
-       curx = 0; cury += 8;
-    }
-    if (cury + 8 >= 1080) {
-       cury = 0;
-    }
-    wtextcolor(vgapal[15]);
-    wouttextxy (curx, cury, NULL, str);
-
-    curx += (strlen(str) * 8);
-}
-
-void debugcrlf(void) {
-    curx = 0; cury += 8;
-}
-
-void debugch(unsigned char b) {
-    unsigned int n;
-    int c;
-    for(c=4;c>=0;c-=4) {
-        n=(b>>c)&0xF;
-        n+=n>9?0x37:0x30;
-        debugstr((char *)&n);
-    }
-    debugstr(" ");
-}
-
-void debughex(unsigned int d) {
-    unsigned int n;
-    int c;
-    for(c=28;c>=0;c-=4) {
-        n=(d>>c)&0xF;
-        n+=n>9?0x37:0x30;
-        debugstr((char *)&n);
-    }
-    debugstr(" ");
-}
-
-int get_max_clock()
-{
-    mbox[0] = 8*4; // Length of message in bytes
-    mbox[1] = MBOX_REQUEST;
-    mbox[2] = MBOX_TAG_GETCLKMAXM; // Tag identifier
-    mbox[3] = 8; // Value size in bytes
-    mbox[4] = 0; // Value size in bytes
-    mbox[5] = 0x3; // Value
-    mbox[6] = 0; // Rate
-    mbox[7] = MBOX_TAG_LAST;
-
-    if (mbox_call(MBOX_CH_PROP)) {
-        if (mbox[5] == 0x3) {
-           return mbox[6];
-        }
-    }
-    return 0;
-}
-
-int get_clock_rate()
-{
-    mbox[0] = 8*4; // Length of message in bytes
-    mbox[1] = MBOX_REQUEST;
-    mbox[2] = MBOX_TAG_GETCLKRATE; // Tag identifier
-    mbox[3] = 8; // Value size in bytes
-    mbox[4] = 0; // Value size in bytes
-    mbox[5] = 0x3; // Value
-    mbox[6] = 0; // Rate
-    mbox[7] = MBOX_TAG_LAST;
-
-    if (mbox_call(MBOX_CH_PROP)) {
-        if (mbox[5] == 0x3) {
-           return mbox[6];
-        }
-    }
-    return 0;
-}
-
-int set_clock_rate(unsigned int rate)
-{
-    mbox[0] = 9*4;  // Length of message in bytes
-    mbox[1] = MBOX_REQUEST;
-    mbox[2] = MBOX_TAG_SETCLKRATE; // Tag identifier
-    mbox[3] = 12;   // Value size in bytes
-    mbox[4] = 0;    // Value size in bytes
-    mbox[5] = 0x3;  // Value
-    mbox[6] = rate; // Rate
-    mbox[7] = 0;    // Rate
-    mbox[8] = MBOX_TAG_LAST;
-
-    if (mbox_call(MBOX_CH_PROP)) {
-        if (mbox[5] == 0x3 && mbox[6] == rate) {
-           return 1;
-        }
-    }
-    return 0;
-}
 
 void timer_routine (void)
 {
@@ -185,8 +85,7 @@ void wgt03()
   winittimer ();
   wstarttimer (timer_routine, TIMERSPEED);
 
-  curx = 0;
-  cury = 0;
+  debugreset();
 
   while (!kbhit ())
   {

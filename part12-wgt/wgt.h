@@ -46,12 +46,18 @@ extern short bx,by,tx,ty;
 
 // ######## HELPER FUNCTIONS ########
 
-void *memset(void *dest, int val, unsigned len);
+void *memset(void *dest, unsigned int val, unsigned len);
 void *memcpy(void *dest, const void *src, unsigned len);
 int abs(int i);
 int strlen(const char *str);
 
 // ######## WGT FUNCTIONS ########
+
+void debugstr(char *str);
+void debugcrlf(void);
+void debugreset(void);
+void debugch(unsigned char b);
+void debughex(unsigned int d);
 
 void vga256(void);
 void wsetcolor (unsigned int col);
@@ -85,6 +91,7 @@ void wfreeblock (block ptr);
 short wgetblockwidth (block ptr);
 short wgetblockheight (block ptr);
 block wnewblock (short x, short y, short x2, short y2);
+void wputblock (short x, short y, block src, short method);
 block wallocblock (short width, short height);
 void wdonetimer (void);
 void winittimer (void);

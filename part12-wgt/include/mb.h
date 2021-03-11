@@ -37,3 +37,6 @@ enum {
 };
 
 unsigned int mbox_call(unsigned char ch);
+int get_max_clock();
+int get_clock_rate();
+int set_clock_rate(unsigned int rate);
