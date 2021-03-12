@@ -14,8 +14,10 @@ void vga256(void)
     mbox[7] = MBOX_TAG_SETVIRTWH;
     mbox[8] = 8;
     mbox[9] = 8;
-    mbox[10] = 1920;
-    mbox[11] = 1080;
+    //mbox[10] = 1920;
+    //mbox[11] = 1080;
+    mbox[10] = 320;
+    mbox[11] = 200;
 
     mbox[12] = MBOX_TAG_SETVIRTOFF;
     mbox[13] = 8;

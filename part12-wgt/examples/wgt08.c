@@ -59,11 +59,11 @@ void wgt08()
     wcls (vgapal[0]);
 
     wsetcolor (vgapal[1]);
-    wcircle (960, 540, 270);           /* try filling a circle */
+    wcircle (160, 100, 50);           /* try filling a circle */
     getch ();
 
     wsetcolor (vgapal[40]);
-    wregionfill (960, 540);
+    wregionfill (160, 100);
     wsetcolor (vgapal[170]);
     wregionfill (0, 0);
 
@@ -73,24 +73,24 @@ void wgt08()
     for (x = 1; x < 10000; x++)        /* try filling 10,000 random pixels */
     {
         wsetcolor (vgapal[rand() % 255]);
-        wputpixel (rand() % 1920, rand() % 1080);
+        wputpixel (rand() % 320, rand() % 200);
     }
 
     getch ();
     wsetcolor (vgapal[40]);
-    wclip (300, 270, 1500, 810);       /* fill works with clipping too! */
-    wregionfill (960, 540);
+    wclip (50, 50, 250, 150);       /* fill works with clipping too! */
+    wregionfill (160, 100);
 
     wsetcolor (vgapal[7]);
-    wclip (60, 54, 240, 216);
-    wregionfill (120, 108);
+    wclip (10, 10, 40, 40);
+    wregionfill (20, 20);
 
     wsetcolor (vgapal[9]);
-    wclip (1560, 864, 1800, 1026);
-    wregionfill (1620, 918);
+    wclip (260, 160, 300, 190);
+    wregionfill (270, 170);
 
     wsetcolor (vgapal[10]);
-    wclip (0, 0, 1919, 1079);
+    wclip (0, 0, 319, 199);
     wregionfill (0, 0);
 
     getch ();

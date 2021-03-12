@@ -61,22 +61,24 @@ void wgt09()
   mem_init();
   vga256 ();
 
-  for (i = 1; i < 1080; i++)
+  for (i = 1; i < 200; i++)
   {
-     wsetcolor (vgapal[i % 255]);
-     wline (0, 0, 1919, i);
-     wline (1919, 1079, 0, 1079 - i);
+     wsetcolor (vgapal[i]);
+     wline (0, 0, 319, i);
+     wline (319, 199, 0, 199 - i);
   }
 
-  screen1 = wnewblock (0, 0, 1919, 1079); /* capture the entire screen */
-  part1 = wnewblock (0, 0, 900, 810);   /* get a part of the screen */
+  getch();
+
+  screen1 = wnewblock (0, 0, 319, 199); /* capture the entire screen */
+  part1 = wnewblock (0, 0, 150, 150);   /* get a part of the screen */
   /* Note that wnewblock allocates the memory for the block */
 
   wcls (vgapal[0]);
 
   do {
-    x = rand() % 1920;
-    y = rand() % 1080;
+    x = rand() % 320;
+    y = rand() % 200;
     wputblock (x, y, part1, 0);         /* put the part somewhere */
   } while (!kbhit ());
 
@@ -84,8 +86,6 @@ void wgt09()
 
   wputblock (0, 0, screen1, 0);         /* replace the mess with the */
                                         /* original screen */
-
-  getch ();                             /* get the key */
 
   wfreeblock (screen1);                 /* *** make sure to free the memory! */
   wfreeblock (part1);

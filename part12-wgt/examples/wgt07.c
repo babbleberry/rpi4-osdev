@@ -75,8 +75,8 @@ void wgt07()
   wtexttransparent (TEXTFGBG);  /* Turn foreground and background on */
 
   do {
-    x = rand() % 1920;
-    y = rand() % 1080;
+    x = rand() % 320;
+    y = rand() % 200;
     col = rand() % 256;
     wtextcolor (vgapal[col]);
     wouttextxy (x, y, NULL, "WordUp Graphics Toolkit");
@@ -87,8 +87,8 @@ void wgt07()
   wtextgrid (TEXTGRID_ON);
 
   do {
-    x = rand() % 240;
-    y = rand() % 135;
+    x = rand() % 80;
+    y = rand() % 25;
     col = rand() % 256;
     wtextcolor (vgapal[col]);
     wtextbackground (vgapal[rand() % 256]);

@@ -60,32 +60,32 @@ void wgt10()
   mem_init();
   vga256 ();
 
-  for (y = 216; y >= 4; y--)
+  for (y = 40; y >= 4; y--)
     {
      wfill_circle (y + 40, y + 10, y);  /* draw a pattern */
-     wsetcolor (vgapal[(y % 235) + 20]);
+     wsetcolor (vgapal[y + 20]);
     }
 
-  part1 = wnewblock (0, 0, 960, 540);   /* get the circle in a block */
+  part1 = wnewblock (0, 0, 160, 100);   /* get the circle in a block */
   getch();
 
   wcls (0);
 
-  for (x = 0; x < 1920; x++)
+  for (x = 0; x < 320; x++)
     {
      wsetcolor (vgapal[x % 255]);
-     wline (x, 0, x, 1079);
+     wline (x, 0, x, 199);
     }
 
   getch();
 
-  wputblock (960, 0, part1, 0);         /* normal mode */
+  wputblock (160, 0, part1, 0);         /* normal mode */
   wflipblock (part1, 0);
 
-  wputblock (960, 540, part1, 1);       /* XRAY mode */
+  wputblock (160, 100, part1, 1);       /* XRAY mode */
   wflipblock (part1, 1);
 
-  wputblock (0, 540, part1, 0);         /* normal mode */
+  wputblock (0, 100, part1, 0);         /* normal mode */
   wflipblock (part1, 0);
 
   wputblock (0, 0, part1, 1);           /* XRAY mode */

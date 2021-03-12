@@ -2,7 +2,7 @@
 
 block abuf;                              /* pointer to the active screen */
 unsigned int currentcolor;
-short tx = 0,ty = 0,bx = 1919,by = 1079; /* clipping variables */
+short tx = 0,ty = 0,bx = 319,by = 199; /* clipping variables */
 
 int curx = 0;
 int cury = 0;
@@ -65,10 +65,10 @@ void wcls (unsigned int col)
 }
 
 void debugstr(char *str) {
-    if (curx + (strlen(str) * 8)  >= 1920) {
+    if (curx + (strlen(str) * 8)  >= 320) {
        curx = 0; cury += 8;
     }
-    if (cury + 8 >= 1080) {
+    if (cury + 8 >= 200) {
        cury = 0;
     }
     wtextcolor(vgapal[15]);

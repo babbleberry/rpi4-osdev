@@ -1,5 +1,4 @@
 #include "wgt.h"
-#include "wpal.h"
 
 // ######## REQUIRED FUNCTIONS ########
 
@@ -60,17 +59,17 @@ void wgt02()
 
     /* Put randomly coloured pixels in random screen coordinates  */
     do {
-       wsetcolor (vgapal[rand () % 256]);
-       x = rand () % 1920;
-       y = rand() % 1080;
+       wsetcolor (vgapal[rand () % 255]);
+       x = rand () % 320;
+       y = rand() % 200;
        wputpixel (x, y);
     } while (kbhit () == 0);
     getch ();
  
     wcls (vgapal[0]);             /* Clear screen with color 0    */
     wsetcolor (vgapal[10]);       /* Now we will draw with #10    */
-    for (x = 0; x < 1920; x++)
-       for (y = 0; y < 1080; y++)
+    for (x = 0; x < 320; x++)
+       for (y = 0; y < 200; y++)
            wfastputpixel (x, y);  /* Fast due to no clipping checking */
  
     getch ();
@@ -79,18 +78,18 @@ void wgt02()
     /* Put randomly coloured pixels in the top left corner of the screen  */
     for (i = 0; i < 15000; i++)
     {
-       wsetcolor (vgapal[rand () % 256]);
-       x = rand () % 960;
-       y = rand () % 540;
+       wsetcolor (vgapal[rand () % 255]);
+       x = rand () % 160;
+       y = rand () % 100;
        wputpixel (x, y);
     }
  
     /* Now use wgetpixel to read image off screen */
-    for (y = 0; y < 540; y++)
-       for (x = 0; x < 960; x++)
+    for (y = 0; y < 100; y++)
+       for (x = 0; x < 160; x++)
        {
           wsetcolor (wgetpixel (x, y));
-          wputpixel (x + 960, y + 540);
+          wputpixel (x + 160, y + 100);
        }
  
     getch ();

@@ -40,7 +40,7 @@ unsigned int kb = 0;
 
 unsigned int kbhit(void) {
     kb++;
-    return kb / 500;
+    return kb / 15000;
 }
 
 void getch(void) {
@@ -67,9 +67,12 @@ void wgt03()
   vga256 ();                     /* Initialize WGT system        */
 
   debugstr ("WGT Example #3"); debugcrlf(); debugcrlf(); 
-  debugstr ("This program will use the wcls routine to clear the screen"); debugcrlf();
-  debugstr ("using random colors as fast as it can until you press a key."); debugcrlf();
-  debugstr ("It will then report the highest frame rate possible on your computer."); debugcrlf(); debugcrlf(); debugcrlf();
+  debugstr ("This program will use the wcls routine"); debugcrlf();
+  debugstr ("to clear the screen using random"); debugcrlf();
+  debugstr ("colors as fast as it can until you"); debugcrlf();
+  debugstr ("press a key."); debugcrlf(); debugcrlf();
+  debugstr ("It will then report the highest frame"); debugcrlf();
+  debugstr ("rate possible on your computer."); debugcrlf(); debugcrlf(); debugcrlf();
 
   int el = get_el();
   debugstr("Exception level: "); debughex(el); debugcrlf();
@@ -109,7 +112,8 @@ void wgt03()
   unsigned int fps = clearcount / (timer / TIMERSPEED);
   debughex(fps); debugstr("frames per second"); debugcrlf(); debugcrlf(); debugcrlf();
 
-  debugstr ("This is the highest frame rate your computer can produce for full screen\n"); debugcrlf();
+  debugstr ("This is the highest frame rate your"); debugcrlf();
+  debugstr ("computer can produce for full screen"); debugcrlf();
   debugstr ("animation.");
 }
 

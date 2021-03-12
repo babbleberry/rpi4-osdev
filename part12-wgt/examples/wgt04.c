@@ -62,7 +62,7 @@ void wgt04()
   ctr = 0;                      /* Start counter for first primitive */
 
   do {
-    wclip (0, 0, 1919, 1079);                   /* Clip to full screen */
+    wclip (0, 0, 319, 199);                     /* Clip to full screen */
     wouttextxy (230, 0, NULL, "WGT DEMO 4");    /* Display text */
     switch (ctr)                                /* Show primitive type */
     {
@@ -83,20 +83,20 @@ void wgt04()
                wsetpalette (0, 255, pal);
                break;
     }
-    wclip (0, 8, 1919, 1079);     /* Clip all primitives below text line */
+    wclip (0, 8, 319, 199);     /* Clip all primitives below text line */
 
     do {
-      x = rand() % 1920;         /* Randomize first point  -  (x,y)   */
-      y = rand() % 1080;
-      x2 = rand() % 1920;        /* Randomize second point -  (x2,y2) */
-      y2 = rand() % 1080;
+      x = rand() % 320;         /* Randomize first point  -  (x,y)   */
+      y = rand() % 200;
+      x2 = rand() % 320;        /* Randomize second point -  (x2,y2) */
+      y2 = rand() % 200;
       col = rand() % 256;       /* Pick a color index to use */
       wsetcolor (vgapal[col]);          /* Now use it */
 
       switch (ctr)              /* Perform primitive */
         {
          case 0 : wline (x, y, x2, y2); break;
-         case 1 : wfline (x, rand() % 1072 + 8, x2, rand() % 1072 + 8); break;
+         case 1 : wfline (x, rand() % 192 + 8, x2, rand() % 192 + 8); break;
          case 2 : wrectangle (x, y, x2, y2); break;
          case 3 : wbar (x, y, x2, y2); break;
          case 4 : wcircle (x, y, rand() % MAX_RADIUS); break;
@@ -105,7 +105,7 @@ void wgt04()
                             rand() % MAX_RADIUS); break;
          case 7 : wfill_ellipse (x, y, rand() % MAX_RADIUS,
                                  rand() % MAX_RADIUS); break;
-         case 8 : wstyleline (x, rand() % 1072 + 8, x2, rand() % 1072 + 8,
+         case 8 : wstyleline (x, rand() % 192 + 8, x2, rand() % 192 + 8,
                               rand() ); break;
          case 9 : wbutt (x, y, x2, y2); break;
         }
