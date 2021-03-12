@@ -100,3 +100,5 @@ void wsettimerspeed (int speed);
 void wstarttimer (void (*rout)(), int speed);
 void wstoptimer (void);
 void wflipblock (block image, short direction);
+block wloadblock (unsigned char *data);
+void wloadpalette (unsigned char *data, color *pal);
