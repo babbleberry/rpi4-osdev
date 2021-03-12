@@ -34,6 +34,10 @@ extern unsigned char vgafont[224][8];
 #define TEXTBG 1
 #define TEXTFGBG 2
 
+/* Image transfer operations */
+#define NORMAL 0
+#define XRAY 1
+
 /* Pointer to the active drawing page */
 typedef unsigned int *block;
 extern block abuf;
@@ -102,3 +106,4 @@ void wstoptimer (void);
 void wflipblock (block image, short direction);
 block wloadblock (unsigned char *data);
 void wloadpalette (unsigned char *data, color *pal);
+void wresize (short x, short y, short x2, short y2, block image, short mode);

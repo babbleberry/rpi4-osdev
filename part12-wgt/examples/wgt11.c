@@ -51,6 +51,16 @@ void getch(void) {
 
 // ######## WGT EXAMPLES ########
 
+#define TIMERSPEED 60
+int timer;
+int size;
+int direction = -1;
+
+void timer_routine (void)
+{
+  timer++;
+}
+
 void wgt11()
 {
   block part1;                    /* part of the screen */
@@ -70,6 +80,39 @@ void wgt11()
   part1 = wloadblock (newblk);
 
   wputblock (0, 0, part1, 0);
+
+  getch ();
+  wcls (vgapal[0]);
+
+  timer = 0;
+  size = 50;
+  winittimer ();
+  wstarttimer (timer_routine, TIMERSPEED);
+
+  wclip (0, 0, 319, 199);
+  do {
+    if (direction > 0)
+      {
+       size += timer * 2;
+       timer = 0;
+       if (size > 50)
+         direction = -1;
+      }   
+    else 
+      {
+       size -= timer * 2;
+       timer = 0;
+       if (size < -1000)
+         direction = 1;
+      }   
+
+    wresize (size, size, 319 - size, 199 - size, part1, NORMAL);
+  
+  } while (1);
+  getch ();
+
+  wstoptimer (); 
+  wdonetimer ();
 
   wfreeblock(part1);
 }
