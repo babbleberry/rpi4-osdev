@@ -3,7 +3,7 @@
 
 // We should replace this with faster version (and xray needs to do the right thing - not sure memcpy is a good replacement)
 #define fastcopy memcpy
-#define putxray memcpy
+#define putxray memcpy_xray
 
 block wnewblock (short x, short y, short x2, short y2)
 { 

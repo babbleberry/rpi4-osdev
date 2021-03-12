@@ -19,13 +19,28 @@ void *memset(void *dest, unsigned int val, unsigned len)
     return dest;
 }
 
-
 void *memcpy(void *dest, const void *src, unsigned len)
 {
     unsigned int *d = dest;
     const unsigned int *s = src;
     while (len--)
        *d++ = *s++;
+    return dest;
+}
+
+void *memcpy_xray(void *dest, const void *src, unsigned len)
+{
+    unsigned int *d = dest;
+    const unsigned int *s = src;
+    while (len--) {
+       if (*s != 0) {
+          *d++ = *s++;
+       } else {
+          d++;
+          s++;
+       }
+    }
+ 
     return dest;
 }
 

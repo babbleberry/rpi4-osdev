@@ -48,6 +48,7 @@ extern short bx,by,tx,ty;
 
 void *memset(void *dest, unsigned int val, unsigned len);
 void *memcpy(void *dest, const void *src, unsigned len);
+void *memcpy_xray(void *dest, const void *src, unsigned len);
 int abs(int i);
 int strlen(const char *str);
 
