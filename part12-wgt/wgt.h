@@ -42,6 +42,9 @@ extern unsigned char vgafont[224][8];
 typedef unsigned int *block;
 extern block abuf;
 
+/* Pointer to the hardware framebuffer */
+extern block fbuf;
+
 /* Current drawing color */
 extern unsigned int currentcolor;
 
@@ -63,6 +66,8 @@ void debugcrlf(void);
 void debugreset(void);
 void debugch(unsigned char b);
 void debughex(unsigned int d);
+
+void delay(unsigned int n);
 
 void vga256(void);
 void wsetcolor (unsigned int col);
@@ -107,3 +112,6 @@ void wflipblock (block image, short direction);
 block wloadblock (unsigned char *data);
 void wloadpalette (unsigned char *data, color *pal);
 void wresize (short x, short y, short x2, short y2, block image, short mode);
+void wdissolve (block sourceimage, short *pattern, short speed);
+void wsetscreen (block image);
+void wnormscreen (void);

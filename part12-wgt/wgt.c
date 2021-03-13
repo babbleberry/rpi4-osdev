@@ -1,6 +1,7 @@
 #include "wgt.h"
 
 block abuf;                              /* pointer to the active screen */
+block fbuf;                              /* pointer to the hardware framebuffer */
 unsigned int currentcolor;
 short tx = 0,ty = 0,bx = 319,by = 199; /* clipping variables */
 
@@ -105,4 +106,17 @@ void debughex(unsigned int d) {
         debugstr((char *)&n);
     }
     debugstr(" ");
+}
+
+void delay(unsigned int n)
+{
+    register unsigned long f, t, r;
+
+    // Get the current counter frequency
+    asm volatile ("mrs %0, cntfrq_el0" : "=r"(f));
+    // Read the current counter
+    asm volatile ("mrs %0, cntpct_el0" : "=r"(t));
+    // Calculate expire value for counter
+    t+=(f/1000)*n;
+    do{asm volatile ("mrs %0, cntpct_el0" : "=r"(r));}while(r<t);
 }

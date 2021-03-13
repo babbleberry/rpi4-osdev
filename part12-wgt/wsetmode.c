@@ -56,6 +56,7 @@ void vga256(void)
         WGT_SYS.screenwidth = mbox[10];
         WGT_SYS.screenheight = mbox[11];
 
-        abuf = (unsigned int *)((long)mbox[28]);
+        fbuf = (unsigned int *)((long)mbox[28]);
+        abuf = fbuf;
     }
 }
