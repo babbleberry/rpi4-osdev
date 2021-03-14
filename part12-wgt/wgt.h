@@ -116,3 +116,4 @@ void wdissolve (block sourceimage, short *pattern, short speed);
 void wsetscreen (block image);
 void wnormscreen (void);
 void wvertres (short x, short y, short y2, block image);
+void wwipe (short x, short y, short x2, short y2, block image);
