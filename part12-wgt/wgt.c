@@ -45,6 +45,29 @@ void *memcpy_xray(void *dest, const void *src, unsigned len)
     return dest;
 }
 
+void *memcpy_char(void *dest, const void *src, unsigned len)
+{
+    unsigned char *d = dest;
+    const unsigned char *s = src;
+    while (len--)
+       *d++ = *s++;
+    return dest;
+}
+
+int memcmp(char *str1, char *str2, unsigned count)
+{
+    char *s1 = str1;
+    char *s2 = str2;
+
+    while (count-- > 0)
+    {
+       if (*s1++ != *s2++)
+          return s1[-1] < s2[-1] ? -1 : 1;
+    }
+
+    return 0;
+}
+
 int abs(int i)
 {
     return i < 0 ? -i : i;

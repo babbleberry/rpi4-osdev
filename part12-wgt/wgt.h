@@ -56,6 +56,8 @@ extern short bx,by,tx,ty;
 void *memset(void *dest, unsigned int val, unsigned len);
 void *memcpy(void *dest, const void *src, unsigned len);
 void *memcpy_xray(void *dest, const void *src, unsigned len);
+void *memcpy_char(void *dest, const void *src, unsigned len);
+int memcmp(char *str1, char *str2, unsigned count);
 int abs(int i);
 int strlen(const char *str);
 
@@ -118,3 +120,6 @@ void wnormscreen (void);
 void wvertres (short x, short y, short y2, block image);
 void wwipe (short x, short y, short x2, short y2, block image);
 void wskew (short x, short y, block image, short degrees);
+short wloadsprites (color *pal, unsigned char *file, block *image_array, short start, short end);
+void wfreesprites (block *image_array, short start, short end);
+void wcopyscreen (short x, short y, short x2, short y2, block source, short destx, short desty, block dest);
