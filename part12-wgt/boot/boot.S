@@ -45,7 +45,7 @@ _start:
     // First enable the FPU
 
     mov     x0, #0x33ff
-    msr     cptr_el3, x0 	 // Disable coprocessor traps to EL2
+    msr     cptr_el3, x0 	 // Disable coprocessor traps to EL3
     mov     x0, #3 << 20
     msr     cpacr_el1, x0	 // Enable FP/SIMD at EL1
 
