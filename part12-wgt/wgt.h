@@ -117,3 +117,4 @@ void wsetscreen (block image);
 void wnormscreen (void);
 void wvertres (short x, short y, short y2, block image);
 void wwipe (short x, short y, short x2, short y2, block image);
+void wskew (short x, short y, block image, short degrees);

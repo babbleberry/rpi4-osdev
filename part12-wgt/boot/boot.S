@@ -42,6 +42,15 @@ _start:
     br      x4
     b       1b
 2:  // We're on the main core!
+    // First enable the FPU
+
+    mov     x0, #0x33ff
+    msr     cptr_el3, x0 	 // Disable coprocessor traps to EL2
+    mov     x0, #3 << 20
+    msr     cpacr_el1, x0	 // Enable FP/SIMD at EL1
+
+    // Now get ready to switch from EL3 down to EL1
+
     ldr     x0, =SCTLR_VALUE_MMU_DISABLED
     msr	    sctlr_el1, x0		
 
@@ -59,6 +68,7 @@ _start:
 
     eret			
 el1_entry:
+    // We're in EL1
     // Clean the BSS section
     ldr     x1, =__bss_start     // Start address
     ldr     w2, =__bss_size      // Size of the section
@@ -77,22 +87,22 @@ el1_entry:
 
 .ltorg
 
-.org 0xd8
+.org 0x100
 .globl spin_cpu0
 spin_cpu0:
         .quad 0
 
-.org 0xe0
+.org 0x108
 .globl spin_cpu1
 spin_cpu1:
         .quad 0
 
-.org 0xe8
+.org 0x110
 .globl spin_cpu2
 spin_cpu2:
         .quad 0
 
-.org 0xf0
+.org 0x118
 .globl spin_cpu3
 spin_cpu3:
         .quad 0
