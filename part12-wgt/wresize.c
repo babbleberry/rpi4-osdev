@@ -198,3 +198,130 @@ unsigned long xfrac;
     }
   }
 }
+
+int resize_width_asm;
+int screen_width_asm;
+
+void resize_vertical_line (block src, block dest, unsigned int whole, unsigned long xfrac, unsigned short step, int length)
+{
+  int resize_width_asm2;
+  int screen_width_asm2;
+ 
+  resize_width_asm2 = resize_width_asm;
+  screen_width_asm2 = screen_width_asm;
+
+  unsigned int px;
+  
+  vresizeloop:
+    px = *src;
+    src += whole;
+    xfrac += step;
+    if (xfrac > 65535) {
+       xfrac %= 65536;
+    } else {
+       goto novres;
+    }
+    src += resize_width_asm2;
+  novres: 
+    *dest = px;
+    dest += screen_width_asm2;
+    length--;
+    if (length != 0) goto vresizeloop;
+}
+
+void resize_vertical_line_xray (block src, block dest, unsigned int whole, unsigned long xfrac, unsigned short step, int length)
+{
+  int resize_width_asm2;
+  int screen_width_asm2;
+ 
+  resize_width_asm2 = resize_width_asm;
+  screen_width_asm2 = screen_width_asm;
+
+  unsigned int px;
+  
+  vresizeloop:
+    px = *src;
+    src += whole;
+    xfrac += step;
+    if (xfrac > 4294967295) {
+       xfrac %= 4294967296;
+       goto novres;
+    }
+    src += resize_width_asm2;
+  novres: 
+    if (px != 0) *dest = px;
+    dest += screen_width_asm2;
+    length--;
+    if (length != 0) goto vresizeloop;
+}
+
+void wresize_column (short x, short y, short y2, block image, short column, short mode)
+{
+  int origheight;
+  int finalheight;
+  int endheight;
+  long ystepper;
+  long ywhole;
+  short ystep;
+  int yfrac;
+
+  long ydif;
+  block dest;
+  block src;
+
+ 
+  /* Skip over the width/height integers */
+  origheight = wgetblockheight (image);
+  resize_width_asm = wgetblockwidth (image);
+  src = image + 2 + column;
+  if (y2 < y)
+  {
+    src += (origheight - 1) * resize_width_asm;
+    origheight *= -1;
+    ydif = y;
+    y = y2;
+    y2 = ydif;
+  }
+
+    finalheight = (y2 - y) + 1;
+
+    if (finalheight > 0)
+    {
+      ystepper = (((long)origheight << 16) / (long)finalheight);
+      ywhole = ystepper >> 16;
+      ystep = ystepper - (ywhole << 16);
+   
+      dest = &abuf[y * WGT_SYS.xres + x];
+      /* Make an initial pointer to the destination */
+    
+      endheight = finalheight;
+
+      /* Differences between actual coordinates and */
+      ydif = 0;                            /* the clipped coordinates. */
+      yfrac = 0;                           /* Reset step to 0 */
+   
+      if  (y < ty)
+      {
+	ydif = ty - y;
+	endheight = finalheight - ydif;
+	dest += ydif * WGT_SYS.xres;
+	yfrac = (ydif * ystep) % 65536;
+
+        src += ((ydif * ystepper) >> 16) * resize_width_asm;
+      }
+  
+      if (y + finalheight > by + 1) 
+	endheight -= ((y + finalheight) - by);
+      /* Clip the bottom edge by decreasing the number of pixels drawn. */
+
+      if (endheight > 0)
+        {
+         screen_width_asm = WGT_SYS.xres;
+         ywhole *= resize_width_asm;
+         if (mode == NORMAL)
+           resize_vertical_line (src, dest, ywhole, yfrac, ystep, endheight);
+         else
+           resize_vertical_line_xray (src, dest, ywhole, yfrac, ystep, endheight);
+        }
+  }
+}

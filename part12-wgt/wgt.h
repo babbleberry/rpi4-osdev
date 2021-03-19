@@ -123,3 +123,6 @@ void wskew (short x, short y, block image, short degrees);
 short wloadsprites (color *pal, unsigned char *file, block *image_array, short start, short end);
 void wfreesprites (block *image_array, short start, short end);
 void wcopyscreen (short x, short y, short x2, short y2, block source, short destx, short desty, block dest);
+void wsline (short x, short y, short x2, short y2, short *y_array);
+void wwarp (short sx, short ex, short *tpy, short *bty, block ptr, short mode);
+void wresize_column (short x, short y, short y2, block image, short column, short mode);
