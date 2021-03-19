@@ -16,8 +16,8 @@ void mem_init()
 {
    // Align the start of heap to an 8-byte boundary
 
-   if ((long)&HEAP_START % 8 != 0) {
-      HEAP_START += 8 - ((long)&HEAP_START % 8);
+   if ((long)HEAP_START % 8 != 0) {
+      HEAP_START += 8 - ((long)HEAP_START % 8);
    }
    HEAP_END = (unsigned char *)(HEAP_START + HEAP_SIZE);
 
@@ -28,6 +28,9 @@ void *malloc(unsigned int size)
 {
    if (size > 0) {
       void *allocated = freeptr;
+      if ((long)allocated % 8 != 0) {
+         allocated += 8 - ((long)allocated % 8);
+      }
     
       if ((unsigned char *)(allocated + size) > HEAP_END) {
          return 0;

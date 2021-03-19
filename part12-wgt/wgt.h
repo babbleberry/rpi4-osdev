@@ -51,6 +51,19 @@ extern unsigned int currentcolor;
 /* Clipping boundaries */
 extern short bx,by,tx,ty;
 
+/* Polygon point definition */
+typedef struct
+{
+  short x,y;   /* Coordinate on the screen */
+  short sx,sy; /* Coordinate on the texture if texture is used,
+                  otherwise sx = color point */
+               /* sx is used for Gouraud shading as well (color of the point) */
+} tpolypoint;
+
+/* whollowpoly types */
+#define CLOSED_POLY 0
+#define OPEN_POLY 1
+
 // ######## HELPER FUNCTIONS ########
 
 void *memset(void *dest, unsigned int val, unsigned len);
@@ -126,3 +139,6 @@ void wcopyscreen (short x, short y, short x2, short y2, block source, short dest
 void wsline (short x, short y, short x2, short y2, short *y_array);
 void wwarp (short sx, short ex, short *tpy, short *bty, block ptr, short mode);
 void wresize_column (short x, short y, short y2, block image, short column, short mode);
+void wsolidpoly (tpolypoint *vertexlist, short numvertex, short x, short y, void (*customline)(short, short, short));
+void whollowpoly(tpolypoint *vertexlist, short numvertex, short x, short y, short closemode);
+void wbezier (tpolypoint *rawpts, short numraw, tpolypoint *curvepts, short numcurve);
