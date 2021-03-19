@@ -243,8 +243,9 @@ void resize_vertical_line_xray (block src, block dest, unsigned int whole, unsig
     px = *src;
     src += whole;
     xfrac += step;
-    if (xfrac > 4294967295) {
-       xfrac %= 4294967296;
+    if (xfrac > 65535) {
+       xfrac %= 65536;
+    } else {
        goto novres;
     }
     src += resize_width_asm2;
