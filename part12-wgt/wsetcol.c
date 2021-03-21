@@ -21,7 +21,7 @@ void wsetpalette (unsigned char start, unsigned char finish, color *pal)
 {
     for (int i = start; i <= finish; i++)
     {
-       vgapal[i] = rgb(pal[i].r, pal[i].g, pal[i].b);
+       vgapal[i] = (i << 24) + rgb(pal[i].r, pal[i].g, pal[i].b);
     }
 }
 

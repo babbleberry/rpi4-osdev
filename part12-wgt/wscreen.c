@@ -42,7 +42,7 @@ void wcopyscreen (short x, short y, short x2, short y2, block source, short dest
 
   if (source == NULL)
   {
-    source = abuf;                      /* Set to visual screen */
+    source = fbuf;                      /* Set to visual screen */
     swidth = 320;
   }
   else {
@@ -77,7 +77,7 @@ void wcopyscreen (short x, short y, short x2, short y2, block source, short dest
 
   if  (dest == NULL)
   {
-    dest = abuf;                              /* Set to visual screen */
+    dest = fbuf;                              /* Set to visual screen */
     dwidth = 320;
   }
   else
