@@ -1,5 +1,6 @@
 #include "wgtspr.h"
 #include "include/mem.h"
+#include "include/multicore.h"
 
 // ######## REQUIRED FUNCTIONS ########
 
@@ -70,6 +71,9 @@ void wgt60()
   mem_init();
   vga256 ();                    /* Initializes WGT system       */
 
+  start_core2(minit);           // Start the comms engine (core 2)
+  while (!comms_up);            // Wait for comms up
+
   wtexttransparent (TEXTFGBG);  /* Turn foreground and background on */
 
   extern unsigned char _binary_bin_break_spr_start[];
@@ -110,6 +114,8 @@ void wgt60()
   spriteon (0, 160, 150, 1);    /* Turn on our sprites */
   spriteon (1, 160, 100, 2);
 
+  msetbounds (50, 129, 245, 179);       /* Limit mouse movement */
+
   xsp = 1.1;                    /* Set initial ball speeds */
   ysp = 1.3;
 
@@ -122,14 +128,17 @@ void wgt60()
     looper ();
   } while (1);			/* Until the right mouse button is clicked */
 
+  mdeinit();
   deinitialize_sprites ();      /* Deinit the sprite system */
 }
 
 void looper(void)
 {
-  // wretrace ();                  /* Time our updates to the vertical retrace */
-  wait_msec(0x3E9F);
+  wait_msec(0x411B);
   erase_sprites ();             /* Clear sprites from sprite screen */
+
+  s[0].x = mx;                  /* Set paddle position to mouse position */
+  s[0].y = my;
 
   if (lx > 267)                 /* Is ball bouncing off right wall? */
     {

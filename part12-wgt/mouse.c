@@ -33,6 +33,10 @@ int but;
 int mx;
 int my;
 
+/* Mouse boundaries */
+int mbx1, mby1;
+int mbx2, mby2;
+
 void hci_poll2(unsigned char byte)
 {
     switch (poll_state) {
@@ -178,8 +182,30 @@ void acl_poll()
     }
 }
 
+void msetbounds (short x1, short y1, short x2, short y2)
+{
+    if (x1 < WGT_SYS.xres && x1 >= 0) {
+       if (x2 < WGT_SYS.xres && x2 >= x1) {
+          if (y1 < WGT_SYS.yres && y1 >= 0) {
+             if (y2 < WGT_SYS.yres && y2 >= y1) {
+                mbx1 = x1;
+                mbx2 = x2;
+                mby1 = y1;
+                mby2 = y2;
+             }
+          }
+       }
+    }
+}
+
 void msetxy (short x, short y)
 {
+    if (x < mbx1) x = mbx1;
+    if (y < mby1) y = mby1;
+
+    if (x > mbx2) x = mbx2;
+    if (y > mby2) y = mby2;
+
     mx = x;
     my = y;
 }
@@ -218,8 +244,12 @@ void minit()
     // Subscribe to updates
     sendACLsubscribe(connection_handle);
 
-    mx = 160;
-    my = 100;
+    mx = WGT_SYS.xres / 2;
+    my = WGT_SYS.yres / 2;
+    mbx1 = 0;
+    mby1 = 0;
+    mbx2 = WGT_SYS.xres;
+    mby2 = WGT_SYS.yres;
     but = 0;
 
     comms_up = 1;

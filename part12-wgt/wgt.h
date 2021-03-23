@@ -155,3 +155,4 @@ void wbezier (tpolypoint *rawpts, short numraw, tpolypoint *curvepts, short numc
 void minit();
 void mdeinit();
 void msetxy (short x, short y);
+void msetbounds (short x1, short y1, short x2, short y2);
