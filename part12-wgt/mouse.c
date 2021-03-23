@@ -159,23 +159,29 @@ void acl_poll()
 	  unsigned char d2 = bt_waitReadByte();
 
 	  unsigned int dlen = d1 | (d2 << 8);
-	  unsigned char data[dlen];
 
 	  if (dlen > 7) {
+	     unsigned char data[dlen];
 	     for (int i=0;i<dlen;i++) data[i] = bt_waitReadByte();
 
 	     unsigned int length = data[0] | (data[1] << 8);
 	     unsigned int channel = data[2] | (data[3] << 8);
 	     unsigned char opcode = data[4];
-
-	     if (thandle == connection_handle && length == 4 && opcode == 0x1b) {
+ 
+	     if (thandle == connection_handle && length == 7 && opcode == 0x1b) {
 	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
-	      	   mx = data[7] * 2;
+                   msetxy(data[7] | (data[8] << 8), data[9] | (data[10] << 8));
                 }
 	     }
           }
        }
     }
+}
+
+void msetxy (short x, short y)
+{
+    mx = x;
+    my = y;
 }
 
 void mdeinit()

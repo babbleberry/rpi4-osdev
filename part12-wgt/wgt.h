@@ -154,3 +154,4 @@ void whollowpoly(tpolypoint *vertexlist, short numvertex, short x, short y, shor
 void wbezier (tpolypoint *rawpts, short numraw, tpolypoint *curvepts, short numcurve);
 void minit();
 void mdeinit();
+void msetxy (short x, short y);

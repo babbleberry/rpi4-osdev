@@ -35,13 +35,16 @@ bleno.on('advertisingStart', function(error) {
 
 var ioHook = require('iohook');
 
-var buf = Buffer.allocUnsafe(1);
-var obuf = Buffer.allocUnsafe(1);
+var buf = Buffer.allocUnsafe(4);
+var obuf = Buffer.allocUnsafe(4);
 const scrwidth = 1440;
-const divisor = scrwidth / 160;
+const scrheight = 900;
+const divisorx = scrwidth / 320;
+const divisory = scrheight / 200;
 
 ioHook.on( 'mousemove', event => {
-   buf.writeUInt8(Math.round(event.x / divisor), 0);
+   buf.writeUInt16LE(Math.round(event.x / divisorx), 0);
+   buf.writeUInt16LE(Math.round(event.y / divisory), 2);
 
    if (Buffer.compare(buf, obuf)) {
       e._value = buf;
