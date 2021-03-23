@@ -1,5 +1,4 @@
 #define PERIPHERAL_BASE 0xFE000000
-#define LEGACY_BASE     0x7E000000
 
 void uart_init();
 void uart_writeText(char *buffer);

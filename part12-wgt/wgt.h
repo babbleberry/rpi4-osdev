@@ -64,6 +64,15 @@ typedef struct
 #define CLOSED_POLY 0
 #define OPEN_POLY 1
 
+/* Mouse variables */
+extern int but;
+extern int mx;
+extern int my;
+
+/* Bluetooth control */
+extern volatile unsigned int comms_up;
+void comms_core(void);
+
 // ######## HELPER FUNCTIONS ########
 
 void *memset(void *dest, unsigned int val, unsigned len);
@@ -83,6 +92,7 @@ void debugch(unsigned char b);
 void debughex(unsigned int d);
 
 void delay(unsigned int n);
+void wait_msec(unsigned int n);
 
 void vga256(void);
 void wsetcolor (unsigned int col);
@@ -142,3 +152,5 @@ void wresize_column (short x, short y, short y2, block image, short column, shor
 void wsolidpoly (tpolypoint *vertexlist, short numvertex, short x, short y, void (*customline)(short, short, short));
 void whollowpoly(tpolypoint *vertexlist, short numvertex, short x, short y, short closemode);
 void wbezier (tpolypoint *rawpts, short numraw, tpolypoint *curvepts, short numcurve);
+void minit();
+void mdeinit();

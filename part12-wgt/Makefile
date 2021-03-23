@@ -8,6 +8,9 @@ all: clean kernel8.img
 boot/boot.o: boot/boot.S
 	$(LLVMPATH)/clang --target=aarch64-elf $(CLANGFLAGS) -c $< -o $@
 
+bin/BCM4345C0.o : bin/BCM4345C0.hcd
+	$(LLVMPATH)/llvm-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
+
 bin/wgt1pal.o: bin/wgt1.pal
 	$(LLVMPATH)/llvm-objcopy -I binary -O elf64-littleaarch64 -B aarch64 $< $@
 
@@ -35,8 +38,8 @@ bin/mousespr.o: bin/mouse.spr
 %.o: %.c
 	$(LLVMPATH)/clang --target=aarch64-elf $(CLANGFLAGS) -c $< -o $@
 
-kernel8.img: boot/boot.o $(OFILES) bin/wgt1pal.o bin/wgt1blk.o bin/wgt2blk.o bin/lettersspr.o bin/spacespr.o bin/invaderspr.o bin/mousespr.o bin/breakspr.o
-	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib boot/boot.o $(OFILES) bin/wgt1pal.o bin/wgt1blk.o bin/wgt2blk.o bin/lettersspr.o bin/spacespr.o bin/invaderspr.o bin/mousespr.o bin/breakspr.o -T boot/link.ld -o kernel8.elf
+kernel8.img: boot/boot.o $(OFILES) bin/BCM4345C0.o bin/wgt1pal.o bin/wgt1blk.o bin/wgt2blk.o bin/lettersspr.o bin/spacespr.o bin/invaderspr.o bin/mousespr.o bin/breakspr.o
+	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib boot/boot.o $(OFILES) bin/BCM4345C0.o bin/wgt1pal.o bin/wgt1blk.o bin/wgt2blk.o bin/lettersspr.o bin/spacespr.o bin/invaderspr.o bin/mousespr.o bin/breakspr.o -T boot/link.ld -o kernel8.elf
 	$(LLVMPATH)/llvm-objcopy -O binary kernel8.elf kernel8.img
 
 clean:
