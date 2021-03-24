@@ -14,7 +14,7 @@ void wflipblock (block image, short direction)
   height = wgetblockheight (image);
   temp = malloc (width*4);
   temp2 = malloc (width*4);
-  image += 4;
+  image += 2;
 
   if  (direction == 1)                       /* Horizontal flip */
   {
