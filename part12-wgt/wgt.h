@@ -65,9 +65,9 @@ typedef struct
 #define OPEN_POLY 1
 
 /* Mouse variables */
-extern int but;
-extern int mx;
-extern int my;
+extern volatile int but;
+extern volatile int mx;
+extern volatile int my;
 
 /* Bluetooth control */
 extern volatile unsigned int comms_up;
@@ -155,4 +155,6 @@ void wbezier (tpolypoint *rawpts, short numraw, tpolypoint *curvepts, short numc
 void minit();
 void mdeinit();
 void msetxy (short x, short y);
+void msetbut (short event, short bnum);
 void msetbounds (short x1, short y1, short x2, short y2);
+void noclick();

@@ -37,6 +37,7 @@ var ioHook = require('iohook');
 
 var buf = Buffer.allocUnsafe(4);
 var obuf = Buffer.allocUnsafe(4);
+var buttbuf = Buffer.allocUnsafe(2);
 const scrwidth = 1440;
 const scrheight = 900;
 const divisorx = scrwidth / 320;
@@ -51,6 +52,22 @@ ioHook.on( 'mousemove', event => {
       if (e._updateValueCallback) e._updateValueCallback(e._value);
       buf.copy(obuf);
    }
+});
+
+ioHook.on( 'mousedown', event => {
+   buttbuf.writeUInt8(1, 0);
+   buttbuf.writeUInt8(event.button, 1);
+
+   e._value = buttbuf;
+   if (e._updateValueCallback) e._updateValueCallback(e._value);
+});
+
+ioHook.on( 'mouseup', event => {
+   buttbuf.writeUInt8(2, 0);
+   buttbuf.writeUInt8(event.button, 1);
+
+   e._value = buttbuf;
+   if (e._updateValueCallback) e._updateValueCallback(e._value);
 });
 
 ioHook.start();

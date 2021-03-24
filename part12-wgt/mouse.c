@@ -29,9 +29,9 @@ unsigned int connection_handle = 0;
 volatile unsigned int comms_up = 0;
 
 /* Mouse variables */
-int but;
-int mx;
-int my;
+volatile int but;
+volatile int mx;
+volatile int my;
 
 /* Mouse boundaries */
 int mbx1, mby1;
@@ -172,9 +172,10 @@ void acl_poll()
 	     unsigned int channel = data[2] | (data[3] << 8);
 	     unsigned char opcode = data[4];
  
-	     if (thandle == connection_handle && length == 7 && opcode == 0x1b) {
+	     if (thandle == connection_handle && opcode == 0x1b) {
 	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
-                   msetxy(data[7] | (data[8] << 8), data[9] | (data[10] << 8));
+                   if (length == 7) msetxy(data[7] | (data[8] << 8), data[9] | (data[10] << 8));
+                   if (length == 5) msetbut(data[7], data[8]);
                 }
 	     }
           }
@@ -198,6 +199,14 @@ void msetbounds (short x1, short y1, short x2, short y2)
     }
 }
 
+void msetbut (short event, short bnum) {
+    if (event == 1) { // Mouse down
+       but |= bnum;
+    } else if (event == 2) { // Mouse up
+       but ^= bnum;
+    }
+}
+
 void msetxy (short x, short y)
 {
     if (x < mbx1) x = mbx1;
@@ -208,6 +217,11 @@ void msetxy (short x, short y)
 
     mx = x;
     my = y;
+}
+
+void noclick()
+{
+    if (but) while (but);
 }
 
 void mdeinit()
