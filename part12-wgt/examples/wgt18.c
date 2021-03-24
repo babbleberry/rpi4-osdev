@@ -86,7 +86,7 @@ void wgt18()
     /* copy the whole screen */
     /* notice how we never use wnormscreen at all! */
 
-  } while (1);
+  } while (but == 0);
 
   mdeinit();
   wfreeblock (screen1);

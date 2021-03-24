@@ -126,7 +126,7 @@ void wgt60()
 
   do {                          /* Now play the game */
     looper ();
-  } while (1);			/* Until the right mouse button is clicked */
+  } while (but != 2);			/* Until the right mouse button is clicked */
 
   mdeinit();
   deinitialize_sprites ();      /* Deinit the sprite system */

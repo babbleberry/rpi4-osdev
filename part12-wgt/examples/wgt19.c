@@ -88,15 +88,15 @@ void wgt19()
 
     wcopyscreen (0, 0, 160, 199, screen1, 0, 0, NULL);  /* copy half the screen */
 
-    if (mx == 0)  /* Show the next sprite */
+    if (but == 1)  /* Show the next sprite */
       {
        sp++;
        if (sp > 9)
 	 sp = 1;
-       //noclick ();
+       noclick ();
       }
 
-  } while (1);
+  } while (but != 2);
 
   msetbounds (0, 0, 319, 199);
   mdeinit ();                   /* Deinitialize the mouse handler */
