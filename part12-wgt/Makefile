@@ -1,4 +1,4 @@
-CFILES = $(wildcard *.c lib/*.c)
+CFILES = $(wildcard *.c lib/*.c wgt/*.c)
 OFILES = $(CFILES:.c=.o)
 LLVMPATH = /opt/homebrew/opt/llvm/bin
 CLANGFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
@@ -43,4 +43,4 @@ kernel8.img: boot/boot.o $(OFILES) bin/BCM4345C0.o bin/wgt1pal.o bin/wgt1blk.o b
 	$(LLVMPATH)/llvm-objcopy -O binary kernel8.elf kernel8.img
 
 clean:
-	/bin/rm kernel8.elf *.o bin/*.o boot/*.o lib/*.o *.img > /dev/null 2> /dev/null || true
+	/bin/rm kernel8.elf *.o bin/*.o boot/*.o lib/*.o wgt/*.o *.img > /dev/null 2> /dev/null || true
