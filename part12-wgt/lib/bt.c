@@ -232,7 +232,7 @@ void sendACLsubscribe(unsigned int handle)
     bt_writeByte(lo(channel));
     bt_writeByte(hi(channel));
 
-    volatile unsigned char command[5] = { 0x12, 0x2b, 0x00, 0x01, 0x00 };
+    volatile unsigned char command[5] = { 0x12, 0x3d, 0x00, 0x01, 0x00 };
 
     unsigned int c=0;
     while (c++<data_length) bt_writeByte(command[c-1]);
@@ -353,6 +353,7 @@ void connect(unsigned char *addr)
 
     command[0] = lo(p);
     command[2] = lo(q);
+    command[5] = 1; // Necessary for iOS connection
     command[6] = *(addr+5);
     command[7] = *(addr+4);
     command[8] = *(addr+3);

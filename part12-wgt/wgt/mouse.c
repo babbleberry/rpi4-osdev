@@ -138,9 +138,9 @@ void bt_conn()
     while ( (buf = hci_poll()) ) {
        if (!connected && data_len >= 2 && buf[0] == LE_CONNECT_CODE) {
           connected = !*(buf+1);
-	  connection_handle = *(buf+2) | (*(buf+3) << 8);
+          connection_handle = *(buf+2) | (*(buf+3) << 8);
 
-	  if (connection_handle == 0) delay(1);
+          if (connected == 0) wait_msec(0x186A);
        }
     }
 }
