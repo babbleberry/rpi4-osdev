@@ -12,14 +12,17 @@ The directory structure
 As I port the WGT to my OS (a.k.a. make it work on my OS), I am using the following directories:
 
  * _bin/_ : for WGT binary files (fonts, sprites, bitmaps etc.)
- * _controller/_ : a new Node.js BLE controller which is a little more advanced and fully emulates a 2-button mouse
+ * _controller-node/_ : a sample Node.js BLE controller which is a little more advanced and fully emulates a 2-button mouse
+ * _controller-ios/_ : a sample Swift BLE controller for the iOS platform
  * _include/_ : now contains _wgt.h_ and _wgtspr.h_ too (header files necessary for WGT code)
  * _samples/_ : sample "kernels" for my OS which exercise certain WGT library functions. To build them, copy one of these (and only one at a time) to the same directory as the _Makefile_.
  * _wgt/_ : the library itself. Where possible, I have stayed true to the original code, but do bear in mind it was written for the x86 architecture and we're on AArch64!
 
+Please note: I am neither a Node.js developer, nor a Swift developer, and so the controllers are purely samples that serve my purpose. They are not intended to be exemplars! I am very aware of the multitudinous problems with both...
+
 Building
 --------
-So... to build the first sample simply type `cp samples/wgt01.c .` from the top-level directory, and then type `make`. When you boot with the generated _kernel8.img_ you will see the screen go into 320x200 (VGA!) mode and draw a white line from corner to corner. If you do, the library is doing its stuff!
+So... to build the first WGT sample simply type `cp samples/wgt01.c .` from the top-level directory, and then type `make`. When you boot with the generated _kernel8.img_ you will see the screen go into 320x200 (VGA!) mode and draw a white line from corner to corner. If you do, the library is doing its stuff!
 
 boot/boot.S changes
 -------------------
