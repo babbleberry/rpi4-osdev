@@ -1,5 +1,6 @@
 #include "include/wgtspr.h"
 #include "include/mem.h"
+#include "include/multicore.h"
 
 // ######## REQUIRED FUNCTIONS ########
 
@@ -52,9 +53,14 @@ void wgt25()
   set_clock_rate(get_max_clock());
   mem_init();
   vga256 ();
+
+  start_core2(minit);           // Start the comms engine (core 2)
+  while (!comms_up);            // Wait for comms up
+
   extern unsigned char _binary_bin_mouse_spr_start[];
   wloadsprites (palette, &_binary_bin_mouse_spr_start[0], sprites, 0, 1000);
   wsetpalette (0, 255, palette);
+
   initialize_sprites (sprites);			  /* initialize them */
   maxsprite = 4;				  /* number of sprites on */
 
@@ -98,7 +104,7 @@ void wgt25()
 
   do {
     looper ();
-  } while (1);
+  } while (!quit);
 
   spriteoff (1);		/* turn off sprite */
   spriteoff (2);		/* turn off sprite */
@@ -112,13 +118,13 @@ void wgt25()
 
 void looper (void)
 {
+  int i;
+
   erase_sprites ();			/* clear the sprites */
 
-  /*
-  if (kbhit ())
+  if (but)
     {
-     c = toupper (getch ());
-     if (c == 'Q')
+     if (but == 2)
 	quit = 1;
 
      sprite_toggle = !sprite_toggle;
@@ -136,8 +142,8 @@ void looper (void)
 	  moveyon (i);
 	  animon (i);
 	 }
+     noclick();
     }
-  */
 
   draw_sprites (1);		/* draw them back on */
 				/* This loop is required to update sprite

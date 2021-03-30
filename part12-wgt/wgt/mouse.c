@@ -1,3 +1,5 @@
+#define IOS_CONTROL
+
 #include "../include/wgt.h"
 #include "../include/multicore.h"
 #include "../include/io.h"
@@ -173,7 +175,11 @@ void acl_poll()
 	     unsigned char opcode = data[4];
  
 	     if (thandle == connection_handle && opcode == 0x1b) {
+#ifdef IOS_CONTROL
 	        if (channel == 4 && data[5] == 0x3b && data[6] == 0x00) {
+#else
+	        if (channel == 4 && data[5] == 0x2a && data[6] == 0x00) {
+#endif
                    if (length == 7) msetxy(data[7] | (data[8] << 8), data[9] | (data[10] << 8));
                    if (length == 5) msetbut(data[7], data[8]);
                 }
