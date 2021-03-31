@@ -12,8 +12,8 @@ The directory structure
 As I port the WGT to my OS (a.k.a. make it work on my OS), I am using the following directories:
 
  * _bin/_ : for WGT binary files (fonts, sprites, bitmaps etc.)
- * _controller-node/_ : a sample Node.js BLE controller which is a little more advanced and fully emulates a 2-button mouse
  * _controller-ios/_ : a sample Swift BLE controller for the iOS platform
+ * _controller-node/_ : a sample Node.js BLE controller 
  * _include/_ : now contains _wgt.h_ and _wgtspr.h_ too (header files necessary for WGT code)
  * _samples/_ : sample "kernels" for my OS which exercise certain WGT library functions. To build them, copy one of these (and only one at a time) to the same directory as the _Makefile_.
  * _wgt/_ : the library itself. Where possible, I have stayed true to the original code, but do bear in mind it was written for the x86 architecture and we're on AArch64!
