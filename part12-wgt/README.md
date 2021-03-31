@@ -33,6 +33,16 @@ We're still booting into a multicore environment (just in case we need it). Ther
  * Move the addresses for the `spin_cpu` variables to accommodate a larger _boot.S_
  * Implement a `get_el` function to check which exception level we're at (for debug mainly)
 
+Using the iOS BLE controller
+----------------------------
+To use the iOS BLE controller instead of the Node.JS controller, ensure that you have:
+
+```c
+#define IOS_CONTROL
+```
+
+at the top of each of _wgt/mouse.c_ and _lib/bt.c_. Without this `#define`, the code will be looking for the Node.JS controller (so remove these lines if that's what you want!).
+
 Work in progress!
 -----------------
 This part is still work in progress - and it's a lot of work - so keep watching this space!
