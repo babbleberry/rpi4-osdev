@@ -158,3 +158,4 @@ void msetxy (short x, short y);
 void msetbut (short event, short bnum);
 void msetbounds (short x1, short y1, short x2, short y2);
 void noclick();
+void wxorbox (short x, short y, short x2, short y2, unsigned char col);
