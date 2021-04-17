@@ -38,10 +38,6 @@ void getch(void) {
 
 // ######## WGT EXAMPLES ########
 
-#define NUM_IN 5       /* number of random points */
-#define NUM_OUT 30     /* number of points of bezier curve */
-/* Fewer points will make more chunky line */
-
 int ox, oy;  /* old mouse coordinates */
 int i;
 
