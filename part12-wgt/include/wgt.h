@@ -1,6 +1,6 @@
 #include "mb.h"
 
-#define NULL 0
+#define NULL ((void*)0)
 #define rgb(i,r,g,b) (i<<24)|(r<<16)|(g<<8)|b
 
 typedef struct {
@@ -159,3 +159,6 @@ void msetbut (short event, short bnum);
 void msetbounds (short x1, short y1, short x2, short y2);
 void noclick();
 void wxorbox (short x, short y, short x2, short y2, unsigned char col);
+short wgettextwidth (char *string, wgtfont font);
+short wgettextheight (char *string, wgtfont font);
+void wgtprintf (short x, short y, wgtfont font, const char *fmt, ...);

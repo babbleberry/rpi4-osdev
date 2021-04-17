@@ -38,20 +38,38 @@ void getch(void) {
 
 // ######## WGT EXAMPLES ########
 
-void wgt37()
+void wgt41()
 {
   set_clock_rate(get_max_clock());
   mem_init();
   vga256 ();			/* Initialize graphics mode */
 
-  start_core2(minit);           // Start the comms engine (core 2)
-  while (!comms_up);            // Wait for comms up
+  char *message = malloc(15);
+  message[0] = 'H';
+  message[1] = 'e';
+  message[2] = 'l';
+  message[3] = 'l';
+  message[4] = 'o';
+  message[5] = ' ';
+  message[6] = 'w';
+  message[7] = 'o';
+  message[8] = 'r';
+  message[9] = 'l';
+  message[10] = 'd';
+  message[11] = '!';
+  message[12] = '\0';
 
-  mdeinit ();                   /* Deinitialize the mouse handler */
+  wtextcolor (vgapal[15]);
+
+  wgtprintf (0, 0, NULL, "%s", message);
+  wgtprintf (0, 8, NULL, "String width : %i pixels", wgettextwidth (message, NULL));
+  wgtprintf (0, 16, NULL, "String height: %i pixels", wgettextheight (message, NULL));
+
+  getch ();
 }
 
 void main()
 {
-    wgt37();
+    wgt41();
     while (1);
 }
