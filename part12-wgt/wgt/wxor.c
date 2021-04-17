@@ -34,9 +34,9 @@ void wxorbox (short x, short y, short x2, short y2, unsigned char col)
     {
       /* This can be change to perform any logical operation
       on the pixels, such as & or | */
-      *temp = *temp ^ col;             /* XOR the pixel on screen with col and put it back on screen */
-      temp++;                          /* Go to next pixel */
-    }                                  /* x loop */
-    temp += (WGT_SYS.xres - 1) - (x2 - x);            /* Advance to next row */
-  }                                    /* y loop */
+      *temp = vgapal[(*temp >> 24) ^ col];     /* XOR the pixel on screen with col and put it back on screen */
+      temp++;                                  /* Go to next pixel */
+    }                                          /* x loop */
+    temp += (WGT_SYS.xres - 1) - (x2 - x);     /* Advance to next row */
+  }                                            /* y loop */
 }

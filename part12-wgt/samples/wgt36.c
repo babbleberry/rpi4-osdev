@@ -63,10 +63,10 @@ void wgt36()
   do {  /* Draws a filled xorbox using mouse coordinates as one corner. */
    ox = mx;
    oy = my;
-   wxorbox (50, 50, ox, oy, vgapal[128]);    /* Draw the box */
+   wxorbox (50, 50, ox, oy, 128);    /* Draw the box */
    while ((mx == ox) && (my == oy) && (!but));  /* Do nothing while mouse is
 						  stationary. */
-   wxorbox (50, 50, ox, oy, vgapal[128]);
+   wxorbox (50, 50, ox, oy, 128);
    /* Erase the box by drawing the same thing */
   } while (but == 0);
 
@@ -75,16 +75,16 @@ void wgt36()
   do {  /* Draws a hollow rubber box using mouse coordinates as one corner. */
    ox = mx;
    oy = my;
-   wxorbox (50, 50, ox, 50, vgapal[128]);
-   wxorbox (ox, 50, ox, oy, vgapal[128]);    /* Draw the box */
-   wxorbox (50, oy, ox, oy, vgapal[128]);
-   wxorbox (50, 50, 50, oy, vgapal[128]);
+   wxorbox (50, 50, ox, 50, 128);
+   wxorbox (ox, 50, ox, oy, 128);    /* Draw the box */
+   wxorbox (50, oy, ox, oy, 128);
+   wxorbox (50, 50, 50, oy, 128);
    while ((mx == ox) && (my == oy) && (!but));  /* Do nothing while mouse is
 						   stationary. */
-   wxorbox (50, 50, ox, 50, vgapal[128]);
-   wxorbox (ox, 50, ox, oy, vgapal[128]);    /* Erase the box */
-   wxorbox (50, oy, ox, oy, vgapal[128]);
-   wxorbox (50, 50, 50, oy, vgapal[128]);
+   wxorbox (50, 50, ox, 50, 128);
+   wxorbox (ox, 50, ox, oy, 128);    /* Erase the box */
+   wxorbox (50, oy, ox, oy, 128);
+   wxorbox (50, 50, 50, oy, 128);
   } while (but == 0);
   mdeinit ();                   /* Deinitialize the mouse handler */
 }
