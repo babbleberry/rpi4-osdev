@@ -431,10 +431,9 @@ wgtprintf (short x, short y, wgtfont font, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 
-        char *buffer = malloc(251);                                 /* Buffer to build string into*/
+        char buffer[251];                                 /* Buffer to build string into*/
 	kvprintf(fmt, NULL, (void *)buffer, 10, ap);
         wouttextxy (x, y, font, buffer);
-        free(buffer);
 
 	va_end(ap);
 }
