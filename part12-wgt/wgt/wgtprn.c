@@ -428,12 +428,16 @@ number:
 void
 wgtprintf (short x, short y, wgtfont font, const char *fmt, ...)
 {
+        char *buffer = malloc(250);                                 /* Buffer to build string into*/
+        memset(buffer, 0, 250);
+
 	va_list ap;
 	va_start(ap, fmt);
 
-        char buffer[251];                                 /* Buffer to build string into*/
 	kvprintf(fmt, NULL, (void *)buffer, 10, ap);
         wouttextxy (x, y, font, buffer);
 
 	va_end(ap);
+     
+        free(buffer);
 }
