@@ -59,37 +59,22 @@ void wgt41()
   message[11] = '!';
   message[12] = '\0';
 
-  wgtfont little;
-  wgtfont medium;
-
-  extern unsigned char _binary_bin_little_wfn_start[];
-  little = &(_binary_bin_little_wfn_start[0]);
-  extern unsigned char _binary_bin_medium_wfn_start[];
-  medium = &(_binary_bin_medium_wfn_start[0]);
-
   wtextcolor (vgapal[15]);
- 
-  wgtprintf (0, 0, NULL, "%.15s", little);
-  wgtprintf (0, 8, NULL, "%.15s", medium);
-  wouttextxy (0, 50, medium, "Nice to see you");
-  wouttextxy (0, 100, little, "Goodbye cruel world!");
 
-/*
   wgtprintf (0, 0, NULL, "%s", message);
   wgtprintf (0, 8, NULL, "String width : %i pixels", wgettextwidth (message, NULL));
   wgtprintf (0, 16, NULL, "String height: %i pixels", wgettextheight (message, NULL));
 
-  wgtprintf (0, 50, medium, "%s", message);
-  wgtprintf (0, 66, NULL, "String width : %i pixels", wgettextwidth (message, medium));
-  wgtprintf (0, 74, NULL, "String height: %i pixels", wgettextheight (message, medium));
+  wgtprintf(0, 32, NULL, "The color: %s", "blue");
+  wgtprintf(0, 40, NULL, "First number: %d", 12345);
+  wgtprintf(0, 48, NULL, "Second number: %04d", 25);
+  wgtprintf(0, 56, NULL, "Third number: %i", 1234);
+  wgtprintf(0, 64, NULL, "Hexadecimal: %x", 255);
+  wgtprintf(0, 72, NULL, "Octal: %o", 255);
+  wgtprintf(0, 80, NULL, "Unsigned value: %u", 150);
+  wgtprintf(0, 88, NULL, "Just print the percentage sign %%", 10);
 
-  wgtprintf (0, 100, little, "%s", message);
-  wgtprintf (0, 116, NULL, "String width : %i pixels", wgettextwidth (message, little));
-  wgtprintf (0, 124, NULL, "String height: %i pixels", wgettextheight (message, little));
-*/
-
-  getch ();
-  free (message);
+  free(message);
 }
 
 void main()
