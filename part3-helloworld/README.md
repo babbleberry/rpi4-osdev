@@ -68,12 +68,12 @@ A quick config.txt change
 
 Do you remember that, back in the first tutorial, I had to edit the _config.txt_ file on the SD card to get Raspbian up on my TV screen? Now we need to add a line to ensure that our UART connection will be reliable.
 
-UART communication is a lot to do with timing, and it's important that both ends agree on the exact speed of data being sent/received. When we set up PuTTY, we told it to communicate at 115200 baud, and we'll need the RPi4 to communicate at the same rate. As it is, we can't be sure that it will - it might communicate faster or slower depending on how busy the CPU is.
+UART communication is a lot to do with timing, and it's important that both ends agree on the exact speed of data being sent/received. When we set up PuTTY, we told it to communicate at 115200 baud, and we'll need the RPi4 to communicate at the same rate. Usually, we can custom the clock of an UART chip. However, the primary UART at RPi4 is miniUART - an UART works at a CPU-frequency-related rate. As it is, we can't be sure that it will - it might communicate faster or slower depending on how busy the CPU is.
 
-Add this line to your _config.txt_ to resolve this:
+Add this line to your _config.txt_ to resolve this, the bootloader will set the CPU frequency to a reasonable value, so our dev machine can correctly receive data at 115200 baud:
 
 ```c
-core_freq_min=500
+enable_uart=1
 ```
 
 Getting the UART going in code
