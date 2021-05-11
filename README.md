@@ -70,6 +70,11 @@ I recommend using [Homebrew](https://docs.brew.sh/Installation) to install LLVM.
 
 LLVM will give you all you need to start building for Raspberry Pi bare metal on Mac. It even works on my M1 MacBook Pro with Apple Silicon, which runs an ARM processor rather than an Intel processsor.
 
+Building directly on a Raspberry Pi 4
+-------------------------------------
+
+You can read more about how to build on the Pi itself [here](./RPI-BUILD.md).
+
 _Now you're ready to start writing your OS!_
 
 [Go to part1-bootstrapping >](./part1-bootstrapping/)
