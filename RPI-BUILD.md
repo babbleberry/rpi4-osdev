@@ -19,7 +19,7 @@ What you're looking for is the current [AArch64 ELF bare-metal target (aarch64-n
 
 Then unpack the archive using `tar -xf <filename>`. You'll end up with a _gcc_ directory (albeit with a slightly longer name), which itself contains a _bin_ subdirectory, wherein you'll find the _gcc_ executable (again - with a longer name!). Remember this path.
 
-Note: if you don't want to re-image, you can [build a cross-compiler yourself](https://wiki.osdev.org/GCC_Cross-Compiler).
+Note: you can avoid re-imaging the Pi, by instead [building a cross-compiler yourself](https://wiki.osdev.org/GCC_Cross-Compiler).
 
 Now let's build something:
 
