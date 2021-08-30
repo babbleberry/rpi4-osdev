@@ -152,7 +152,7 @@ Finally, we look at _kernel.c_, where we now have a single `main()`, but also:
 
 _As you run this, you'll see that these functions run in parallel on their respective cores. Welcome to symmetric multi-processing!_
 
-**If all you see on boot is the rainbow screen, try first updating your firmware using `rpi-update` from Raspbian**
+**If all you see on boot is the rainbow screen, try first updating your firmware using** `rpi-update` **from Raspbian.**
 
 ![Code now running on all four cores of the Raspberry Pi 4](images/10-multicore-running.jpg)
 
