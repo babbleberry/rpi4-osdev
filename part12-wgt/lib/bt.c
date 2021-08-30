@@ -1,5 +1,3 @@
-#define IOS_CONTROL
-
 #include "../include/io.h"
 
 // UART0

@@ -1,5 +1,3 @@
-#define IOS_CONTROL
-
 #include "../include/wgt.h"
 #include "../include/multicore.h"
 #include "../include/io.h"
