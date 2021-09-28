@@ -39,7 +39,14 @@ The same cable will work on a Mac without the need to install any drivers.
 
 Now we need to look at the RPi4 to identify how to connect the other end of the cable. You'll be looking for the **GPIO pins**, all 40 of them, which are just above the Raspberry Pi copyright notice. 
 
-The diagram below shows where you need to make connections. The BLACK connecter hooks over Ground (Pin 6), the WHITE over TXD (GPIO 14/Pin 8) and the GREEN over RXD (GPIO 15/Pin 10). As we are powering the RPi4 using a dedicated power supply, make sure you **don't connect the RED connector**.
+The diagram below shows where you need to make connections. The cable I recommended has breakout leads that are colour-coded as follows:
+
+ * BLACK = Ground
+ * RED = +5v Power
+ * GREEN = TX (transmits from USB port to RPi4)
+ * WHITE = RX (receives to USB port from RPi4)
+
+The Ground lead (BLACK in my case) hooks over the RPi4's Ground pin (Pin 6), the RX lead (WHITE) over TXD (GPIO 14/Pin 8) and the TX lead (GREEN) over RXD (GPIO 15/Pin 10). Note how it's necessary to cross RX and TX, i.e. connect RX to TX and vice versa. As we are powering the RPi4 using a dedicated power supply, make sure you **don't connect the RED connector**.
 
 ![GPIO location](images/3-helloworld-pinloc.png)
 
