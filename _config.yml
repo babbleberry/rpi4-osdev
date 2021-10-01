@@ -1,3 +1,4 @@
 theme: jekyll-theme-cayman
+url: "https://www.rpi4os.com"
 plugins:
           - jekyll-sitemap
