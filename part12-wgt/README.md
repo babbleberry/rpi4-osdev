@@ -47,4 +47,4 @@ Work in progress!
 -----------------
 This part is still work in progress - and it's a lot of work - so keep watching this space!
 
-_In the meantime, do have a go at building some of the samples..._
+_In the meantime, do have a go at building some of the samples (hint: wgt20 and wgt60 are fun!)..._
