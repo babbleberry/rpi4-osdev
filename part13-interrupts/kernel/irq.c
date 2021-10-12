@@ -26,6 +26,10 @@ void enable_interrupt_controller() {
     REGS_IRQ->irq0_enable_0 = AUX_IRQ | SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3;
 }
 
+void disable_interrupt_controller() {
+    REGS_IRQ->irq0_enable_0 = AUX_IRQ;
+}
+
 void handle_irq() {
     unsigned int irq = REGS_IRQ->irq0_pending_0;
 

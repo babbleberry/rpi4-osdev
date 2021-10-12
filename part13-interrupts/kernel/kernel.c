@@ -30,11 +30,19 @@ void core0_main(void)
 {
     unsigned int core0_val = 0;
 
-    while (1) {
+    while (core0_val <= 100) {
        wait_msec(0x100000);
        drawProgress(0, core0_val);
-       if (core0_val < 100) core0_val++;
+       core0_val++;
     }
+
+    debugstr("Core 0 done.");
+    debugcrlf();
+
+    irq_disable();
+    disable_interrupt_controller();
+
+    while(1);
 }
 
 void core1_main(void)
@@ -43,11 +51,16 @@ void core1_main(void)
 
     clear_core1();                // Only run once
 
-    while (1) {
+    while (core1_val <= 100) {
        wait_msec(0x3FFFF);
        drawProgress(1, core1_val);
-       if (core1_val < 100) core1_val++;
+       core1_val++;
     }
+
+    debugstr("Core 1 done.");
+    debugcrlf();
+ 
+    while(1);
 }
 
 // TIMER FUNCTIONS
@@ -73,7 +86,12 @@ void handle_timer_1() {
     REGS_TIMER->control_status |= SYS_TIMER_IRQ_1;
 
     unsigned int progval = timer1_val / timer1_int;
-    if (progval <= 100) drawProgress(2, progval);
+    if (progval <= 100) {
+       drawProgress(2, progval);
+    } else {
+       debugstr("Timer 1 done.");
+       debugcrlf();
+    }
 }
 
 void handle_timer_3() {
