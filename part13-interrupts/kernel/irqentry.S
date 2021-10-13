@@ -22,10 +22,10 @@
 #define S_FRAME_SIZE			256
 
 .macro kernel_entry
-    sub sp, sp, #S_FRAME_SIZE
-    stp x0, x1, [sp, #16 * 0]
-    stp x2, x3, [sp, #16 * 1]
-    stp	x4, x5, [sp, #16 * 2]
+	sub 	sp, sp, #S_FRAME_SIZE
+	stp 	x0, x1, [sp, #16 * 0]
+	stp 	x2, x3, [sp, #16 * 1]
+	stp	x4, x5, [sp, #16 * 2]
 	stp	x6, x7, [sp, #16 * 3]
 	stp	x8, x9, [sp, #16 * 4]
 	stp	x10, x11, [sp, #16 * 5]
@@ -42,9 +42,9 @@
 .endm
 
 .macro kernel_exit
-    ldp x0, x1, [sp, #16 * 0]
-    ldp x2, x3, [sp, #16 * 1]
-    ldp	x4, x5, [sp, #16 * 2]
+	ldp	x0, x1, [sp, #16 * 0]
+	ldp	x2, x3, [sp, #16 * 1]
+	ldp	x4, x5, [sp, #16 * 2]
 	ldp	x6, x7, [sp, #16 * 3]
 	ldp	x8, x9, [sp, #16 * 4]
 	ldp	x10, x11, [sp, #16 * 5]
@@ -59,7 +59,7 @@
 	ldp	x28, x29, [sp, #16 * 14]
 	ldr	x30, [sp, #16 * 15] 
 	add	sp, sp, #S_FRAME_SIZE
-    eret
+	eret
 .endm
 
 .macro handle_invalid_entry type
@@ -67,12 +67,18 @@
 	mov	x0, #\type
 	mrs	x1, esr_el1
 	mrs	x2, elr_el1
+
+        // We could pass this to a function to print an error here
+        // e.g. bl show_invalid_entry_message
+        //
+        // For now we'll just hang
+
 	b	err_hang
 .endm
 
 .macro	ventry	label
 .align	7
-    b	\label
+	b	\label
 .endm
 
 //Exception vectors table
