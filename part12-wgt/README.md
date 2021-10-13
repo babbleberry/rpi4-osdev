@@ -26,7 +26,7 @@ So... to build the first WGT sample simply type `cp samples/wgt01.c .` from the 
 
 boot/boot.S changes
 -------------------
-We're still booting into a multicore environment (just in case we need it). There are a few significant changes to _boot/boot.S_ though. I will write more on these later, but (for now) they are:
+We're still booting into a multicore environment (just in case we need it). There are a few significant changes to _boot/boot.S_ though. They are:
 
  * Enable FPU (floating-point unit) access so we can do non-integer mathematics
  * Switch from EL3 (supervisor exception level) down to EL1 (kernel exception level), disabling the MMU all the same
@@ -45,6 +45,10 @@ at the top of each of _wgt/mouse.c_ and _lib/bt.c_. Without this `#define`, the 
 
 Work in progress!
 -----------------
-This part is still work in progress - and it's a lot of work - so keep watching this space!
+There's always more that can be done, but I do think this was a good exercise in exploring the joy of getting other people's code to run on your own OS! It's quite a thrill.
 
-_In the meantime, do have a go at building some of the samples (hint: wgt20 and wgt60 are fun!)..._
+_Do have a go at building some of the samples (hint: wgt20 and wgt60 are super fun!)..._
+
+I'm going to move on from here now so we can continue to make progress on the OS itself.
+
+[Go to part13-interrupts>](../part13-interrupts)
