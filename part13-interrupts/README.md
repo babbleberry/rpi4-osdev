@@ -148,3 +148,5 @@ We update the compare register so the next interrupt will be generated after the
 Then we update the screen to show our progress!
 
 _And... hey presto! You're handling two system timer interrupts like a pro!_
+
+![Timers firing on all cylinders on the Raspberry Pi 4](images/13-interrupts-running.jpg)
