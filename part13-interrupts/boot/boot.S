@@ -87,22 +87,22 @@ el1_entry:
 
 .ltorg
 
-.org 0x100
+.org 0x110
 .globl spin_cpu0
 spin_cpu0:
         .quad 0
 
-.org 0x108
+.org 0x118
 .globl spin_cpu1
 spin_cpu1:
         .quad 0
 
-.org 0x110
+.org 0x120
 .globl spin_cpu2
 spin_cpu2:
         .quad 0
 
-.org 0x118
+.org 0x128
 .globl spin_cpu3
 spin_cpu3:
         .quad 0
