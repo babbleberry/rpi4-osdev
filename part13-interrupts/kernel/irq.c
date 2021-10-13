@@ -1,11 +1,11 @@
 #include "kernel.h"
 
 void enable_interrupt_controller() {
-    REGS_IRQ->irq0_enable_0 = AUX_IRQ | SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3;
+    REGS_IRQ->irq0_enable_0 = SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3;
 }
 
 void disable_interrupt_controller() {
-    REGS_IRQ->irq0_enable_0 = AUX_IRQ;
+    REGS_IRQ->irq0_enable_0 = 0;
 }
 
 void handle_irq() {

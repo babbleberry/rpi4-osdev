@@ -26,7 +26,7 @@ Please note: I have also done some work to tidy up the _Makefile_ and respect th
 
 The new code
 ------------
-You'll recognise a lot of _kernel.c_ from _part10-multicore_, except instead of showing four cores at work and playing sound, we're now only using core 0 & 1 and, in addition, making use of two distinct timers to show four progress bars. So, the `main()` routine kicks off core 1, then the timers, and then finally core 0's workload.
+You'll recognise a lot of _kernel.c_ from _part10-multicore_, except instead of showing four cores at work and playing sound, we're now only using core 0 & 1 and, in addition, making use of two timer interrupts to show four progress bars. So, the `main()` routine kicks off core 1, sets up the timers, and then finally kicks off core 0's workload.
 
 The timers are set up using these calls:
 
@@ -43,7 +43,7 @@ In fact, interrupts are a more specific kind of _exception_ - something that, wh
 
 _irqentry.S_ sets up a list called `vectors` which contains individual _vector entries_. These vector entries are simply jump instructions to handler code.
 
-The CPU is told where the vector table is stored during the `irq_init_vectors()` call from `main()` in _kernel.c_. You'll find this code in _utils.S_:
+The CPU is told where this exception vector table is stored during the `irq_init_vectors()` call from `main()` in _kernel.c_. You'll find this code in _utils.S_:
 
 ```c
 irq_init_vectors:
@@ -69,7 +69,7 @@ handle_el1_irq:
 
 Put simply, `kernel_entry` saves the register state before the interrupt handler runs, and `kernel_exit` restores this register state before we return. As we're _interrupting_ normal program execution, we want to be sure that we put things back to how they were so that nothing unpredictable happens as our kernel code resumes.
 
-In the middle we simply call a function called `handle_irq()` which is written in the C language in _irq.c_. It's purpose is to look more closely at the interrupt request, figure out what device was responsible for generating an interrupt, and run the right sub-handler:
+In the middle we simply call a function called `handle_irq()` which is written in the C language in _irq.c_. Its purpose is to look more closely at the interrupt request, figure out what device was responsible for generating an interrupt, and run the right sub-handler:
 
 ```c
 void handle_irq() {
@@ -91,21 +91,21 @@ void handle_irq() {
 }
 ```
 
-As you can see, we're handling two different timer interrupts in this code. In fact, `handle_timer_1()` and `handler_timer_3()` are implemented in _kernel.c_ and serve to demonstrate that the timer has fired by incrementing a progress counter and updating a graphical representation of its value. Timer 3 is configured to progress at four times the speed of Timer 1.
+As you can see, we're handling two different timer interrupts in this code. In fact, `handle_timer_1()` and `handler_timer_3()` are implemented in _kernel.c_ and serve to demonstrate that the timer has fired by incrementing a progress counter and updating a graphical representation of its value. Timer 3 is configured to progress at 4 times the speed of Timer 1.
 
 The interrupt controller
 ------------------------
 The interrupt controller is the hardware responsible for telling the CPU about interrupts as they occur. We can use the interrupt controller to allow/block (or enable/disable) interrupts. We can also use it to figure out which device generated the interrupt, as we did in `handle_irq()`.
 
-In `enable_interrupt_controller()`, called from `main()` in _kernel.c_, we allow the Timer 1, Timer 3 and AUX interrupts through. Similarly, in `disable_interrupt_controller()` we block the Timer 1 and Timer 3 interrupts:
+In `enable_interrupt_controller()`, called from `main()` in _kernel.c_, we allow the Timer 1 and Timer 3 interrupts through and in `disable_interrupt_controller()` we block all interrupts:
 
 ```c
 void enable_interrupt_controller() {
-    REGS_IRQ->irq0_enable_0 = AUX_IRQ | SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3;
+    REGS_IRQ->irq0_enable_0 = SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3;
 }
 
 void disable_interrupt_controller() {
-    REGS_IRQ->irq0_enable_0 = AUX_IRQ;
+    REGS_IRQ->irq0_enable_0 = 0;
 }
 ```
 
@@ -129,7 +129,7 @@ irq_disable:
     ret
 ```
 
-As soon as `irq_enable()` called from `main()` in _kernel.c_, the timer handlers are run when the timer fires. Well, sort of...!
+As soon as `irq_enable()` is called from `main()` in _kernel.c_, the timer handlers are run when the timer fires. Well, sort of...!
 
 Initialising the timers
 -----------------------
@@ -139,6 +139,10 @@ So before we receive any timer interrupts, we must also set the right compare re
 
 Handling the timer interrupts
 -----------------------------
-This is the simplest bit. We update the compare register so the next interrupt will be generated after the same interval again. Importantly we then acknowledge the interrupt by setting the right bit of the Control Status register. Then we update the screen!
+This is the simplest bit.
 
-And... hey presto...
+We update the compare register so the next interrupt will be generated after the same interval again. Importantly we then acknowledge the interrupt by setting the right bit of the Control Status register.
+
+Then we update the screen to show our progress!
+
+_And... hey presto! You're handling two system timer interrupts like a pro!_
