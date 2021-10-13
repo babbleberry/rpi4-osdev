@@ -39,7 +39,7 @@ timer_init();
 
 Initialising the exception vector table
 ---------------------------------------
-In fact, interrupts are a more specific kind of _exception_ - something that, when "raised", needs the immediate attention of the processor. A perfect example of when an exception might occur is when bad code tries to do soemthing "impossible" e.g. divide by zero. The CPU needs to know how to respond when/if this happens i.e. an address of some code to run which handles this exception e.g. by printing an error to the screen. These addresses are stored in an _exception vector table_.
+In fact, interrupts are a more specific kind of _exception_ - something that, when "raised", needs the immediate attention of the processor. A perfect example of when an exception might occur is when bad code tries to do something "impossible" e.g. divide by zero. The CPU needs to know how to respond when/if this happens i.e. jump to an address of some code to run which handles this exception gracefully e.g. by printing an error to the screen. These addresses are stored in an _exception vector table_.
 
 _irqentry.S_ sets up a list called `vectors` which contains individual _vector entries_. These vector entries are simply jump instructions to handler code.
 
@@ -56,7 +56,7 @@ It simply sets the Vector Base Address Register to the address of the `vectors` 
 
 Interrupt handling
 ------------------
-The only vector entry we really care about for the purposes of this tutorial is `handle_el1_irq`. This is a generic handler for any interrupt request (IRQ) that comes in at EL1 (kernel execution level), and please do note that we're only allowed one of these.
+The only vector entry we really care about for the purposes of this tutorial is `handle_el1_irq`. This is a generic handler for any interrupt request (IRQ) that comes in at EL1 (kernel execution level).
 
 If you do want a deeper understanding, I highly recommend reading s-matyukevich's work [here](https://github.com/s-matyukevich/raspberry-pi-os/blob/master/docs/lesson03/rpi-os.md).
 
@@ -95,7 +95,7 @@ As you can see, we're handling two different timer interrupts in this code. In f
 
 The interrupt controller
 ------------------------
-The interrupt controller is the hardware responsible for telling the CPU about interrupts as they occur. We can use the interrupt controller to allow/block (or enable/disable) interrupts. We can also use it to figure out which device generated the interrupt, as we did in `handle_irq()`.
+The interrupt controller is the hardware responsible for telling the CPU about interrupts as they occur. We can use the interrupt controller to act as a gatekeeper and allow/block (or enable/disable) interrupts. We can also use it to figure out which device generated the interrupt, as we did in `handle_irq()`.
 
 In `enable_interrupt_controller()`, called from `main()` in _kernel.c_, we allow the Timer 1 and Timer 3 interrupts through and in `disable_interrupt_controller()` we block all interrupts:
 
@@ -113,7 +113,7 @@ Masking/unmasking interrupts
 ----------------------------
 To begin receiving interrupts, we need to take one more step: unmasking all types of interrupts.
 
-Masking is a technique used by the CPU to stop a particular piece of code from being stopped in its tracks by an interrupt. It's used to protect important code that *must* complete. Imagine what would happen if our `kernel_entry` code (that saves register state) was interrupted halfway through! In this case, the register state would be overwritten and lost. This is why the CPU automatically masks all interrupts when an exception handler is executed.
+Masking is a technique used by the CPU to prevent a particular piece of code from being stopped in its tracks by an interrupt. It's used to protect important code that *must* complete. Imagine what would happen if our `kernel_entry` code (that saves register state) was interrupted halfway through! In this case, the register state would be overwritten and lost. This is why the CPU automatically masks all interrupts when an exception handler is executed.
 
 The `irq_enable` and `irq_disable` functions in _utils.S_ are responsible for masking and unmasking interrupts:
 
@@ -129,10 +129,12 @@ irq_disable:
     ret
 ```
 
-As soon as `irq_enable()` is called from `main()` in _kernel.c_, the timer handlers are run when the timer fires. Well, sort of...!
+As soon as `irq_enable()` is called from `main()` in _kernel.c_, the timer handler is run when the timer interrupt fires. Well, sort of...!
 
-Initialising the timers
------------------------
+Initialising the system timer
+-----------------------------
+We still need to initialise the timer.
+
 The RPi4's system timer couldn't be simpler. It has a counter which increases by 1 with each clock tick. It then has 4 interrupt lines (0 & 2 reserved for the GPU, 1 & 3 used by us in this tutorial!) with 4 corresponding compare registers. When the value of the counter becomes equal to a value in one of the compare registers, the corresponding interrupt is fired.
 
 So before we receive any timer interrupts, we must also set the right compare registers to have a non-zero value. The `timer_init()` function (called from `main()` in _kernel.c_) gets the current timer value, adds the timer interval and sets the compare register to that total, so when the right number of clock ticks pass, the interrupt fires. It does this for both Timer 1 and Timer 3, setting Timer 3 to run 4 times as fast.
