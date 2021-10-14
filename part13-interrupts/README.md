@@ -91,7 +91,7 @@ void handle_irq() {
 }
 ```
 
-As you can see, we're handling two different timer interrupts in this code. In fact, `handle_timer_1()` and `handler_timer_3()` are implemented in _kernel.c_ and serve to demonstrate that the timer has fired by incrementing a progress counter and updating a graphical representation of its value. Timer 3 is configured to progress at 4 times the speed of Timer 1.
+As you can see, we're handling two different timer interrupts in this code. In fact, `handle_timer_1()` and `handle_timer_3()` are implemented in _kernel.c_ and serve to demonstrate that the timer has fired by incrementing a progress counter and updating a graphical representation of its value. Timer 3 is configured to progress at 4 times the speed of Timer 1.
 
 The interrupt controller
 ------------------------
