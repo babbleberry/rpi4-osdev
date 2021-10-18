@@ -1,4 +1,5 @@
 #include "../include/io.h"
+#include "../include/fb.h"
 
 // SPI
 
@@ -83,6 +84,7 @@ void spi_send_recv(unsigned char *sbuffer, unsigned char *rbuffer, unsigned int 
     while(!(REGS_SPI0->cs & CS_DONE)) {
         while(REGS_SPI0->cs & CS_RXD) {
             unsigned int r = REGS_SPI0->fifo;
+	    debughex(r);
         }
     }
 

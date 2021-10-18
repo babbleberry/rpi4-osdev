@@ -811,6 +811,6 @@ void ENC_GetPkcnt(ENC_HandleTypeDef *handle);
  *
  ****************************************************************************/
 
-__inline void up_udelay(uint32_t us);
+//__inline void up_udelay(uint32_t us);
 
 #endif /* ENC28J60_H_INCLUDED */

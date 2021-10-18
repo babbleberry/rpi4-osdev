@@ -191,7 +191,7 @@ static void calibrate(void)
  * Software delay in µs
  *  us: the number of µs to wait
  **/
-__inline void up_udelay(uint32_t us)
+static __inline void up_udelay(uint32_t us)
 {
     volatile uint32_t i;
 
