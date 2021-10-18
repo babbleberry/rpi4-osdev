@@ -158,7 +158,7 @@ void init_network(void)
     if (!ENC_Start(&handle)) {
        debugstr("Could not initialise network card.");
     } else {
-       debugstr("Network successfully card initialised.");
+       debugstr("Network card successfully initialised.");
     }
     debugcrlf();
 }
