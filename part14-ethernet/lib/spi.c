@@ -52,7 +52,7 @@ void spi_chip_select(unsigned char chip_select) {
     REGS_SPI0->cs = (REGS_SPI0->cs & ~CS_CS) | (chip_select << CS_CS__SHIFT);
 }
 
-void spi_send_recv(unsigned char *sbuffer, unsigned char *rbuffer, unsigned int size) {
+unsigned int spi_send_recv(unsigned char *sbuffer, unsigned char *rbuffer, unsigned int size) {
     REGS_SPI0->data_length = size;
     REGS_SPI0->cs = REGS_SPI0->cs | CS_CLEAR_RX | CS_CLEAR_TX | CS_TA;
     
@@ -89,6 +89,7 @@ void spi_send_recv(unsigned char *sbuffer, unsigned char *rbuffer, unsigned int 
     }
 
     REGS_SPI0->cs = (REGS_SPI0->cs & ~CS_TA);
+    return read_count;
 }
 
 void spi_send(unsigned char *data, unsigned int size) {

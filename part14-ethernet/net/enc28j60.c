@@ -993,7 +993,7 @@ void ENC_WriteBuffer(void *buffer, uint16_t buflen)
 }
 
 /****************************************************************************
- * Function: enc_rdbuffer
+ * Function: ENC_ReadBuffer
  *
  * Description:
  *   Read a buffer of data.
@@ -1003,15 +1003,17 @@ void ENC_WriteBuffer(void *buffer, uint16_t buflen)
  *   buflen  - The number of bytes to read
  *
  * Returned Value:
- *   None
+ *   read_count - Number of bytes received
  *
  * Assumptions:
  *   Read pointer is set to the correct address
  *
  ****************************************************************************/
 
-static void enc_rdbuffer(void *buffer, int16_t buflen)
+uint8_t ENC_ReadBuffer(void *buffer, uint16_t buflen)
 {
+  uint8_t read_count = 0;
+
   /* Select ENC28J60 chip */
 
   ENC_SPI_Select(true);
@@ -1022,9 +1024,11 @@ static void enc_rdbuffer(void *buffer, int16_t buflen)
 
   /* Then read the buffer data */
 
-  ENC_SPI_SendBuf(NULL, buffer, buflen);
+  read_count = ENC_SPI_SendBuf(NULL, buffer, buflen);
 
   /* De-select ENC28J60 chip: done in ENC_SPI_SendBuf callback */
+
+  return read_count;
 }
 
 /****************************************************************************
@@ -1187,7 +1191,7 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
                 enc_wrbreg(handle, ENC_ERDPTL, addtTsv4 & 0xff);
                 enc_wrbreg(handle, ENC_ERDPTH, addtTsv4 >> 8);
 
-                enc_rdbuffer(&tsv4, 1);
+                ENC_ReadBuffer(&tsv4, 1);
                 regval = enc_rdgreg(ENC_EIR);
                 if (!(regval & EIR_TXERIF) || !(tsv4 & TSV_LATECOL)) {
                     break;
@@ -1242,7 +1246,7 @@ bool ENC_GetReceivedFrame(ENC_HandleTypeDef *handle)
     * and wrap to the beginning of the read buffer as necessary)
     */
 
-    enc_rdbuffer(rsv, 6);
+    ENC_ReadBuffer(rsv, 6);
 
     /* Decode the new next packet pointer, and the RSV.  The
     * RSV is encoded as:
@@ -1281,7 +1285,7 @@ bool ENC_GetReceivedFrame(ENC_HandleTypeDef *handle)
             * end_rdbuffer (above).
             */
 
-            enc_rdbuffer(handle->RxFrameInfos.buffer, handle->RxFrameInfos.length);
+            ENC_ReadBuffer(handle->RxFrameInfos.buffer, handle->RxFrameInfos.length);
 
         }
     }

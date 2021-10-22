@@ -67,11 +67,7 @@
 	mov	x0, #\type
 	mrs	x1, esr_el1
 	mrs	x2, elr_el1
-
-        // We could pass this to a function to print an error here
-        // e.g. bl show_invalid_entry_message
-        //
-        // For now we'll just hang
+        bl      show_invalid_entry_message
 
 	b	err_hang
 .endm

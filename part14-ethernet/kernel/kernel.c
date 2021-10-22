@@ -8,10 +8,10 @@
 void initProgress(void)
 {
     drawRect(0, 0, 301, 50, 0x0f, 0);
-    drawString(309, 21, "Core 0", 0x0f, 1);
+    drawString(309, 21, "Core 1", 0x0f, 1);
 
     drawRect(0, 60, 301, 110, 0x0f, 0);
-    drawString(309, 81, "Core 1", 0x0f, 1);
+    drawString(309, 81, "Core 2", 0x0f, 1);
 
     drawRect(0, 120, 301, 170, 0x0f, 0);
     drawString(309, 141, "Timer 1", 0x0f, 1);
@@ -28,21 +28,24 @@ void drawProgress(unsigned int core, unsigned int val) {
     if (val > 0) drawRect(1, (60 * core) + 1, (val * 3), (60 * core) + 49, col, 1);
 }
 
-void core0_main(void)
-{
-    unsigned int core0_val = 0;
+unsigned int c2_done = 0;
 
-    while (core0_val <= 100) {
+void core2_main(void)
+{
+    unsigned int core2_val = 0;
+
+    clear_core2();                // Only run once
+
+    while (core2_val <= 100) {
        wait_msec(0x100000);
-       drawProgress(0, core0_val);
-       core0_val++;
+       drawProgress(1, core2_val);
+       core2_val++;
     }
 
-    debugstr("Core 0 done.");
+    debugstr("Core 2 done.");
     debugcrlf();
 
-    irq_disable();
-    disable_interrupt_controller();
+    c2_done = 1;
 
     while(1);
 }
@@ -55,7 +58,7 @@ void core1_main(void)
 
     while (core1_val <= 100) {
        wait_msec(0x3FFFF);
-       drawProgress(1, core1_val);
+       drawProgress(0, core1_val);
        core1_val++;
     }
 
@@ -132,37 +135,6 @@ unsigned int HAL_GetTick(void) {
     return timer_get_ticks();
 }
 
-void init_network(void)
-{
-    ENC_HandleTypeDef handle;
-
-    unsigned char macaddr[6];
-    macaddr[0] = 0xc0;
-    macaddr[1] = 0xff;
-    macaddr[2] = 0xee;
-    macaddr[3] = 0xc0;
-    macaddr[4] = 0xff;
-    macaddr[5] = 0xee;
-
-    debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
-    debugcrlf();
-
-    handle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
-    handle.Init.MACAddr = macaddr;
-    handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
-    handle.Init.InterruptEnableBits = 0;
-
-    debugstr("Starting network up.");
-    debugcrlf();
-
-    if (!ENC_Start(&handle)) {
-       debugstr("Could not initialise network card.");
-    } else {
-       debugstr("Network card successfully initialised.");
-    }
-    debugcrlf();
-}
-
 void main(void)
 {
     fb_init();
@@ -172,20 +144,35 @@ void main(void)
 
     initProgress();
 
+    // Kick it off on core 1&2
+
+    start_core1(core1_main);
+    start_core2(core2_main);
+
     // Kick off the timers
 
     irq_init_vectors();
     enable_interrupt_controller();
     irq_enable();
     timer_init();
+
+    // Test the network card
+
     spi_init();
     init_network();
+    arp_test();
 
-    // Kick it off on core 1
+    // The work is done - wait for timers to get done
 
-    start_core1(core1_main);
+    debugstr("Core 0 done.");
+    debugcrlf();
 
-    // Loop endlessly
+    while (!c2_done);
 
-    core0_main();
+    // Disable IRQs and loop endlessly
+
+    irq_disable();
+    disable_interrupt_controller();
+
+    while(1);
 }

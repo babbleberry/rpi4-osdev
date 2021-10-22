@@ -1,7 +1,7 @@
 CFILES = $(wildcard *.c lib/*.c kernel/*.c net/*.c)
 SFILES = $(wildcard boot/*.S lib/*.S kernel/*.S)
 OFILES = $(CFILES:.c=.o) $(SFILES:.S=.o)
-GCCFLAGS = -Wall -O2 -ffreestanding -nostdlib -nostartfiles
+GCCFLAGS = -Wall -O0 -ffreestanding -nostdlib -nostartfiles
 GCCPATH = ../../gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin
 
 all: clean kernel8.img

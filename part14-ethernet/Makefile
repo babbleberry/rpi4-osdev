@@ -2,7 +2,7 @@ CFILES = $(wildcard *.c lib/*.c kernel/*.c net/*.c)
 SFILES = $(wildcard boot/*.S lib/*.S kernel/*.S)
 OFILES = $(CFILES:.c=.o) $(SFILES:.S=.o)
 LLVMPATH = /opt/homebrew/opt/llvm/bin
-CLANGFLAGS = -Wall -O2 -ffreestanding -nostdlib -mcpu=cortex-a72+nosimd
+CLANGFLAGS = -Wall -O0 -ffreestanding -nostdlib -mcpu=cortex-a72+nosimd
 
 all: clean kernel8.img
 
