@@ -7,7 +7,7 @@ void vga256(void)
 
     mbox[2] = MBOX_TAG_SETPHYWH; // Tag identifier
     mbox[3] = 8; // Value size in bytes
-    mbox[4] = 8; // Value size in bytes (again!)
+    mbox[4] = 0;
     mbox[5] = 1920; // Value(width)
     mbox[6] = 1080; // Value(height)
 

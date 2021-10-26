@@ -8,10 +8,10 @@
 void initProgress(void)
 {
     drawRect(0, 0, 301, 50, 0x0f, 0);
-    drawString(309, 21, "Core 1", 0x0f, 1);
+    drawString(309, 21, "Core 0", 0x0f, 1);
 
     drawRect(0, 60, 301, 110, 0x0f, 0);
-    drawString(309, 81, "Core 2", 0x0f, 1);
+    drawString(309, 81, "Core 1", 0x0f, 1);
 
     drawRect(0, 120, 301, 170, 0x0f, 0);
     drawString(309, 141, "Timer 1", 0x0f, 1);
@@ -28,26 +28,30 @@ void drawProgress(unsigned int core, unsigned int val) {
     if (val > 0) drawRect(1, (60 * core) + 1, (val * 3), (60 * core) + 49, col, 1);
 }
 
-unsigned int c2_done = 0;
+void core3_main(void) {
+    clear_core3();                // Only run once
 
-void core2_main(void)
-{
-    unsigned int core2_val = 0;
+    // Test the network card
 
-    clear_core2();                // Only run once
-
-    while (core2_val <= 100) {
-       wait_msec(0x100000);
-       drawProgress(1, core2_val);
-       core2_val++;
-    }
-
-    debugstr("Core 2 done.");
-    debugcrlf();
-
-    c2_done = 1;
+    spi_init();
+    init_network();
+    arp_test();
 
     while(1);
+}
+
+void core0_main(void)
+{
+    unsigned int core0_val = 0;
+
+    while (core0_val <= 100) {
+       wait_msec(0x100000);
+       drawProgress(0, core0_val);
+       core0_val++;
+    }
+
+    debugstr("Core 0 done.");
+    debugcrlf();
 }
 
 void core1_main(void)
@@ -58,7 +62,7 @@ void core1_main(void)
 
     while (core1_val <= 100) {
        wait_msec(0x3FFFF);
-       drawProgress(0, core1_val);
+       drawProgress(1, core1_val);
        core1_val++;
     }
 
@@ -144,10 +148,9 @@ void main(void)
 
     initProgress();
 
-    // Kick it off on core 1&2
+    // Kick it off on core 1
 
     start_core1(core1_main);
-    start_core2(core2_main);
 
     // Kick off the timers
 
@@ -156,18 +159,13 @@ void main(void)
     irq_enable();
     timer_init();
 
-    // Test the network card
+    // Kick it off on core 3
 
-    spi_init();
-    init_network();
-    arp_test();
+    start_core3(core3_main);
 
-    // The work is done - wait for timers to get done
+    // Kick it off on core 0
 
-    debugstr("Core 0 done.");
-    debugcrlf();
-
-    while (!c2_done);
+    core0_main();
 
     // Disable IRQs and loop endlessly
 

@@ -376,8 +376,7 @@ void enc_reset(ENC_HandleTypeDef *handle) {
    */
 
   handle->bank = 0; /* Initialize the trace on the current selected bank */
-  //up_mdelay(2);
-  HAL_Delay(2); /* >1000 µs, conforms to errata #2 */
+  up_udelay(2); /* >1000 µs, conforms to errata #2 */
 }
 
 /****************************************************************************
@@ -797,7 +796,7 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     enc_wrbreg(handle, ENC_ERXFCON, ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_BCEN);
 
 	do {
-		HAL_Delay(10); /* Wait for 10 ms to let the clock be ready */
+		up_udelay(10); /* Wait for 10 ms to let the clock be ready */
 		regval = enc_rdbreg(handle, ENC_ESTAT);
 	} while ((regval & ESTAT_CLKRDY) == 0);
 
@@ -993,7 +992,7 @@ void ENC_WriteBuffer(void *buffer, uint16_t buflen)
 }
 
 /****************************************************************************
- * Function: ENC_ReadBuffer
+ * Function: enc_rdbuffer
  *
  * Description:
  *   Read a buffer of data.
@@ -1010,10 +1009,8 @@ void ENC_WriteBuffer(void *buffer, uint16_t buflen)
  *
  ****************************************************************************/
 
-uint8_t ENC_ReadBuffer(void *buffer, uint16_t buflen)
+static void enc_rdbuffer(void *buffer, uint16_t buflen)
 {
-  uint8_t read_count = 0;
-
   /* Select ENC28J60 chip */
 
   ENC_SPI_Select(true);
@@ -1024,11 +1021,9 @@ uint8_t ENC_ReadBuffer(void *buffer, uint16_t buflen)
 
   /* Then read the buffer data */
 
-  read_count = ENC_SPI_SendBuf(NULL, buffer, buflen);
+  ENC_SPI_SendBuf(NULL, buffer, buflen);
 
   /* De-select ENC28J60 chip: done in ENC_SPI_SendBuf callback */
-
-  return read_count;
 }
 
 /****************************************************************************
@@ -1153,6 +1148,8 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
     PT_BEGIN(pt);
 
     if (handle->transmitLength != 0) {
+        debugstr("We're actually sending"); debugcrlf();
+
         /* A frame is ready for transmission */
         /* Set TXRTS to send the packet in the transmit buffer */
 
@@ -1191,7 +1188,7 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
                 enc_wrbreg(handle, ENC_ERDPTL, addtTsv4 & 0xff);
                 enc_wrbreg(handle, ENC_ERDPTH, addtTsv4 >> 8);
 
-                ENC_ReadBuffer(&tsv4, 1);
+                enc_rdbuffer(&tsv4, 1);
                 regval = enc_rdgreg(ENC_EIR);
                 if (!(regval & EIR_TXERIF) || !(tsv4 & TSV_LATECOL)) {
                     break;
@@ -1201,7 +1198,10 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
         } while (handle->retries > 0);
         /* Transmission finished (but can be unsuccessful) */
         handle->transmitLength = 0;
+    } else {
+        debugstr("Nothing to send"); debugcrlf();
     }
+    debugstr("We're done sending"); debugcrlf();
     PT_END(pt);
 }
 
@@ -1246,7 +1246,7 @@ bool ENC_GetReceivedFrame(ENC_HandleTypeDef *handle)
     * and wrap to the beginning of the read buffer as necessary)
     */
 
-    ENC_ReadBuffer(rsv, 6);
+    enc_rdbuffer(rsv, 6);
 
     /* Decode the new next packet pointer, and the RSV.  The
     * RSV is encoded as:
@@ -1285,7 +1285,7 @@ bool ENC_GetReceivedFrame(ENC_HandleTypeDef *handle)
             * end_rdbuffer (above).
             */
 
-            ENC_ReadBuffer(handle->RxFrameInfos.buffer, handle->RxFrameInfos.length);
+            enc_rdbuffer(handle->RxFrameInfos.buffer, handle->RxFrameInfos.length);
 
         }
     }

@@ -686,7 +686,6 @@ int8_t ENC_RestoreTXBuffer(ENC_HandleTypeDef *handle, uint16_t len);
  ****************************************************************************/
 
 void ENC_WriteBuffer(void *buffer, uint16_t buflen);
-uint8_t ENC_ReadBuffer(void *buffer, uint16_t buflen);
 
 /****************************************************************************
  * Function: ENC_Transmit

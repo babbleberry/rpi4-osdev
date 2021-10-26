@@ -1,6 +1,8 @@
 #include "../net/enc28j60.h"
 #include "../include/fb.h"
 
+ENC_HandleTypeDef handle;
+
 // Structure for Ethernet header
 
 typedef struct {
@@ -11,8 +13,8 @@ typedef struct {
 
 // Ethernet packet types
 
-#define ARPPACKET 0x0806
-#define IPPACKET  0x0800
+#define ARPPACKET 0x0608
+#define IPPACKET  0x0008
 
 // Structure for an ARP Packet
 
@@ -31,12 +33,12 @@ typedef struct {
 
 // ARP OpCodes
 
-#define ARPREPLY   0x0002
-#define ARPREQUEST 0x0001
+#define ARPREPLY   0x0200
+#define ARPREQUEST 0x0100
 
 // ARP hardware types
 
-#define ETHERNET 0x0001
+#define ETHERNET   0x0100
 
 // MAC address to be assigned to the ENC28J60
 
@@ -135,59 +137,66 @@ void SendArpPacket(uint8_t *targetIP, uint8_t *deviceMAC)
    }
 
    // Send the packet
-   ENC_WriteBuffer((unsigned char*)&arpPacket, sizeof(ARP));
+
+   if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
+      debugstr("Sending ARP request... ");
+      debugcrlf();
+      
+      ENC_WriteBuffer((unsigned char *)&arpPacket, sizeof(ARP));
+      handle.transmitLength = sizeof(ARP);
+      ENC_Transmit(&handle);
+   }
 }
 
 void arp_test(void)
 {
-   unsigned int tries = 0;
-   ARP checkPacket;
-
-   debugstr("Sending ARP request... ");
+   ARP *checkPacket;
 
    SendArpPacket(routerIP, myMAC);
-
-   debugstr("done.");
-   debugcrlf();
 
    debugstr("Waiting for ARP response... ");
    debugcrlf();
 
-   while (tries < 1000) {
-      if (ENC_ReadBuffer((unsigned char *)&checkPacket, sizeof(ARP)) == 0) {
+   while (1) {
+      if (!ENC_GetReceivedFrame(&handle)) {
          continue;
       }
-      if (!memcmp(checkPacket.senderIP, routerIP, 4)) {
-         // Success! We have found our router's MAC address
 
-         memcpy(routerMAC, checkPacket.senderMAC, 6);
-         debugstr("Router MAC is ");
-         debughex(routerMAC[0]);
-         debughex(routerMAC[1]);
-         debughex(routerMAC[2]);
-         debughex(routerMAC[3]);
-         debughex(routerMAC[4]);
-         debughex(routerMAC[5]);
-         debugcrlf();
+      uint16_t len    = handle.RxFrameInfos.length;
+      uint8_t *buffer = (uint8_t *)handle.RxFrameInfos.buffer;
+      checkPacket     = (ARP *)buffer;
+
+      if (len > 0) {
+         if (!memcmp(checkPacket->senderIP, routerIP, 4)) {
+            // Success! We have found our router's MAC address
+
+            memcpy(routerMAC, checkPacket->senderMAC, 6);
+            debugstr("Router MAC is ");
+            debughex(routerMAC[0]);
+            debughex(routerMAC[1]);
+            debughex(routerMAC[2]);
+            debughex(routerMAC[3]);
+            debughex(routerMAC[4]);
+            debughex(routerMAC[5]);
+            debugcrlf();
+
+            break;
+         }
       }
-      tries++;
    }
-
-   debugstr("Timed out.");
-   debugcrlf();
 }
 
 void init_network(void)
 {
-   ENC_HandleTypeDef handle;
-
-   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
-   debugcrlf();
-
    handle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
    handle.Init.MACAddr = myMAC;
    handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
    handle.Init.InterruptEnableBits = 0;
+
+   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
+   debugcrlf();
+
+   ENC_SetMacAddr(&handle);
 
    debugstr("Starting network up.");
    debugcrlf();
