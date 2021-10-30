@@ -139,11 +139,12 @@ void SendArpPacket(uint8_t *targetIP, uint8_t *deviceMAC)
    // Send the packet
 
    if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
-      debugstr("Sending ARP request... ");
+      debugstr("Sending ARP request.");
       debugcrlf();
       
       ENC_WriteBuffer((unsigned char *)&arpPacket, sizeof(ARP));
       handle.transmitLength = sizeof(ARP);
+
       ENC_Transmit(&handle);
    }
 }
@@ -154,33 +155,32 @@ void arp_test(void)
 
    SendArpPacket(routerIP, myMAC);
 
-   debugstr("Waiting for ARP response... ");
+   debugstr("Waiting for ARP response.");
    debugcrlf();
 
    while (1) {
-      while (!(handle.interruptFlags & EIR_PKTIF)) ENC_IRQHandler(&handle);
+      while (!ENC_GetReceivedFrame(&handle));
   
-      debugstr("Got one... ");
-      ENC_GetReceivedFrame(&handle);
-
-      //uint16_t len    = handle.RxFrameInfos.length;
+      uint16_t len    = handle.RxFrameInfos.length;
       uint8_t *buffer = (uint8_t *)handle.RxFrameInfos.buffer;
       checkPacket     = (ARP *)buffer;
 
-      if (!memcmp(checkPacket->senderIP, routerIP, 4)) {
-         // Success! We have found our router's MAC address
+      if (len > 0) {
+         if (!memcmp(checkPacket->senderIP, routerIP, 4)) {
+            // Success! We have found our router's MAC address
 
-         memcpy(routerMAC, checkPacket->senderMAC, 6);
-         debugstr("Router MAC is ");
-         debughex(routerMAC[0]);
-         debughex(routerMAC[1]);
-         debughex(routerMAC[2]);
-         debughex(routerMAC[3]);
-         debughex(routerMAC[4]);
-         debughex(routerMAC[5]);
-         debugcrlf();
+            memcpy(routerMAC, checkPacket->senderMAC, 6);
+            debugstr("Router MAC is ");
+            debughex(routerMAC[0]);
+            debughex(routerMAC[1]);
+            debughex(routerMAC[2]);
+            debughex(routerMAC[3]);
+            debughex(routerMAC[4]);
+            debughex(routerMAC[5]);
+            debugcrlf();
 
-         break;
+            break;
+         }
       }
    }
 }
@@ -197,15 +197,20 @@ void init_network(void)
    if (!ENC_Start(&handle)) {
       debugstr("Could not initialise network card.");
    } else {
+      debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
+      debugcrlf();
+
+      ENC_SetMacAddr(&handle);
+
       debugstr("Network card successfully initialised.");
    }
    debugcrlf();
 
-   debugstr("Waiting for ifup.");
-   debugcrlf();
+   debugstr("Waiting for ifup... ");
    while (!(handle.LinkStatus & PHSTAT2_LSTAT)) ENC_IRQHandler(&handle);
-
-   debugstr("Link status: ");
-   debughex(((handle.LinkStatus & PHSTAT2_LSTAT) != 0));
+   debugstr("done.");
    debugcrlf();
+
+   // Re-enable global interrupts
+   ENC_EnableInterrupts(EIE_INTIE);
 }

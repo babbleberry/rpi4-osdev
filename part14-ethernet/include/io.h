@@ -13,5 +13,7 @@ void mmio_write(long reg, unsigned int val);
 unsigned int mmio_read(long reg);
 void gpio_useAsAlt0(unsigned int pin_number);
 void gpio_useAsAlt3(unsigned int pin_number);
+void gpio_setPinOutputBool(unsigned int pin_number, unsigned int onOrOff);
+void gpio_initOutputPinWithPullNone(unsigned int pin_number);
 void uart_hex(unsigned int d);
 void uart_byte(unsigned char b);

@@ -41,18 +41,15 @@ struct Spi0Regs {
 #define CS_CS__SHIFT	0
 
 void spi_init() {
-    gpio_useAsAlt0(7);  //CS1
-    gpio_useAsAlt0(8);  //CS0
-    gpio_useAsAlt0(9);  //MISO 
-    gpio_useAsAlt0(10); //MOSI
-    gpio_useAsAlt0(11); //SCLK
-
-    REGS_SPI0->cs =  0x30;
-    REGS_SPI0->clock = 0x28; // 500Mhz / 40 = 12.5Mhz for ENC SPI
+    gpio_useAsAlt0(7);                  //CS1
+    gpio_initOutputPinWithPullNone(8);  //CS0
+    gpio_useAsAlt0(9);                  //MISO 
+    gpio_useAsAlt0(10);                 //MOSI
+    gpio_useAsAlt0(11);                 //SCLK
 }
 
 void spi_chip_select(unsigned char chip_select) {
-    REGS_SPI0->cs = (REGS_SPI0->cs & ~CS_CS) | (chip_select << CS_CS__SHIFT);
+    gpio_setPinOutputBool(8, chip_select);
 }
 
 void spi_send_recv(unsigned char *sbuffer, unsigned char *rbuffer, unsigned int size) {

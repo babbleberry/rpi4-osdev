@@ -750,18 +750,10 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
      * via SPI.
      */
 
-    regval = enc_rdphy(handle, ENC_PHID1);
-    debugstr("PHID1: ");
-    debughex(regval);
-    debugcrlf();
-
     regval = enc_rdbreg(handle, ENC_EREVID);
     if (regval == 0x00 || regval == 0xff) {
       return false;
     }
-    debugstr("Board revision: ");
-    debughex(regval);
-    debugcrlf();
  
     /* Initialize ECON2: Enable address auto increment.
      */
@@ -847,10 +839,6 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     enc_wrbreg(handle, ENC_MAMXFLL, (CONFIG_NET_ETH_MTU+18) & 0xff);
     enc_wrbreg(handle, ENC_MAMXFLH, (CONFIG_NET_ETH_MTU+18) >> 8);
 
-    /* Set the Mac Address */
-
-    ENC_SetMacAddr(handle);
-
   /* Configure LEDs (No, just use the defaults for now) */
   /* enc_wrphy(priv, ENC_PHLCON, ??); */
 
@@ -931,8 +919,6 @@ void ENC_SetMacAddr(ENC_HandleTypeDef *handle)
   enc_wrbreg(handle, ENC_MAADR4, handle->Init.MACAddr[3]);
   enc_wrbreg(handle, ENC_MAADR5, handle->Init.MACAddr[4]);
   enc_wrbreg(handle, ENC_MAADR6, handle->Init.MACAddr[5]);
-
-  enc_wrbreg(handle, ENC_ECOCON, 0x2 & 0x7); // 12.5Mhz
 }
 
 
@@ -1199,6 +1185,7 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
                 enc_wrbreg(handle, ENC_ERDPTH, addtTsv4 >> 8);
 
                 enc_rdbuffer(&tsv4, 1);
+
                 regval = enc_rdgreg(ENC_EIR);
                 if (!(regval & EIR_TXERIF) || !(tsv4 & TSV_LATECOL)) {
                     break;
