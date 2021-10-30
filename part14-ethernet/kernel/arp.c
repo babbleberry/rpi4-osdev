@@ -188,10 +188,14 @@ void arp_test(void)
 
 void init_network(void)
 {
-   handle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
+   handle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
    handle.Init.MACAddr = myMAC;
    handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
-   handle.Init.InterruptEnableBits = 0;
+   handle.Init.InterruptEnableBits = EIE_LINKIE;
+
+   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
+   debugcrlf();
+   ENC_SetMacAddr(&handle);
 
    debugstr("Starting network up.");
    debugcrlf();
@@ -202,7 +206,11 @@ void init_network(void)
    }
    debugcrlf();
 
-   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
+   debugstr("Waiting for ifup.");
    debugcrlf();
-   ENC_SetMacAddr(&handle);
+   while (!(handle.LinkStatus & PHSTAT2_LSTAT)) ENC_IRQHandler(&handle);
+
+   debugstr("Link status: ");
+   debughex(((handle.LinkStatus & PHSTAT2_LSTAT) != 0));
+   debugcrlf();
 }

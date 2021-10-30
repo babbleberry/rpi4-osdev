@@ -885,16 +885,6 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     /* Enable the receiver */
     enc_bfsgreg(ENC_ECON1, ECON1_RXEN);
 
-    regval = enc_rdphy(handle, ENC_PHSTAT1) & PHSTAT1_LLSTAT;
-    debugstr("Link status 1: ");
-    debughex(regval);
-    debugcrlf();
-
-    regval = enc_rdphy(handle, ENC_PHSTAT2) & PHSTAT2_LSTAT;
-    debugstr("Link status 2: ");
-    debughex(regval);
-    debugcrlf();
-
     return true;
 }
 
