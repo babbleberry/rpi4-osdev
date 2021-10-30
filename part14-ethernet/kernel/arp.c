@@ -193,18 +193,16 @@ void init_network(void)
    handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
    handle.Init.InterruptEnableBits = 0;
 
-   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
-   debugcrlf();
-
-   ENC_SetMacAddr(&handle);
-
    debugstr("Starting network up.");
    debugcrlf();
-
    if (!ENC_Start(&handle)) {
       debugstr("Could not initialise network card.");
    } else {
       debugstr("Network card successfully initialised.");
    }
    debugcrlf();
+
+   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
+   debugcrlf();
+   ENC_SetMacAddr(&handle);
 }

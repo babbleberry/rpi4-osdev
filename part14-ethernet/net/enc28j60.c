@@ -191,7 +191,7 @@ static void calibrate(void)
  * Software delay in 탎
  *  us: the number of 탎 to wait
  **/
-static __inline void up_udelay(uint32_t us)
+void up_udelay(uint32_t us)
 {
     volatile uint32_t i;
 
@@ -376,7 +376,8 @@ void enc_reset(ENC_HandleTypeDef *handle) {
    */
 
   handle->bank = 0; /* Initialize the trace on the current selected bank */
-  up_udelay(2); /* >1000 탎, conforms to errata #2 */
+  //up_mdelay(2);
+  HAL_Delay(2); /* >1000 탎, conforms to errata #2 */
 }
 
 /****************************************************************************
@@ -749,6 +750,11 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
      * via SPI.
      */
 
+    regval = enc_rdphy(handle, ENC_PHID1);
+    debugstr("PHID1: ");
+    debughex(regval);
+    debugcrlf();
+
     regval = enc_rdbreg(handle, ENC_EREVID);
     if (regval == 0x00 || regval == 0xff) {
       return false;
@@ -756,7 +762,7 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     debugstr("Board revision: ");
     debughex(regval);
     debugcrlf();
-
+ 
     /* Initialize ECON2: Enable address auto increment.
      */
 
@@ -796,7 +802,7 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     enc_wrbreg(handle, ENC_ERXFCON, ERXFCON_UCEN | ERXFCON_CRCEN | ERXFCON_BCEN);
 
 	do {
-		up_udelay(10); /* Wait for 10 ms to let the clock be ready */
+		HAL_Delay(10); /* Wait for 10 ms to let the clock be ready */
 		regval = enc_rdbreg(handle, ENC_ESTAT);
 	} while ((regval & ESTAT_CLKRDY) == 0);
 
@@ -878,6 +884,16 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
 
     /* Enable the receiver */
     enc_bfsgreg(ENC_ECON1, ECON1_RXEN);
+
+    regval = enc_rdphy(handle, ENC_PHSTAT1) & PHSTAT1_LLSTAT;
+    debugstr("Link status 1: ");
+    debughex(regval);
+    debugcrlf();
+
+    regval = enc_rdphy(handle, ENC_PHSTAT2) & PHSTAT2_LSTAT;
+    debugstr("Link status 2: ");
+    debughex(regval);
+    debugcrlf();
 
     return true;
 }
@@ -1002,14 +1018,14 @@ void ENC_WriteBuffer(void *buffer, uint16_t buflen)
  *   buflen  - The number of bytes to read
  *
  * Returned Value:
- *   read_count - Number of bytes received
+ *   None
  *
  * Assumptions:
  *   Read pointer is set to the correct address
  *
  ****************************************************************************/
 
-static void enc_rdbuffer(void *buffer, uint16_t buflen)
+static void enc_rdbuffer(void *buffer, int16_t buflen)
 {
   /* Select ENC28J60 chip */
 
@@ -1148,8 +1164,6 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
     PT_BEGIN(pt);
 
     if (handle->transmitLength != 0) {
-        debugstr("We're actually sending"); debugcrlf();
-
         /* A frame is ready for transmission */
         /* Set TXRTS to send the packet in the transmit buffer */
 
@@ -1198,10 +1212,7 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
         } while (handle->retries > 0);
         /* Transmission finished (but can be unsuccessful) */
         handle->transmitLength = 0;
-    } else {
-        debugstr("Nothing to send"); debugcrlf();
     }
-    debugstr("We're done sending"); debugcrlf();
     PT_END(pt);
 }
 

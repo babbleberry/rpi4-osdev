@@ -98,10 +98,10 @@ void ENC_SPI_Send(uint8_t command);
   * Implement SPI buffer send and receive. Must be provided by user code
   * param  master2slave: data to be sent from host to ENC28J60, can be NULL if we only want to receive data from slave
   * param  slave2master: answer from ENC28J60 to host, can be NULL if we only want to send data to slave
-  * retval read_count: number of bytes read (if applicable)
+  * retval none
   */
 
-unsigned int ENC_SPI_SendBuf(uint8_t *master2slave, uint8_t *slave2master, uint16_t bufferSize);
+void ENC_SPI_SendBuf(uint8_t *master2slave, uint8_t *slave2master, uint16_t bufferSize);
 
 /* Exported types ------------------------------------------------------------*/
 /** @defgroup ETH_Exported_Types ETH Exported Types
@@ -811,6 +811,6 @@ void ENC_GetPkcnt(ENC_HandleTypeDef *handle);
  *
  ****************************************************************************/
 
-//__inline void up_udelay(uint32_t us);
+void up_udelay(uint32_t us);
 
 #endif /* ENC28J60_H_INCLUDED */
