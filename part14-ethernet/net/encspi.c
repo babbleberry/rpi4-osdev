@@ -1,5 +1,4 @@
 #include "../include/spi.h"
-#include "../kernel/kernel.h"
 
 void ENC_SPI_Select(unsigned char truefalse) {
     spi_chip_select(!truefalse); // If it's true, select 0 (the ENC), if false, select 1 (i.e. deselect the ENC)
