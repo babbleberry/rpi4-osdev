@@ -46,6 +46,9 @@ void spi_init() {
     gpio_useAsAlt0(9);  //MISO 
     gpio_useAsAlt0(10); //MOSI
     gpio_useAsAlt0(11); //SCLK
+
+    REGS_SPI0->cs =  0x30;
+    REGS_SPI0->clock = 0x28; // 500Mhz / 40 = 12.5Mhz for ENC SPI
 }
 
 void spi_chip_select(unsigned char chip_select) {

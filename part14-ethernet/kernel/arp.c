@@ -158,30 +158,29 @@ void arp_test(void)
    debugcrlf();
 
    while (1) {
-      if (!ENC_GetReceivedFrame(&handle)) {
-         continue;
-      }
+      while (!(handle.interruptFlags & EIR_PKTIF)) ENC_IRQHandler(&handle);
+  
+      debugstr("Got one... ");
+      ENC_GetReceivedFrame(&handle);
 
-      uint16_t len    = handle.RxFrameInfos.length;
+      //uint16_t len    = handle.RxFrameInfos.length;
       uint8_t *buffer = (uint8_t *)handle.RxFrameInfos.buffer;
       checkPacket     = (ARP *)buffer;
 
-      if (len > 0) {
-         if (!memcmp(checkPacket->senderIP, routerIP, 4)) {
-            // Success! We have found our router's MAC address
+      if (!memcmp(checkPacket->senderIP, routerIP, 4)) {
+         // Success! We have found our router's MAC address
 
-            memcpy(routerMAC, checkPacket->senderMAC, 6);
-            debugstr("Router MAC is ");
-            debughex(routerMAC[0]);
-            debughex(routerMAC[1]);
-            debughex(routerMAC[2]);
-            debughex(routerMAC[3]);
-            debughex(routerMAC[4]);
-            debughex(routerMAC[5]);
-            debugcrlf();
+         memcpy(routerMAC, checkPacket->senderMAC, 6);
+         debugstr("Router MAC is ");
+         debughex(routerMAC[0]);
+         debughex(routerMAC[1]);
+         debughex(routerMAC[2]);
+         debughex(routerMAC[3]);
+         debughex(routerMAC[4]);
+         debughex(routerMAC[5]);
+         debugcrlf();
 
-            break;
-         }
+         break;
       }
    }
 }
@@ -191,11 +190,7 @@ void init_network(void)
    handle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
    handle.Init.MACAddr = myMAC;
    handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
-   handle.Init.InterruptEnableBits = EIE_LINKIE;
-
-   debugstr("Setting MAC address to C0:FF:EE:C0:FF:EE.");
-   debugcrlf();
-   ENC_SetMacAddr(&handle);
+   handle.Init.InterruptEnableBits = EIE_LINKIE | EIE_PKTIE;
 
    debugstr("Starting network up.");
    debugcrlf();

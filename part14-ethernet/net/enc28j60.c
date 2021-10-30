@@ -847,6 +847,10 @@ bool ENC_Start(ENC_HandleTypeDef *handle)
     enc_wrbreg(handle, ENC_MAMXFLL, (CONFIG_NET_ETH_MTU+18) & 0xff);
     enc_wrbreg(handle, ENC_MAMXFLH, (CONFIG_NET_ETH_MTU+18) >> 8);
 
+    /* Set the Mac Address */
+
+    ENC_SetMacAddr(handle);
+
   /* Configure LEDs (No, just use the defaults for now) */
   /* enc_wrphy(priv, ENC_PHLCON, ??); */
 
@@ -927,6 +931,8 @@ void ENC_SetMacAddr(ENC_HandleTypeDef *handle)
   enc_wrbreg(handle, ENC_MAADR4, handle->Init.MACAddr[3]);
   enc_wrbreg(handle, ENC_MAADR5, handle->Init.MACAddr[4]);
   enc_wrbreg(handle, ENC_MAADR6, handle->Init.MACAddr[5]);
+
+  enc_wrbreg(handle, ENC_ECOCON, 0x2 & 0x7); // 12.5Mhz
 }
 
 
