@@ -2,7 +2,6 @@
 #include "../include/io.h"
 #include "../include/spi.h"
 #include "../include/multicore.h"
-#include "../net/enc28j60.h"
 #include "kernel.h"
 
 void initProgress(void)
