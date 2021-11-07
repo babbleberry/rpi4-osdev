@@ -128,3 +128,42 @@ void HAL_Delay(unsigned int ms) {
     while(HAL_GetTick() < start + (ms * 1000));
 }
 ```
+
+Let's connect!
+--------------
+So we have a working driver, that's interfacing with our hardware via _net/encspi.c_ and a few timer functions in _kernel/kernel.c_. Now what?
+
+The design goals of our kernel's networking routine will be to:
+
+ 1. Prove we can talk to the hardware
+ 2. Bring the network up successfully
+ 3. Prove we can connect to something else on the network and get a response
+
+My proposals for how we fulfil these goals are:
+
+ 1. Prove we can detect whether a network link has been established at a physical level (CAT5 cable plugged in and connected to a working switch)
+ 2. Rely on the ENC28J60 driver to tell us that we've started up successfully
+ 3. Handcraft and send an [ARP](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) request and await an ARP response from my Internet router (the traditional way devices "find each other" on a network from a point of zero knowledge)
+
+Look at _kernel/arp.c_. First we create a handle to reference our driver instance `ENC_HandleTypeDef handle`.
+
+We then initialise this structure in `init_network()`:
+
+```c
+handle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
+handle.Init.MACAddr = myMAC;
+handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
+handle.Init.InterruptEnableBits = EIE_LINKIE | EIE_PKTIE;
+```
+
+This starts the module in half duplex mode (can't transmit & receive simultaneously), sets its MAC address (my favourite: `C0:FF:EE:C0:FF:EE`!), tells the hardware to add its own packet checksums (we don't want to have to create them in software), and enables interrupt messages for "link up/down" and "packet received".
+
+We then call the driver routine `ENC_Start(&handle)` and check it returns true (this fulfils design requirement 2 - the driver tells us we've started correctly). We go on to set the MAC address using `ENC_SetMacAddr(&handle)`.
+
+This line waits until a physical network link has been established (fulfilling design requirement 1):
+
+```c
+while (!(handle.LinkStatus & PHSTAT2_LSTAT)) ENC_IRQHandler(&handle);
+```
+
+The driver's `ENC_IRQHandler(&handle)` routine would ordinarily be called if interrupt was raised, and it refreshes the driver status flags. Because we didn't hook up the interrupt line, we're just polling in the software for now. When we see the `handle.LinkStatus` flag has the `PHSTAT2_LSTAT` bit set, we know the link is up and we carry on (documented on page 24 of the module's datasheet).
