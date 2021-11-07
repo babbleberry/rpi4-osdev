@@ -62,3 +62,39 @@ Then, whilst there's either data to write or data to read (and we haven't writte
 Finally, to be absolutely sure, we clear the TA flag.
 
 I've then set up two convenient functions - _spi_send()_ and _spi_recv()_ - which exercise _spi_send_recv(), mainly to make future code more readable.
+
+The ENC28J60 drivers
+--------------------
+Let's now look into the _net/_ subdirectory.
+
+Both _enc28j60.c_ and _enc28j60.h_ make up the driver code for the ENC28J60 Ethernet module. Whilst we could have laboured for months writing our own driver based on [the module's datasheet](http://ww1.microchip.com/downloads/en/devicedoc/39662c.pdf), I chose to leverage somebody else's hard work instead. It felt like a win that I could effortlessly bring somebody else's good code into my own OS! I did, however, make sure I understood what the code was doing at every turn (optional!).
+
+Thanks to [this Github repository](https://github.com/wolfgangr/enc28j60) for saving me months of work. I made a very few changes to the code, but nothing worth documenting here. If you're keen to see how little I needed to change, clone the repo and make good use of the `diff` command.
+
+What I did need to do is write some bridging code between the driver and the RPi4 hardware. Essentially, I'm talking about hooking up our SPI library to the driver - the whole reason for _encspi.c_.
+
+It defines four functions that the driver requires (well documented in the _enc28j60.h_ file):
+
+```c
+void ENC_SPI_Select(unsigned char truefalse) {
+    spi_chip_select(!truefalse); // If it's true, select 0 (the ENC), if false, select 1 (i.e. deselect the ENC)
+}
+
+void ENC_SPI_SendBuf(unsigned char *master2slave, unsigned char *slave2master, unsigned short bufferSize) {
+    spi_chip_select(0);
+    spi_send_recv(master2slave, slave2master, bufferSize);
+    spi_chip_select(1); // De-select the ENC
+}
+
+void ENC_SPI_Send(unsigned char command) {
+    spi_chip_select(0);
+    spi_send(&command, 1);
+    spi_chip_select(1); // De-select the ENC
+}
+
+void ENC_SPI_SendWithoutSelection(unsigned char command) {
+    spi_send(&command, 1);
+}
+```
+
+Perhaps the most confusing aspect is the chip selection. Through a bit of trial & error I discovered that when GPIO08 is clear, the device is selected, and when it's set, the device is deselected. If you can explain this to me, I'd love to hear from you - frankly, I was just pleased to get it working, so I moved on!
