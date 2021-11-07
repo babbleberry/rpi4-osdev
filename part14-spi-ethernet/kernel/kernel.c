@@ -111,7 +111,7 @@ void handle_timer_3() {
     if (progval <= 100) drawProgress(3, progval);
 }
 
-unsigned long timer_get_ticks() {
+unsigned long HAL_GetTick(void) {
     unsigned int hi = REGS_TIMER->counter_hi;
     unsigned int lo = REGS_TIMER->counter_lo;
 
@@ -124,18 +124,10 @@ unsigned long timer_get_ticks() {
     return ((unsigned long)hi << 32) | lo;
 }
 
-void timer_sleep(unsigned int ms) {
-    unsigned long start = timer_get_ticks();
+void HAL_Delay(unsigned int ms) {
+    unsigned long start = HAL_GetTick();
 
-    while(timer_get_ticks() < start + (ms * 1000));
-}
-
-void HAL_Delay(volatile unsigned int Delay) {
-    timer_sleep(Delay);
-}
-
-unsigned int HAL_GetTick(void) {
-    return timer_get_ticks();
+    while(HAL_GetTick() < start + (ms * 1000));
 }
 
 void main(void)

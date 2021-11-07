@@ -47,11 +47,11 @@ void gpio_setPinOutputBool(unsigned int pin_number, unsigned int onOrOff);
 void gpio_initOutputPinWithPullNone(unsigned int pin_number);
 ```
 
-Specifically, _spi_init()_ sets GPIO 7, 9, 10, and 11 to use the ALT0 function. Cross-referencing with the [BCM2711 ARM Peripherals document](https://datasheets.raspberrypi.com/bcm2711/bcm2711-peripherals.pdf), page 77, you'll see that this maps SPI0 to the GPIO header. GPIO 8 is mapped as an output pin, since we'll use this to signal to the ENC28J60 that we want to talk. In fact, the _spi_chip_select()_ function takes a true/false (boolean) parameter which either sets or clears this pin.
+Specifically, `spi_init()` sets GPIO 7, 9, 10, and 11 to use the ALT0 function. Cross-referencing with the [BCM2711 ARM Peripherals document](https://datasheets.raspberrypi.com/bcm2711/bcm2711-peripherals.pdf), page 77, you'll see that this maps SPI0 to the GPIO header. GPIO 8 is mapped as an output pin, since we'll use this to signal to the ENC28J60 that we want to talk. In fact, the `spi_chip_select()` function takes a true/false (boolean) parameter which either sets or clears this pin.
 
-Looking at the SPI0 register map on page 134, we see this reflected in our _REGS_SPI0_ structure. This gives us handy access to the SPI0 peripheral's memory-mapped registers.
+Looking at the SPI0 register map on page 134, we see this reflected in our `REGS_SPI0` structure. This gives us handy access to the SPI0 peripheral's memory-mapped registers.
 
-Our _spi_send_recv()_ function then sets us up for some communcation:
+Our `spi_send_recv()` function then sets us up for some communcation:
 
  * Sets the DLEN Register to the number of bytes to transfer (a length we passed into the function)
  * Clears the RX & TX FIFOs
@@ -61,7 +61,7 @@ Then, whilst there's either data to write or data to read (and we haven't writte
 
 Finally, to be absolutely sure, we clear the TA flag.
 
-I've then set up two convenient functions - _spi_send()_ and _spi_recv()_ - which exercise _spi_send_recv(), mainly to make future code more readable.
+I've then set up two convenient functions - `spi_send()` and `spi_recv()` - which exercise `spi_send_recv()`, mainly to make future code more readable.
 
 The ENC28J60 drivers
 --------------------
@@ -98,3 +98,33 @@ void ENC_SPI_SendWithoutSelection(unsigned char command) {
 ```
 
 Perhaps the most confusing aspect is the chip selection. Through a bit of trial & error I discovered that when GPIO08 is clear, the device is selected, and when it's set, the device is deselected. If you can explain this to me, I'd love to hear from you - frankly, I was just pleased to get it working, so I moved on!
+
+Some more timer functions
+-------------------------
+The only other thing our ENC28J60 driver requires is access to a couple of well-defined timer functions:
+
+ * `HAL_GetTick()` - returns the current number of timer ticks since start
+ * `HAL_Delay()` - delays by a specified number of milliseconds
+
+These are quickly implemented in _kernel/kernel.c_ and weren't too much of a stretch after _part13-interrupts_:
+
+```c
+unsigned long HAL_GetTick(void) {
+    unsigned int hi = REGS_TIMER->counter_hi;
+    unsigned int lo = REGS_TIMER->counter_lo;
+
+    //double check hi value didn't change after setting it...
+    if (hi != REGS_TIMER->counter_hi) {
+        hi = REGS_TIMER->counter_hi;
+        lo = REGS_TIMER->counter_lo;
+    }
+
+    return ((unsigned long)hi << 32) | lo;
+}
+
+void HAL_Delay(unsigned int ms) {
+    unsigned long start = HAL_GetTick();
+
+    while(HAL_GetTick() < start + (ms * 1000));
+}
+```

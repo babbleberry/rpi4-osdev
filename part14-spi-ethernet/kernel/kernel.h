@@ -45,10 +45,5 @@ void disable_interrupt_controller();
 void handle_timer_1();
 void handle_timer_3();
 
-unsigned long timer_get_ticks();
-void timer_sleep(unsigned int ms);
-void HAL_Delay(volatile unsigned int Delay);
-unsigned int HAL_GetTick(void);
-
 void init_network(void);
 void arp_test(void);
