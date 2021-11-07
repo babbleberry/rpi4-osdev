@@ -196,8 +196,14 @@ if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
 
 You'll see that the `arp_test()` function sends our first ARP this way. We tell it the IP of our router (192.168.0.1 in my case), but we don't know its MAC address - that's what we want to find out. Once the ARP is sent, `arp_test()` then waits for received Ethernet packets, checks whether they're for us and, if they come from the router's IP address (therefore likely to be the ARP response to our request), we print out the router's MAC address.
 
-This fulfils design requirement 3, and therefore we're done!
+This fulfils design requirement 3, and therefore we're done! All we need to do is ensure that _kernel/kernel.c_ calls our networking routines in the right order. I've chosen to do this on core 3 with a few easy-to-follow changes from where we left off in _part13-interrupts_. Essentially these are all the calls we need:
 
-_Imagine how happy I was when I finally saw my router's MAC address appear on-screen - a sign of life, and proof that my OS is networking!_
+```c
+spi_init();
+init_network();
+arp_test();
+```
+
+_Imagine how happy I was to see my router's (correct!) MAC address appear on-screen - a sign of life, and proof that my OS is actually networking!_
 
 ![ARP response](images/14-spi-ethernet-arp.jpg)
