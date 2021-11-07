@@ -131,9 +131,9 @@ void HAL_Delay(unsigned int ms) {
 
 Let's connect!
 --------------
-So we have a working driver, that's interfacing with our hardware via _net/encspi.c_ and a few timer functions in _kernel/kernel.c_. Now what?
+So we have a working driver that's interfacing with our hardware via _net/encspi.c_ and a few timer functions in _kernel/kernel.c_. Now what?
 
-The design goals of our kernel's networking routine will be to:
+The design goals of our kernel's networking demo will be to:
 
  1. Prove we can talk to the hardware
  2. Bring the network up successfully
@@ -145,9 +145,7 @@ My proposals for how we fulfil these goals are:
  2. Rely on the ENC28J60 driver to tell us that we've started up successfully
  3. Handcraft and send an [ARP](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) request and await an ARP response from my Internet router (the traditional way devices "find each other" on a network from a point of zero knowledge)
 
-Look at _kernel/arp.c_. First we create a handle to reference our driver instance `ENC_HandleTypeDef handle`.
-
-We then initialise this structure in `init_network()`:
+Look at _kernel/arp.c_. First we create a handle to reference our driver instance `ENC_HandleTypeDef handle`. We then initialise this structure in `init_network()`:
 
 ```c
 handle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
@@ -156,7 +154,7 @@ handle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
 handle.Init.InterruptEnableBits = EIE_LINKIE | EIE_PKTIE;
 ```
 
-This starts the module in half duplex mode (can't transmit & receive simultaneously), sets its MAC address (my favourite: `C0:FF:EE:C0:FF:EE`!), tells the hardware to add its own packet checksums (we don't want to have to create them in software), and enables interrupt messages for "link up/down" and "packet received".
+This starts the module in half duplex mode (can't transmit & receive simultaneously), sets its MAC address (my favourite: `C0:FF:EE:C0:FF:EE`), tells the hardware to add its own packet checksums (we don't want to have to create them in software), and enables interrupt messages for "link up/down" and "packet received".
 
 We then call the driver routine `ENC_Start(&handle)` and check it returns true (this fulfils design requirement 2 - the driver tells us we've started correctly). We go on to set the MAC address using `ENC_SetMacAddr(&handle)`.
 
@@ -166,7 +164,7 @@ This line waits until a physical network link has been established (fulfilling d
 while (!(handle.LinkStatus & PHSTAT2_LSTAT)) ENC_IRQHandler(&handle);
 ```
 
-The driver's `ENC_IRQHandler(&handle)` routine would ordinarily be called if interrupt was raised, and it refreshes the driver status flags. Because we didn't hook up the interrupt line, we're just polling in the software for now. When we see the `handle.LinkStatus` flag has the `PHSTAT2_LSTAT` bit set, we know the link is up (documented on page 24 of the module's datasheet).
+The driver's `ENC_IRQHandler(&handle)` routine would ordinarily be called when an interrupt was raised to refresh the driver status flags. Because we didn't hook up the interrupt line and to keep things simple, we're just polling in the software for now. When we see the `handle.LinkStatus` flag has the `PHSTAT2_LSTAT` bit set, we know the link is up (documented on page 24 of the module's datasheet).
 
 Before we're done, we have to re-enable Ethernet interrupts (`ENC_IRQHandler()` disables them, but doesn't re-enable them - something I discovered by reading the code).
 
@@ -192,9 +190,9 @@ if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
 }
 ```
 
-`ENC_RestoreTXBuffer()` simply prepares the transmit buffer and returns 0 if successful. `ENC_WriteBuffer()` sends the packet to the ENC28J60 over the SPI. We then set the transmit buffer length in the driver flags and call `ENC_Transmit()` to tell the ENC to send the packet across the network.
+`ENC_RestoreTXBuffer()` simply prepares the transmit buffer and returns 0 if successful. `ENC_WriteBuffer()` sends the packet to the ENC28J60 over the SPI. We then set the transmit buffer length in the driver status flags and call `ENC_Transmit()` to tell the ENC to send the packet across the network.
 
-You'll see that the `arp_test()` function sends our first ARP this way. We tell it the IP of our router (192.168.0.1 in my case), but we don't know its MAC address - that's what we want to find out. Once the ARP is sent, `arp_test()` then waits for received Ethernet packets, checks whether they're for us and, if they come from the router's IP address (therefore likely to be the ARP response to our request), we print out the router's MAC address.
+You'll see that the `arp_test()` function sends our first ARP this way. We tell it the IP of our router (`192.168.0.1` in my case), but we don't know its MAC address - that's what we want to find out. Once the ARP is sent, `arp_test()` then waits for received Ethernet packets, checks whether they're for us and, if they come from the router's IP address (therefore likely to be the ARP response to our request), we print out the router's MAC address.
 
 This fulfils design requirement 3, and therefore we're done! All we need to do is ensure that _kernel/kernel.c_ calls our networking routines in the right order. I've chosen to do this on core 3 with a few easy-to-follow changes from where we left off in _part13-interrupts_. Essentially these are all the calls we need:
 
