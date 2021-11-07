@@ -15,7 +15,7 @@ Things you'll need:
 
 Connecting up the ENC28J60 Ethernet module
 ------------------------------------------
-I followed the very helpful instructions [here](https://www.instructables.com/Super-Cheap-Ethernet-for-the-Raspberry-Pi/).
+I followed the very helpful instructions [here](https://www.instructables.com/Super-Cheap-Ethernet-for-the-Raspberry-Pi/) to hook up the ENC28J60 to the RPi4's SPI0 interface.
 
 We won't be connecting the interrupt line for now, so there are just six jumper leads (I've suggested colours) that need connecting:
 
@@ -33,3 +33,25 @@ We won't be connecting the interrupt line for now, so there are just six jumper 
 Here's a (not very useful) photo of my RPi4 connected correctly:
 
 ![ENC28J60 connections](images/14-spi-ethernet-photo.jpg)
+
+The SPI library
+---------------
+Let's start by looking at how we implement SPI communication.
+
+I'm not going to write a long paper on how SPI works and why we need it, because it's [very well documented elsewhere](https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/). It's recommended background reading, but not essential if all you want to do is get something working.
+
+Look at _lib/spi.c_. It uses some of existing functions in _lib/io.c_ that you'll remember from earlier tutorials. Specifically, _spi_init()_ sets GPIO 7, 9, 10, and 11 to use the ALT0 function. Cross-referencing with the [BCM2711 ARM Peripherals document](https://datasheets.raspberrypi.com/bcm2711/bcm2711-peripherals.pdf), page 77, you'll see that this maps SPI0 to the GPIO header. GPIO 8 is mapped as an output pin, since we'll use this to signal to the ENC28J60 that we want to talk. In fact, the _spi_chip_select()_ function takes a true/false (boolean) parameter which either sets or clears this pin.
+
+Looking at the SPI0 register map on page 134, we see this reflected in the _REGS_SPI0_ structure. This gives us handy access to the SPI0 peripheral's memory map.
+
+Our _spi_send_recv()_ function then sets us up for some communcation:
+
+ * Sets the DLEN Register to the number of bytes to transfer (a length we passed into the function)
+ * Clears the RX & TX FIFOs
+ * Sets the Transfer Active (TA) flag
+
+Then, whilst there's either data to write or data to read (and we haven't written/read more bytes than we asked for), we write to/read from the FIFO using the buffers we passed in. Once we think we're done, we wait until the SPI interface agrees i.e. the DONE flag in the CS Register is set. If there are extraneous bytes to read, we just throw them away (well, dump them to the screen for now because this shouldn't happen).
+
+Finally, to be absolutely sure, we clear the TA flag.
+
+I've then set up two convenient functions _spi_send()_ and _spi_recv()_ which exercise _spi_send_recv(), mainly to make future code more readable.
