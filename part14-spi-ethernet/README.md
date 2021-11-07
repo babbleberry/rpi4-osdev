@@ -166,4 +166,32 @@ This line waits until a physical network link has been established (fulfilling d
 while (!(handle.LinkStatus & PHSTAT2_LSTAT)) ENC_IRQHandler(&handle);
 ```
 
-The driver's `ENC_IRQHandler(&handle)` routine would ordinarily be called if interrupt was raised, and it refreshes the driver status flags. Because we didn't hook up the interrupt line, we're just polling in the software for now. When we see the `handle.LinkStatus` flag has the `PHSTAT2_LSTAT` bit set, we know the link is up and we carry on (documented on page 24 of the module's datasheet).
+The driver's `ENC_IRQHandler(&handle)` routine would ordinarily be called if interrupt was raised, and it refreshes the driver status flags. Because we didn't hook up the interrupt line, we're just polling in the software for now. When we see the `handle.LinkStatus` flag has the `PHSTAT2_LSTAT` bit set, we know the link is up (documented on page 24 of the module's datasheet).
+
+Before we're done, we have to re-enable Ethernet interrupts (`ENC_IRQHandler()` disables them, but doesn't re-enable them - something I discovered by reading the code).
+
+Sending/receiving an ARP
+------------------------
+To transmit on an Ethernet network, we need to format our packets correctly. The ENC28J60 deals with the physical layer (including the checksum, as we asked it to), so we only need concern ourselves with the data link layer - made up of a header, and a payload.
+
+The header (our `EtherNetII` struct) is simply a destination and source MAC address, as well as a [16-bit packet type](https://en.wikipedia.org/wiki/EtherType). ARP packets, for example, have type `0x0806`. You'll note in our `#define ARPPACKET` that we've swapped the two bytes. This is because big-endianness is the dominant ordering in network protocols, and the RPi4 is a little-endian architecture (some reading may be required here!). We've had to do this across the board.
+
+The payload is the full [ARP packet](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) defined in the `ARP` struct. The `SendArpPacket()` function sets up the data we need in the structure (documented in code comments) and then uses driver calls to transmit the packet:
+
+```c
+// Send the packet
+
+if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
+   debugstr("Sending ARP request.");
+   debugcrlf();
+
+   ENC_WriteBuffer((unsigned char *)&arpPacket, sizeof(ARP));
+   handle.transmitLength = sizeof(ARP);
+
+   ENC_Transmit(&handle);
+}
+```
+
+`ENC_RestoreTXBuffer()` simply prepares the transmit buffer and return 0 if successful. `ENC_WriteBuffer()` sends the packet to the ENC28J60 over the SPI. We then set the transmit buffer length in the driver flags and call `ENC_Transmit()` to tell the ENC to send the packet across the network.
+
+You'll see that the `arp_test()` function sends our first ARP this way. We tell it the IP of our router (192.168.0.1 in my case), but we don't know its MAC address - that's what we want to find out. Once the ARP is sent, `arp_test()` then waits for received Ethernet packets, checks whether they're for us and, if they come from the router's IP address (therefore likely to be the ARP response to our request), we print out the router's MAC address.
