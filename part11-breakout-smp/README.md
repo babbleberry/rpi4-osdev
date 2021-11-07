@@ -32,4 +32,4 @@ Click on the picture below to watch a quick video of the game in action.
 
 PS: Sorry for the bad audio quality - the game itself sounds great in real life, I promise!
 
-[Go to part12-wgt>](../part12-wgt)
+[Go to part12-wgt >](../part12-wgt)

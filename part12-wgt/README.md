@@ -51,4 +51,4 @@ _Do have a go at building some of the samples (hint: wgt20 and wgt60 are super f
 
 I'm going to move on from here now so we can continue to make progress on the OS itself.
 
-[Go to part13-interrupts>](../part13-interrupts)
+[Go to part13-interrupts >](../part13-interrupts)

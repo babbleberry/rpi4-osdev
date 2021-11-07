@@ -192,6 +192,12 @@ if (ENC_RestoreTXBuffer(&handle, sizeof(ARP)) == 0) {
 }
 ```
 
-`ENC_RestoreTXBuffer()` simply prepares the transmit buffer and return 0 if successful. `ENC_WriteBuffer()` sends the packet to the ENC28J60 over the SPI. We then set the transmit buffer length in the driver flags and call `ENC_Transmit()` to tell the ENC to send the packet across the network.
+`ENC_RestoreTXBuffer()` simply prepares the transmit buffer and returns 0 if successful. `ENC_WriteBuffer()` sends the packet to the ENC28J60 over the SPI. We then set the transmit buffer length in the driver flags and call `ENC_Transmit()` to tell the ENC to send the packet across the network.
 
 You'll see that the `arp_test()` function sends our first ARP this way. We tell it the IP of our router (192.168.0.1 in my case), but we don't know its MAC address - that's what we want to find out. Once the ARP is sent, `arp_test()` then waits for received Ethernet packets, checks whether they're for us and, if they come from the router's IP address (therefore likely to be the ARP response to our request), we print out the router's MAC address.
+
+This fulfils design requirement 3, and therefore we're done!
+
+_Imagine how happy I was when I finally saw my router's MAC address appear on-screen - a sign of life, and proof that my OS is networking!_
+
+![ARP response](images/14-spi-ethernet-arp.jpg)
