@@ -54,7 +54,7 @@ void net_test(void)
 }
 ```
 
-This is an infinite loop which waits for an incoming packet and then simply passes it to Guido's `packetloop_arp_icmp_tcp()` function. This function implements some useful things, like responding to pings. I modified the routine to print a message to the screen when it sends a "pong" (look from line 1381), so we can see when it's in action!
+This is an infinite loop which waits for an incoming packet and then simply passes it to Guido's `packetloop_arp_icmp_tcp()` function. This function implements some useful things, like responding to pings. I modified the routine to print a message to the screen when it sends a "pong" (look from line 1381 of _tcpip/ip_arp_udp_tcp.c_), so we can see when it's in action!
 
 _Imagine my excitement when I built, ran and could ping my RPi4 at 192.168.0.66 and get a response to both my laptop and my iPhone!_
 
