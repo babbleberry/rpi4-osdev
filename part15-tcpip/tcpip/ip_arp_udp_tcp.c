@@ -15,7 +15,6 @@
  * packet. The client "web browser" as implemented here can also receive
  * large pages.
  *
- * Chip type           : ATMEGA88/168/328/644 with ENC28J60
  *********************************************/
 
 #include "ip_config.h"
@@ -27,7 +26,7 @@
 //
 static uint8_t macaddr[6];
 static uint8_t ipaddr[4]={0,0,0,0};
-static uint8_t seqnum=0xa; // my initial tcp sequence number
+//static uint8_t seqnum=0xa; // my initial tcp sequence number
 static void (*icmp_callback)(uint8_t *ip);
 
 //
@@ -1319,7 +1318,7 @@ uint8_t packetloop_icmp_checkreply(uint8_t *buf,uint8_t *ip_monitoredhost)
 // of the tcp data if there is tcp data part
 uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
 {
-        uint16_t len;
+//        uint16_t len;
 #if defined (TCP_client)
         uint8_t send_fin=0;
         uint16_t tcpstart;

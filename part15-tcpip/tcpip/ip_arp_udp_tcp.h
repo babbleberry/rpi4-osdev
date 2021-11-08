@@ -7,7 +7,6 @@
  *
  * IP/ARP/UDP/TCP functions
  *
- * Chip type           : ATMEGA88/168/328/644 with ENC28J60
  *********************************************/
 //@{
 #ifndef IP_ARP_UDP_TCP_H
