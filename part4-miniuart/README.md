@@ -10,6 +10,10 @@ We started with the UART for a reason - it's a (relatively) simple piece of hard
 
 These memory addresses start at `0xFE000000` (our `PERIPHERAL_BASE`).
 
+Note: you might wonder why this base address differs from the one shown throughout the [BCM2711 ARM Peripherals document](https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf). It's because the RPi4 boots into Low Peripheral Mode by default. This maps the peripherals over the last 64mb of RAM, therefore they're "visible to the ARM at 0x0_FEnn_nnnn".
+
+People might wish to enable High Peripheral mode (full 35-bit address map) so as to avoid "losing" that last 64mb of RAM. There are various side effects, however, of doing this and it would require some refactoring of the kernel (even in this simple tutorial) to make it work.
+
 Configuring the GPIO (General Purpose Input/Output) pins
 --------------------------------------------------------
 
