@@ -61,11 +61,6 @@
 #define MIN_FRAMELEN      64
 #define MAX_FRAMELEN      1518
 
-
-/* External functions --------------------------------------------------------*/
-void HAL_Delay(volatile uint32_t Delay);
-uint32_t HAL_GetTick(void);
-
 /* Callback  functions  *********************************************************/
 
 /**

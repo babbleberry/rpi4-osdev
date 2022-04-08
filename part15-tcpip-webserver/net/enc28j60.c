@@ -81,6 +81,7 @@ Errata 18 is implemented in lwip stack
 /* Includes ------------------------------------------------------------------*/
 #include "enc28j60.h"
 #include "../include/fb.h"
+#include "../include/io.h"
 
 /** @addtogroup BSP
   * @{
@@ -1170,6 +1171,8 @@ void ENC_Transmit(ENC_HandleTypeDef *handle)
             /* Wait for end of transmission */
             enc_waitwhilegreg(ENC_EIR, EIR_TXIF | EIR_TXERIF, 0);
 #endif
+
+            HAL_Delay(20); // Added by AGB - fixes weird timing bug
 
             /* Stop transmission */
             enc_bfcgreg(ENC_ECON1, ECON1_TXRTS);

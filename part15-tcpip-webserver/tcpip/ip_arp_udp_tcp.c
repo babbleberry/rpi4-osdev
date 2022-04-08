@@ -2,7 +2,7 @@
  * vim:sw=8:ts=8:si:et
  * To use the above modeline in vim you must have "set modeline" in your .vimrc
  *
- * Author: Guido Socher
+ * Author: Guido Socher 
  * Copyright:LGPL V2
  * See http://www.gnu.org/licenses/old-licenses/lgpl-2.0.html
  *
@@ -16,27 +16,29 @@
  * large pages.
  *
  *********************************************/
-
+#include "net.h"
+#include "../net/enc28j60.h"
+#include "../kernel/kernel.h"
+#include "../include/fb.h"
 #include "ip_config.h"
-#include "ip_arp_udp_tcp.h"
 
 // I use them to debug stuff:
 #define LEDOFF PORTB|=(1<<PORTB1)
 #define LEDON PORTB&=~(1<<PORTB1)
+#define LEDISOFF PORTB&(1<<PORTB1)
 //
 static uint8_t macaddr[6];
 static uint8_t ipaddr[4]={0,0,0,0};
-//static uint8_t seqnum=0xa; // my initial tcp sequence number
+static uint8_t seqnum=0xa; // my initial tcp sequence number
 static void (*icmp_callback)(uint8_t *ip);
-
 //
 #if defined (NTP_client) || defined (UDP_client) || defined (TCP_client) || defined (PING_client)
 #define ARP_MAC_resolver_client 1
 #define ALL_clients 1
 #endif
-#if defined (WWW_client) || defined (TCP_client)
+#if defined (WWW_client) || defined (TCP_client) 
 // just lower byte, the upper byte is TCPCLIENT_SRC_PORT_H:
-static uint8_t tcpclient_src_port_l=1;
+static uint8_t tcpclient_src_port_l=1; 
 static uint8_t tcp_fd=0; // a file descriptor, will be encoded into the port
 static uint8_t tcp_otherside_ip[4];
 static uint8_t tcp_dst_mac[6]; // normally the gateway via which we want to send
@@ -59,10 +61,10 @@ static uint16_t (*client_tcp_datafill_callback)(uint8_t);
 static uint8_t www_fd=0;
 static uint8_t browsertype=0; // 0 = get, 1 = post
 static void (*client_browser_callback)(uint16_t,uint16_t,uint16_t); // the fields are: uint16_t webstatuscode,uint16_t datapos,uint16_t len; datapos is start of http data and len the the length of that data
-static const prog_char *client_additionalheaderline;
+static const char *client_additionalheaderline_p; // null pointer or pointer to a string in progmem
 static char *client_postval;
-static const prog_char *client_urlbuf;
-static const char *client_urlbuf_var;
+static const char *client_urlbuf_p; // null pointer or pointer to a string in progmem
+static char *client_urlbuf_var;
 static const char *client_hoststr;
 static uint8_t *bufptr=0; // ugly workaround for backward compatibility
 #endif
@@ -89,6 +91,8 @@ static uint16_t info_data_len=0;
 
 #if defined (ALL_clients)
 static uint8_t ipnetmask[4]={255,255,255,255};
+#endif
+#if defined (ALL_clients) || defined (WOL_client)
 static uint8_t ipid=0x2; // IP-identification, it works as well if you do not change it but it is better to fill the field, we count this number up and wrap.
 const char iphdr[] ={0x45,0,0,0x82,0,0,0x40,0,0x20}; // 0x82 is the total len on ip, 0x20 is ttl (time to live), the second 0,0 is IP-identification and may be changed.
 #endif
@@ -107,7 +111,7 @@ const char ntpreqhdr[] ={0xe3,0,4,0xfa,0,1,0,0,0,1};
 // the calculation.
 // len for ip is 20.
 //
-// For UDP/TCP we do not make up the required pseudo header. Instead we
+// For UDP/TCP we do not make up the required pseudo header. Instead we 
 // use the ip.src and ip.dst fields of the real packet:
 // The udp checksum calculation starts with the ip.src field
 // Ip.src=4bytes,Ip.dst=4 bytes,Udp header=8bytes + data length=16+len
@@ -129,7 +133,7 @@ uint16_t checksum(uint8_t *buf, uint16_t len,uint8_t type){
         //      2=tcp
         uint32_t sum = 0;
 
-        //if(type==0){
+        //if(type==0){    
         //        // do not add anything, standard IP checksum as described above
         //        // Usable for ICMP and IP header
         //}
@@ -140,7 +144,7 @@ uint16_t checksum(uint8_t *buf, uint16_t len,uint8_t type){
                 sum+=len-8; // = real udp len
         }
         if(type==2){
-                sum+=IP_PROTO_TCP_V;
+                sum+=IP_PROTO_TCP_V; 
                 // the length here is the length of tcp (data+header len)
                 // =length given to this function - (IP.scr+IP.dst length)
                 sum+=len-8; // = real tcp len
@@ -185,14 +189,14 @@ void client_ifconfig(uint8_t *ip,uint8_t *netmask)
 // returns 1 if destip must be routed via the GW. Returns 0 if destip is on the local LAN
 uint8_t route_via_gw(uint8_t *destip)
 {
-    uint8_t i=0;
-    while(i<4){
-        if ((destip[i] & ipnetmask[i]) != (ipaddr[i] & ipnetmask[i])){
-            return(1);
-        }
-        i++;
-    }
-    return(0);
+	uint8_t i=0;
+	while(i<4){
+		if ((destip[i] & ipnetmask[i]) != (ipaddr[i] & ipnetmask[i])){
+			return(1);
+		}
+		i++;
+	}
+	return(0);
 }
 #endif
 
@@ -211,11 +215,11 @@ uint8_t check_ip_message_is_from(uint8_t *buf,uint8_t *ip)
 
 uint8_t eth_type_is_arp_and_my_ip(uint8_t *buf,uint16_t len){
         uint8_t i=0;
-        //
+        //  
         if (len<41){
                 return(0);
         }
-        if(buf[ETH_TYPE_H_P] != ETHTYPE_ARP_H_V ||
+        if(buf[ETH_TYPE_H_P] != ETHTYPE_ARP_H_V || 
            buf[ETH_TYPE_L_P] != ETHTYPE_ARP_L_V){
                 return(0);
         }
@@ -234,7 +238,7 @@ uint8_t eth_type_is_ip_and_my_ip(uint8_t *buf,uint16_t len){
         if (len<42){
                 return(0);
         }
-        if(buf[ETH_TYPE_H_P]!=ETHTYPE_IP_H_V ||
+        if(buf[ETH_TYPE_H_P]!=ETHTYPE_IP_H_V || 
            buf[ETH_TYPE_L_P]!=ETHTYPE_IP_L_V){
                 return(0);
         }
@@ -364,7 +368,7 @@ void make_arp_answer_from_request(uint8_t *buf)
                 i++;
         }
         // eth+arp is 42 bytes:
-        enc28j60PacketSend(42,buf);
+        enc28j60PacketSend(42,buf); 
 }
 
 void make_echo_reply_from_request(uint8_t *buf,uint16_t len)
@@ -382,7 +386,7 @@ void make_echo_reply_from_request(uint8_t *buf,uint16_t len)
         enc28j60PacketSend(len,buf);
 }
 
-// do some basic length calculations
+// do some basic length calculations 
 uint16_t get_tcp_data_len(uint8_t *buf)
 {
         int16_t i;
@@ -412,20 +416,6 @@ uint16_t fill_tcp_data_p(uint8_t *buf,uint16_t pos, const uint8_t *progmem_s)
         return(pos);
 }
 
-uint16_t fill_tcp_data_string(uint8_t *buf,uint16_t pos, char *reply)
-{
-//        char c;
-        // fill in tcp data at position pos
-        //
-        // with no options the data starts after the checksum + 2 more bytes (urgent ptr)
-        while ( !(*reply == '\n') ) {
-                buf[TCP_CHECKSUM_L_P+3+pos] = *reply;
-                reply++;
-                pos++;
-        }
-        return(pos);
-}
-
 // fill a binary string of len data into the tcp packet
 uint16_t fill_tcp_data_len(uint8_t *buf,uint16_t pos, const uint8_t *s, uint8_t len)
 {
@@ -450,7 +440,7 @@ uint16_t fill_tcp_data(uint8_t *buf,uint16_t pos, const char *s)
 }
 
 // Make just an ack packet with no tcp data inside
-// This will modify the eth/ip/tcp header
+// This will modify the eth/ip/tcp header 
 void make_tcp_ack_from_any(uint8_t *buf,int16_t datlentoack,uint8_t addflags)
 {
         uint16_t j;
@@ -458,7 +448,7 @@ void make_tcp_ack_from_any(uint8_t *buf,int16_t datlentoack,uint8_t addflags)
         // fill the header:
         buf[TCP_FLAGS_P]=TCP_FLAGS_ACK_V|addflags;
         if (addflags==TCP_FLAGS_RST_V){
-                make_tcphead(buf,datlentoack,1);
+                make_tcphead(buf,datlentoack,1); 
         }else{
                 if (datlentoack==0){
                         // if there is no data then we must still acknoledge one packet
@@ -468,7 +458,7 @@ void make_tcp_ack_from_any(uint8_t *buf,int16_t datlentoack,uint8_t addflags)
                 make_tcphead(buf,datlentoack,1); // no options
         }
         // total length field in the IP header must be set:
-        // 20 bytes IP + 20 bytes tcp (when no options)
+        // 20 bytes IP + 20 bytes tcp (when no options) 
         j=IP_HEADER_LEN+TCP_HEADER_LEN_PLAIN;
         buf[IP_TOTLEN_H_P]=j>>8;
         buf[IP_TOTLEN_L_P]=j& 0xff;
@@ -597,10 +587,10 @@ void make_tcp_synack_from_syn(uint8_t *buf)
         // put an inital seq number
         buf[TCP_SEQ_H_P+0]= 0;
         buf[TCP_SEQ_H_P+1]= 0;
-        // we step only the second byte, this allows us to send packts
+        // we step only the second byte, this allows us to send packts 
         // with 255 bytes, 512  or 765 (step by 3) without generating
         // overlapping numbers.
-        buf[TCP_SEQ_H_P+2]= seqnum;
+        buf[TCP_SEQ_H_P+2]= seqnum; 
         buf[TCP_SEQ_H_P+3]= 0;
         // step the inititial seq num by something we will not use
         // during this tcp session:
@@ -629,7 +619,7 @@ void make_tcp_synack_from_syn(uint8_t *buf)
 
 // you must have initialized info_data_len at some time before calling this function
 //
-// This info_data_len initialisation is done automatically if you call
+// This info_data_len initialisation is done automatically if you call 
 // packetloop_icmp_tcp(buf,enc28j60PacketReceive(BUFFER_SIZE, buf));
 // and test the return value for non zero.
 //
@@ -644,28 +634,27 @@ void www_server_reply(uint8_t *buf,uint16_t dlen)
         // This code requires that we send only one data packet
         // because we keep no state information. We must therefore set
         // the fin here:
-        buf[TCP_FLAGS_P]=TCP_FLAGS_ACK_V|TCP_FLAGS_PUSH_V;//|TCP_FLAGS_FIN_V;
+        buf[TCP_FLAGS_P]=TCP_FLAGS_ACK_V|TCP_FLAGS_PUSH_V|TCP_FLAGS_FIN_V;
         make_tcp_ack_with_data_noflags(buf,dlen); // send data
 }
 
 #endif // WWW_server
 
-#if defined (ALL_clients)
+#if defined (ALL_clients) || defined (GRATARP) || defined (WOL_client)
 // fill buffer with a prog-mem string
-void fill_buf_p(uint8_t *buf,uint16_t len, const char *progmem_s)
+void fill_buf_p(uint8_t *buf,uint16_t len, const char *progmem_str_p)
 {
-        uint8_t i=0;
-
         while (len){
-                *buf= progmem_s[i];
+                *buf= pgm_read_byte(progmem_str_p);
                 buf++;
-                len--; i++;
+                progmem_str_p++;
+                len--;
         }
 }
-#endif
+#endif 
 
 #ifdef PING_client
-// icmp echo, matchpat is a pattern that has to be sent back by the
+// icmp echo, matchpat is a pattern that has to be sent back by the 
 // host answering the ping.
 // The ping is sent to destip  and mac dstmac
 void client_icmp_request(uint8_t *buf,uint8_t *destip,uint8_t *dstmac)
@@ -697,14 +686,14 @@ void client_icmp_request(uint8_t *buf,uint8_t *destip,uint8_t *dstmac)
         buf[ICMP_CHECKSUM_H_P]=0;
         buf[ICMP_CHECKSUM_L_P]=0;
         // a possibly unique id of this host:
-        buf[ICMP_IDENT_H_P]=5; // some number
+        buf[ICMP_IDENT_H_P]=5; // some number 
         buf[ICMP_IDENT_L_P]=ipaddr[3]; // last byte of my IP
         //
         buf[ICMP_IDENT_L_P+1]=0; // seq number, high byte
         buf[ICMP_IDENT_L_P+2]=1; // seq number, low byte, we send only 1 ping at a time
         // copy the data:
         i=0;
-        while(i<56){
+        while(i<56){ 
                 buf[ICMP_DATA_P+i]=PINGPATTERN;
                 i++;
         }
@@ -725,6 +714,7 @@ void client_ntp_request(uint8_t *buf,uint8_t *ntpip,uint8_t srcport,uint8_t *dst
 {
         uint8_t i=0;
         uint16_t ck;
+        if (!enc28j60linkup())return;
         //
         while(i<6){
                 buf[ETH_DST_MAC +i]=dstmac[i]; // gw mac in local lan or host mac
@@ -756,7 +746,7 @@ void client_ntp_request(uint8_t *buf,uint8_t *ntpip,uint8_t srcport,uint8_t *dst
         // copy the data:
         i=0;
         // most fields are zero, here we zero everything and fill later
-        while(i<48){
+        while(i<48){ 
                 buf[UDP_DATA_P+i]=0;
                 i++;
         }
@@ -772,7 +762,7 @@ void client_ntp_request(uint8_t *buf,uint8_t *ntpip,uint8_t srcport,uint8_t *dst
 // return 1 on sucessful processing of answer
 uint8_t client_ntp_process_answer(uint8_t *buf,uint32_t *time,uint8_t dstport_l){
         if (dstport_l){
-                if (buf[UDP_DST_PORT_L_P]!=dstport_l){
+                if (buf[UDP_DST_PORT_L_P]!=dstport_l){ 
                         return(0);
                 }
         }
@@ -787,9 +777,9 @@ uint8_t client_ntp_process_answer(uint8_t *buf,uint32_t *time,uint8_t dstport_l)
 #endif
 
 #ifdef UDP_client
-// -------------------- send a spontanious UDP packet to a server
+// -------------------- send a spontanious UDP packet to a server 
 // There are two ways of using this:
-// 1) you call send_udp_prepare, you fill the data yourself into buf starting at buf[UDP_DATA_P],
+// 1) you call send_udp_prepare, you fill the data yourself into buf starting at buf[UDP_DATA_P], 
 // you send the packet by calling send_udp_transmit
 //
 // 2) You just allocate a large enough buffer for you data and you call send_udp and nothing else
@@ -820,9 +810,9 @@ void send_udp_prepare(uint8_t *buf,uint16_t sport, const uint8_t *dip, uint16_t 
         }
         // done in transmit: fill_ip_hdr_checksum(buf);
         buf[UDP_DST_PORT_H_P]=(dport>>8);
-        buf[UDP_DST_PORT_L_P]=0xff&dport;
+        buf[UDP_DST_PORT_L_P]=0xff&dport; 
         buf[UDP_SRC_PORT_H_P]=(sport>>8);
-        buf[UDP_SRC_PORT_L_P]=sport&0xff;
+        buf[UDP_SRC_PORT_L_P]=sport&0xff; 
         buf[UDP_LEN_H_P]=0;
         // done in transmit: buf[UDP_LEN_L_P]=UDP_HEADER_LEN+datalen;
         // zero the checksum
@@ -912,7 +902,7 @@ void send_wol(uint8_t *buf,uint8_t *wolmac)
         buf[UDP_CHECKSUM_L_P]=0;
         // copy the data (102 bytes):
         i=0;
-        while(i<6){
+        while(i<6){ 
                 buf[UDP_DATA_P+i]=0xff;
                 i++;
         }
@@ -920,7 +910,7 @@ void send_wol(uint8_t *buf,uint8_t *wolmac)
         pos=UDP_DATA_P+6;
         while (m<16){
                 i=0;
-                while(i<6){
+                while(i<6){ 
                         buf[pos]=wolmac[i];
                         i++;
                         pos++;
@@ -960,7 +950,7 @@ uint8_t gratutious_arp(uint8_t *buf)
         buf[ETH_TYPE_L_P] = ETHTYPE_ARP_L_V;
         // arp request and reply are the same execept for
         // the opcode:
-        fill_buf_p(&buf[ETH_ARP_P],8,arpreqhdr);
+        fill_buf_p(&buf[ETH_ARP_P],8,arpreqhdr); 
         //buf[ETH_ARP_OPCODE_L_P]=ETH_ARP_OPCODE_REPLY_L_V; // reply
         i=0;
         while(i<6){
@@ -982,8 +972,8 @@ uint8_t gratutious_arp(uint8_t *buf)
 
 #if ARP_MAC_resolver_client
 // make a arp request
-// Note: you must have initialized the stack with
-// init_udp_or_www_server or client_ifconfig
+// Note: you must have initialized the stack with 
+// init_udp_or_www_server or client_ifconfig 
 // before you can use this function
 void client_arp_whohas(uint8_t *buf,uint8_t *ip_we_search)
 {
@@ -1025,8 +1015,8 @@ uint8_t get_mac_with_arp_wait(void)
 
 // reference_number is something that is just returned in the callback
 // to make matching and waiting for a given ip/mac address pair easier
-// Note: you must have initialized the stack with
-// init_udp_or_www_server or client_ifconfig
+// Note: you must have initialized the stack with 
+// init_udp_or_www_server or client_ifconfig 
 // before you can use this function
 void get_mac_with_arp(uint8_t *ip, uint8_t reference_number,void (*arp_result_callback)(uint8_t *ip,uint8_t reference_number,uint8_t *mac))
 {
@@ -1039,7 +1029,7 @@ void get_mac_with_arp(uint8_t *ip, uint8_t reference_number,void (*arp_result_ca
                 i++;
         }
 }
-#endif
+#endif 
 
 #if defined (TCP_client)
 // Make a tcp syn packet
@@ -1076,12 +1066,12 @@ void tcp_client_syn(uint8_t *buf,uint8_t srcport,uint16_t dstport)
                 buf[TCP_SEQ_H_P+i]=0;
                 i++;
         }
-        // -- header ready
+        // -- header ready 
         // put inital seq number
-        // we step only the second byte, this allows us to send packts
+        // we step only the second byte, this allows us to send packts 
         // with 255 bytes 512 (if we step the initial seqnum by 2)
         // or 765 (step by 3)
-        buf[TCP_SEQ_H_P+2]= seqnum;
+        buf[TCP_SEQ_H_P+2]= seqnum; 
         // step the inititial seq num by something we will not use
         // during this tcp session:
         seqnum+=3;
@@ -1110,7 +1100,7 @@ void tcp_client_syn(uint8_t *buf,uint8_t srcport,uint16_t dstport)
 }
 #endif // TCP_client
 
-#if defined (TCP_client)
+#if defined (TCP_client) 
 // This is how to use the tcp client:
 //
 // Declare a callback function to get the result (tcp data from the server):
@@ -1126,16 +1116,16 @@ void tcp_client_syn(uint8_t *buf,uint8_t srcport,uint16_t dstport)
 // output such that this will be the only packet.
 //
 // close_tcp_session=1 means close the session now. close_tcp_session=0
-// read all data and leave it to the other side to close it.
+// read all data and leave it to the other side to close it. 
 // If you connect to a web server then you want close_tcp_session=0.
 // If you connect to a modbus/tcp equipment then you want close_tcp_session=1
 //
-// Declare a callback function to be called in order to fill in the
+// Declare a callback function to be called in order to fill in the 
 //
 // request (tcp data sent to the server):
 // uint16_t your_client_tcp_datafill_callback(uint8_t fd){...your code;return(len_of_data_filled_in);}
 //
-// Now call:
+// Now call: 
 // fd=client_tcp_req(&your_client_tcp_result_callback,&your_client_tcp_datafill_callback,portnumber);
 //
 // fd is a file descriptor like number that you get back in the fill and result
@@ -1171,7 +1161,7 @@ uint8_t client_tcp_req(uint8_t (*result_callback)(uint8_t fd,uint8_t statuscode,
 }
 #endif //  TCP_client
 
-#if defined (WWW_client)
+#if defined (WWW_client) 
 uint16_t www_client_internal_datafill_callback(uint8_t fd){
         char strbuf[5];
         uint16_t len=0;
@@ -1179,27 +1169,27 @@ uint16_t www_client_internal_datafill_callback(uint8_t fd){
                 if (browsertype==0){
                         // GET
                         len=fill_tcp_data_p(bufptr,0,PSTR("GET "));
-                        len=fill_tcp_data_p(bufptr,len,client_urlbuf);
+                        len=fill_tcp_data_p(bufptr,len,client_urlbuf_p);
                         len=fill_tcp_data(bufptr,len,client_urlbuf_var);
                         // I would prefer http/1.0 but there is a funny
                         // bug in some apache webservers which causes
                         // them to send two packets (fragmented PDU)
                         // if we don't use HTTP/1.1 + Connection: close
                         len=fill_tcp_data_p(bufptr,len,PSTR(" HTTP/1.1\r\nHost: "));
-                        len=fill_tcp_data(bufptr,len,client_hoststr);
-                        len=fill_tcp_data_p(bufptr,len,PSTR("\r\nUser-Agent: tgr/1.1\r\nAccept: text/html\r\nConnection: close\r\n\r\n"));
+                        len=fill_tcp_data_p(bufptr,len,client_hoststr);
+                        len=fill_tcp_data_p(bufptr,len,PSTR("\r\nUser-Agent: tgr/1.1\r\nAccept: text/html\r\n\r\n"));
                 }else{
                         // POST
                         len=fill_tcp_data_p(bufptr,0,PSTR("POST "));
-                        len=fill_tcp_data_p(bufptr,len,client_urlbuf);
+                        len=fill_tcp_data_p(bufptr,len,client_urlbuf_p);
                         len=fill_tcp_data(bufptr,len,client_urlbuf_var);
                         len=fill_tcp_data_p(bufptr,len,PSTR(" HTTP/1.1\r\nHost: "));
-                        len=fill_tcp_data(bufptr,len,client_hoststr);
-                        if (client_additionalheaderline){
+                        len=fill_tcp_data_p(bufptr,len,client_hoststr);
+                        if (client_additionalheaderline_p){
                                 len=fill_tcp_data_p(bufptr,len,PSTR("\r\n"));
-                                len=fill_tcp_data_p(bufptr,len,client_additionalheaderline);
+                                len=fill_tcp_data_p(bufptr,len,client_additionalheaderline_p);
                         }
-                        len=fill_tcp_data_p(bufptr,len,PSTR("\r\nUser-Agent: tgr/1.1\r\nAccept: */*\r\nConnection: close\r\n"));
+                        len=fill_tcp_data_p(bufptr,len,PSTR("\r\nUser-Agent: tgr/1.1\r\nAccept: */*\r\n"));
                         len=fill_tcp_data_p(bufptr,len,PSTR("Content-Length: "));
                         itoa(strlen(client_postval),strbuf,10);
                         len=fill_tcp_data(bufptr,len,strbuf);
@@ -1213,7 +1203,7 @@ uint16_t www_client_internal_datafill_callback(uint8_t fd){
 
 uint8_t www_client_internal_result_callback(uint8_t fd, uint8_t statuscode, uint16_t datapos, uint16_t len_of_data){
         uint16_t web_statuscode=0; // tcp status is OK but we need to check http layer too
-        uint8_t i=0;
+        uint8_t i=0; 
         if (fd!=www_fd){
                 (*client_browser_callback)(500,0,0);
                 return(0);
@@ -1222,7 +1212,7 @@ uint8_t www_client_internal_result_callback(uint8_t fd, uint8_t statuscode, uint
                 // we might have a http status code
                 // http status codes are 3digit numbers as ascii text. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
                 // The buffer would look like this: HTTP/1.1 200 OK\r\n
-                // web_statuscode=0 means we got a corrupted answer
+                // web_statuscode=0 means we got a corrupted answer 
                 if (client_browser_callback){
                         if (isblank(bufptr[datapos+8]) && isdigit(bufptr[datapos+9])&& isdigit(bufptr[datapos+11])){ // e.g 200 OK, a status code has 3 digits from datapos+9 to datapos+11, copy over the web/http status code to web_statuscode:
                                 while(i<2){
@@ -1260,10 +1250,10 @@ uint8_t www_client_internal_result_callback(uint8_t fd, uint8_t statuscode, uint
 // The string buffers to which urlbuf_varpart and hoststr are pointing
 // must not be changed until the callback is executed.
 //
-void client_browse_url(const prog_char *urlbuf,const char *urlbuf_varpart,const char *hoststr,void (*callback)(uint16_t,uint16_t,uint16_t),uint8_t *dstip,uint8_t *dstmac)
+void client_browse_url(const char *urlbuf_p,char *urlbuf_varpart,const char *hoststr,void (*callback)(uint16_t,uint16_t,uint16_t),uint8_t *dstip,uint8_t *dstmac)
 {
         if (!enc28j60linkup())return;
-        client_urlbuf=urlbuf;
+        client_urlbuf_p=urlbuf_p;
         client_urlbuf_var=urlbuf_varpart;
         client_hoststr=hoststr;
         browsertype=0;
@@ -1272,19 +1262,19 @@ void client_browse_url(const prog_char *urlbuf,const char *urlbuf_varpart,const 
 }
 
 // client web browser using http POST operation:
-// additionalheaderline must be set to NULL if not used.
+// additionalheaderline_p must be set to NULL if not used.
 // The string buffers to which urlbuf_varpart and hoststr are pointing
 // must not be changed until the callback is executed.
-// postval is a string buffer which can only be de-allocated by the caller
+// postval is a string buffer which can only be de-allocated by the caller 
 // when the post operation was really done (e.g when callback was executed).
 // postval must be urlencoded.
-void client_http_post(const prog_char *urlbuf, const char *urlbuf_varpart,const char *hoststr, const prog_char *additionalheaderline,char *postval,void (*callback)(uint16_t,uint16_t,uint16_t),uint8_t *dstip,uint8_t *dstmac)
+void client_http_post(const char *urlbuf_p, char *urlbuf_varpart,const char *hoststr, const char *additionalheaderline_p,char *postval,void (*callback)(uint16_t,uint16_t,uint16_t),uint8_t *dstip,uint8_t *dstmac)
 {
         if (!enc28j60linkup())return;
-        client_urlbuf=urlbuf;
+        client_urlbuf_p=urlbuf_p;
         client_hoststr=hoststr;
         client_urlbuf_var=urlbuf_varpart;
-        client_additionalheaderline=additionalheaderline;
+        client_additionalheaderline_p=additionalheaderline_p;
         client_postval=postval;
         browsertype=1;
         client_browser_callback=callback;
@@ -1314,18 +1304,18 @@ uint8_t packetloop_icmp_checkreply(uint8_t *buf,uint8_t *ip_monitoredhost)
 #endif // PING_client
 
 
-// return 0 to just continue in the packet loop and return the position
+// return 0 to just continue in the packet loop and return the position 
 // of the tcp data if there is tcp data part
 uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
 {
-//        uint16_t len;
+        uint16_t len;
 #if defined (TCP_client)
         uint8_t send_fin=0;
         uint16_t tcpstart;
         uint16_t save_len;
 #endif
 #ifdef ARP_MAC_resolver_client
-        //plen will be unequal to zero if there is a valid
+        //plen will be unequal to zero if there is a valid 
         // packet (without crc error):
         if(plen==0){
                 if (arpip_state == (WGW_ACCEPT_ARP_REPLY|WGW_INITIAL_ARP) && arp_delaycnt==0 ){
@@ -1352,17 +1342,17 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
         }
 #endif // ARP_MAC_resolver_client
         // arp is broadcast if unknown but a host may also
-        // verify the mac address by sending it to
+        // verify the mac address by sending it to 
         // a unicast address.
         if(eth_type_is_arp_and_my_ip(buf,plen)){
                 if (buf[ETH_ARP_OPCODE_L_P]==ETH_ARP_OPCODE_REQ_L_V){
-                        // is it an arp request
+                        // is it an arp request 
                         make_arp_answer_from_request(buf);
                 }
 #ifdef ARP_MAC_resolver_client
                 if ((arpip_state & WGW_ACCEPT_ARP_REPLY) && (buf[ETH_ARP_OPCODE_L_P]==ETH_ARP_OPCODE_REPLY_L_V)){
-                        // is it an arp reply
-                        if (memcmp(&buf[ETH_ARP_SRC_IP_P],arpip,4)!=0) return(0); // not an arp reply for the IP we were searching
+                        // is it an arp reply 
+                        if (memcmp(&buf[ETH_ARP_SRC_IP_P],arpip,4)!=0) return(0); // not an arp reply for the IP we were searching           
                         (*client_arp_result_callback)(arpip,arp_reference_number,buf+ETH_ARP_SRC_MAC_P);
                         arpip_state=WGW_HAVE_MAC;
                 }
@@ -1379,13 +1369,13 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
                         (*icmp_callback)(&(buf[IP_SRC_P]));
                 }
                 // a ping packet, let's send pong
-                debugstr("Sending ping reply...");
-                debugcrlf();
+                debugstr("Replying to ping..."); debugcrlf();
                 make_echo_reply_from_request(buf,plen);
                 return(0);
         }
-        if (plen<54 && buf[IP_PROTO_P]!=IP_PROTO_TCP_V ){
-                // smaller than the smallest TCP packet and not tcp port
+        // this is an important check to avoid working on the wrong packets:
+        if (plen<54 || buf[IP_PROTO_P]!=IP_PROTO_TCP_V ){
+                // smaller than the smallest TCP packet (TCP packet with no options section) or not tcp port
                 return(0);
         }
 #if defined (TCP_client)
@@ -1393,7 +1383,7 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
         if ( buf[TCP_DST_PORT_H_P]==TCPCLIENT_SRC_PORT_H){
 #if defined (WWW_client)
                 // workaround to pass pointer to www_client_internal..
-                bufptr=buf;
+                bufptr=buf; 
 #endif // WWW_client
                 if (check_ip_message_is_from(buf,tcp_otherside_ip)==0){
                         return(0);
@@ -1404,7 +1394,7 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
                                 // parameters in client_tcp_result_callback: fd, status, buf_start, len
                                 (*client_tcp_result_callback)((buf[TCP_DST_PORT_L_P]>>5)&0x7,3,0,0);
                         }
-                        tcp_client_state=5;
+                        tcp_client_state=6;
                         return(0);
                 }
                 len=get_tcp_data_len(buf);
@@ -1418,7 +1408,7 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
                                 // still have a valid tcp-ack in the buffer. In other words
                                 // you have just called make_tcp_ack_from_any(buf,0).
                                 if (client_tcp_datafill_callback){
-                                        // in this case it is src port because the above
+                                        // in this case it is src port because the above 
                                         // make_tcp_ack_from_any swaps the dst and src port:
                                         len=(*client_tcp_datafill_callback)((buf[TCP_SRC_PORT_L_P]>>5)&0x7);
                                 }else{
@@ -1447,7 +1437,7 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
                 }
                 // in tcp_client_state==3 we will normally first get an empty
                 // ack-packet and then a ack-packet with data.
-                if (tcp_client_state==3 && len>0){
+                if (tcp_client_state==3 && len>0){ 
                         // our first real data packet
                         tcp_client_state=4;
                         // return the data we received
@@ -1470,11 +1460,25 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
                         }
                 }
                 if(tcp_client_state==5){
-                        // no more ack
+                        // we get one more final ack to our fin-ack:
+                        if (buf[TCP_FLAGS_P] & TCP_FLAGS_ACK_V){
+                                tcp_client_state=6; // in state 6 communication should be finished
+                        }
+                        return(0);
+                }
+                if(tcp_client_state==6){
+                        // something wrong, can't deal with this, reset the connection
+                        len++;
+                        if (buf[TCP_FLAGS_P] & TCP_FLAGS_ACK_V) len=0; // if packet was an ack then do not step the ack number
+                        make_tcp_ack_from_any(buf,len,TCP_FLAGS_RST_V);
+                        // just a single reset, do not repeat if more messages:
+                        tcp_client_state=7;
                         return(0);
                 }
                 if (buf[TCP_FLAGS_P] & TCP_FLAGS_FIN_V){
-                        make_tcp_ack_from_any(buf,len+1,TCP_FLAGS_PUSH_V|TCP_FLAGS_FIN_V);
+                        // this normally a fin ack message but it could be
+                        // any message with fin we answer with fin-ack:
+                        make_tcp_ack_from_any(buf,len+1,TCP_FLAGS_FIN_V);
                         tcp_client_state=5; // connection terminated
                         return(0);
                 }
@@ -1490,7 +1494,7 @@ uint16_t packetloop_arp_icmp_tcp(uint8_t *buf,uint16_t plen)
         //
 #ifdef WWW_server
         // tcp port web server start
-        if (buf[IP_PROTO_P]==IP_PROTO_TCP_V && buf[TCP_DST_PORT_H_P]==wwwport_h && buf[TCP_DST_PORT_L_P]==wwwport_l){
+        if (buf[TCP_DST_PORT_H_P]==wwwport_h && buf[TCP_DST_PORT_L_P]==wwwport_l){
                 if (buf[TCP_FLAGS_P] & TCP_FLAGS_SYN_V){
                         make_tcp_synack_from_syn(buf);
                         // make_tcp_synack_from_syn does already send the syn,ack

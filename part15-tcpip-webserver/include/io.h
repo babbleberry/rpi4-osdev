@@ -17,3 +17,5 @@ void gpio_setPinOutputBool(unsigned int pin_number, unsigned int onOrOff);
 void gpio_initOutputPinWithPullNone(unsigned int pin_number);
 void uart_hex(unsigned int d);
 void uart_byte(unsigned char b);
+unsigned long HAL_GetTick(void);
+void HAL_Delay(unsigned int ms);

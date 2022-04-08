@@ -12,10 +12,6 @@
 #ifndef IP_ARP_UDP_TCP_H
 #define IP_ARP_UDP_TCP_H 1
 
-#include "net.h"
-#include "../net/enc28j60.h"
-#include "../kernel/kernel.h"
-#include "../include/fb.h"
 #include "ip_config.h"
 
 // set my own mac address:
