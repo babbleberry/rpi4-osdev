@@ -31,7 +31,7 @@ This was also added to _kernel/kernel.h_.
 
 What happened to _arp.c_?
 -------------------------
-You'll notice that I've merged _arp.c_ and _kernel.c_. We still initialise the network card in exactly the same way but, when we're done, we call this function in Guido's code:
+You'll notice that I've merged _arp.c_ and _kernel.c_. I have also gone away from doing anything wih multicore or IRQ timers to keep this kernel simple. We still initialise the network card in exactly the same way but, when we're done, we call this function in Guido's code:
 
 ```c
 init_udp_or_www_server(myMAC, deviceIP);
@@ -39,7 +39,7 @@ init_udp_or_www_server(myMAC, deviceIP);
 
 This tells the TCP/IP library who we are, so we're all on the same page!
 
-Finally, and aside from a little cleanup (eg. moving the HAL timer functions to _io.c_ with the commensurate changes to _io.h_), the major change is the new `serve()` function:
+Finally, and aside from a little cleanup (eg. moving the HAL/system timer functions to _lib/io.c_ with the commensurate changes to _include/io.h_), the major change is the new `serve()` function:
 
 ```c
 void serve(void)
