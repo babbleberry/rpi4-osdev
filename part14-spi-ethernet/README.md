@@ -206,4 +206,4 @@ _Imagine how happy I was to see my router's (correct!) MAC address appear on-scr
 
 ![ARP response](images/14-spi-ethernet-arp.jpg)
 
-[Go to part15-tcpip >](../part15-tcpip-webserver)
+[Go to part15-tcpip-webserver >](../part15-tcpip-webserver)
