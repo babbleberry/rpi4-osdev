@@ -26,9 +26,9 @@ _Good luck as you explore the code!_
 
 Progress video
 --------------
-Click on the picture below to watch a quick video of the game in action.
+Click to watch a quick video of the game in action.
 
-[![A video of the Breakout game in action](https://img.youtube.com/vi/W6fE2q_1voM/0.jpg)](https://www.youtube.com/watch?v=W6fE2q_1voM)
+https://user-images.githubusercontent.com/68182575/173157526-2b22f9b2-0f55-42a0-87e1-b8278930fefe.mp4
 
 PS: Sorry for the bad audio quality - the game itself sounds great in real life, I promise!
 
