@@ -46,7 +46,7 @@ Software prerequisites
 
 If you can't get someone else's OS running, you likely won't be able to write your own. So I started by flashing the SD card with Raspbian - Raspberry Pi's recommended OS. I used the very neat [Imager tool](https://www.raspberrypi.org/downloads/) that they make available on their website to do this.
 
-Hook up your RPi4 and make sure it boots into Raspbian. There are plenty of resources online to help you achieve/troubleshoot this. Getting Raspbian up will test that your hardware setup is working properly. Note: because I connected my RPi4 to my (not brilliant) TV, I needed to make an edit in the _config.txt_ file on the SD card (setting the `hdmi_safe` parameter to 1) to ensure that I could see the screen. Without that, it was just black.
+Hook up your RPi4 and make sure it boots into Raspbian. There are plenty of resources online to help you achieve/troubleshoot this. Getting Raspbian up will test that your hardware setup is working properly. Note: because I connected my RPi4 to my (not brilliant) TV, I needed to make an edit in the _config.txt_ file on the SD card (setting the `hdmi_safe` parameter to 1) to ensure that I could see the screen. Without that, it was just black. If you're still having trouble, check out the other _config.txt_ video options [here on the Raspberry Pi website](https://www.raspberrypi.com/documentation/computers/config_txt.html#video-options).
 
 Don't proceed until you get Raspbian running!
 
