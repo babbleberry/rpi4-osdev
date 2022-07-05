@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 6)
 ===================================================================
 
+[< Go back to part5-framebuffer](../part5-framebuffer)
+
 Introducing Breakout
 --------------------
 

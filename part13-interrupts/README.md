@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 13)
 ====================================================================
 
+[< Go back to part12-wgt](../part12-wgt)
+
 What are interrupts?
 --------------------
 If you've spent any time looking at the Bluetooth code in these tutorials, you'll notice we're always "polling" for updates. In fact, in _part11-breakout-smp_ we tie up an entire core just waiting around for something to happen. This clearly isn't the best use of CPU time. Fortunately, the world solved that problem for us years ago with _interrupts_.

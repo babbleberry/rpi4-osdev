@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 12)
 ====================================================================
 
+[< Go back to part11-breakout-smp](../part11-breakout-smp)
+
 Porting the WordUp Graphics Toolkit
 -----------------------------------
 Back in the mid-1990s (when I was young!), programmers who wanted to build their own games didn't have rich frameworks like Unity. Perhaps the closest we got was the WordUp Graphics Toolkit, which I came across on the Hot Sound & Vision CD-ROM - a BBS archive. If you have a moment, perhaps use Google to see what "bulletin board systems" were... nostaglia awaits!

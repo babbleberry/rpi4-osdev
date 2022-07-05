@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 10)
 ====================================================================
 
+[< Go back to part9-sound](../part9-sound)
+
 Using multiple CPU cores
 ------------------------
 Instead of a background DMA transfer, I suggested that we might use a second CPU core to play the audio whilst our main core continues on. I also said it would be hard on the Raspberry Pi 4... and it is.
@@ -158,4 +160,4 @@ _As you run this, you'll see that these functions run in parallel on their respe
 
 Coming up in part 11, we'll put all of this work together for a multi-core version of our Breakout game.
 
-[Go to part11-breakout-smp>](../part11-breakout-smp)
+[Go to part11-breakout-smp >](../part11-breakout-smp)

@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 7)
 ===================================================================
 
+[< Go back to part6-breakout](../part6-breakout)
+
 Getting Bluetooth up
 --------------------
 

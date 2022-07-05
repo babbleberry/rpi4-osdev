@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 11)
 ====================================================================
 
+[< Go back to part10-multicore](../part10-multicore)
+
 Putting it all together
 -----------------------
 Frankly, I'm unlikely to write much documentation for this part. I'm also only providing a Clang _Makefile_ for now. If you're using gcc, have a go at putting your own _Makefile_ together, referencing the previous parts.

@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 3)
 ===================================================================
 
+[< Go back to part2-building](../part2-building)
+
 Making something happen
 -----------------------
 

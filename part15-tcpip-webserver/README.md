@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 15)
 ====================================================================
 
+[< Go back to part14-spi-ethernet](../part14-spi-ethernet)
+
 Adding a TCP/IP stack
 ---------------------
 Having achieved "proof of life" from our Ethernet module in _part14-spi-ethernet_, you're doubtless wondering how to go from there to serving web pages, posting tweets on Twitter or perhaps even just simply responding to a ping!

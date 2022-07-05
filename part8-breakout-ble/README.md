@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 8)
 ===================================================================
 
+[< Go back to part7-bluetooth](../part7-bluetooth)
+
 Receiving Bluetooth data
 ------------------------
 So we've mastered advertising and we're broadcasting data out into the World. But that's only half the story! In this part, we'll be exploring how to receive data from an external source. This is much more exciting as we can begin to use other devices as remote controllers.

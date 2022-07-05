@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 2)
 ===================================================================
 
+[< Go back to part1-bootstrapping](./part1-bootstrapping/)
+
 Making a makefile
 -----------------
 

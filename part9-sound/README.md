@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 9)
 ===================================================================
 
+[< Go back to part8-breakout-ble](../part8-breakout-ble)
+
 Playing sound from the audio jack
 ---------------------------------
 One thing our game is missing is the excitement of sound! Some beeps and squeaks would be a wonderful addition to make the gameplay more compelling. Let's work to do just that!

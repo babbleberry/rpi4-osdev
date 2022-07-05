@@ -1,6 +1,8 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 14)
 ====================================================================
 
+[< Go back to part13-interrupts](../part13-interrupts)
+
 Bare metal Ethernet for under £10
 ---------------------------------
 It's exciting to build your own OS, but until you give it the ability to communicate with the outside world, your possibilities are limited. Indeed, our simple Bluetooth comms got us up and running - but if we're to do anything meaningful then we need proper networking.
