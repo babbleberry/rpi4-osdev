@@ -1,7 +1,7 @@
 Writing a "bare metal" operating system for Raspberry Pi 4 (Part 1)
 ===================================================================
 
-[< Go back to introduction](../)
+[< Go back to introduction](https://www.rpi4os.com/)
 
 How do we code?
 ---------------
