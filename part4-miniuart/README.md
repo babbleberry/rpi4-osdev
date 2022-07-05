@@ -49,7 +49,7 @@ Configuring the UART
 
 The second section of _io.c_ (marked with `// UART`) implements a few functions to help us talk to the UART. Thankfully, this device also uses MMIO, and you'll see the registers set up in the first `enum` just like you saw before. Look in the [BCM2711 ARM Peripherals document](https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf) for a more detailed explanation of these registers.
 
-I do just want to call out the `AUX_UART_CLOCK` parameter, which we set to `500000000`. Remember how I said that UART communication is all about timing? Well, this is exactly the same clock speed (500Mhz) that we set in _config.txt_ when we added the `core_freq_min=500` line. This is no coincidence!
+I do just want to call out the `AUX_UART_CLOCK` parameter, which we set to `500000000`. Remember how I said that UART communication is all about timing? Well, this is exactly the same clock speed (500 MHz) that we set in _config.txt_ when we added the `core_freq_min=500` line. This is no coincidence!
 
 You'll also note some other familiar numbers in the `uart_init()` function, which we call directly from our `main()` routine in _kernel.c_. We set the baud rate to `115200`, and the number of bits to `8`.
 

@@ -50,7 +50,7 @@ mov     w1, 0x80000000
 str     w1, [x0, #(LOCAL_PRESCALER - LOCAL_CONTROL)]
 ```
 
-You should remember the expected oscillator frequency of 54Mhz from part9. We set this with the following lines:
+You should remember the expected oscillator frequency of 54 MHz from part9. We set this with the following lines:
 
 ```c
 ldr     x0, =OSC_FREQ

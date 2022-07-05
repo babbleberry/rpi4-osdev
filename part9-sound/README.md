@@ -22,7 +22,7 @@ Notes to self
 Here are a few things I learned on this journey, which helped me along significantly:
 
  * The Raspberry Pi 4 uses PWM1 for output on the audio jack when GPIO 40 and 41 are mapped to Alternate Function 0
- * The Raspberry Pi 4's clock oscillator frequency is 54Mhz
+ * The Raspberry Pi 4's clock oscillator frequency is 54 MHz
  * PWM1 DMA is mapped to DMA channel 1
  * PWM1 is mapped to DREQ 1
  * We must use Legacy Master (starting `0x7E`, not `0xFE`) addresses for DMA transfers to peripherals
@@ -32,7 +32,7 @@ And always, always have a browser tab open on the [BCM2711 ARM Peripherals docum
 
 Audio sample format
 -------------------
-_audio.bin_ is the audio file we'll be playing. Technically speaking, it's 8-bit, unsigned PCM data at 44.1Khz. This is an unusual format in this modern day and age, but it's easily converted using a tool like [ffmpeg](https://ffmpeg.org/).
+_audio.bin_ is the audio file we'll be playing. Technically speaking, it's 8-bit, unsigned PCM data at 44.1 KHz. This is an unusual format in this modern day and age, but it's easily converted using a tool like [ffmpeg](https://ffmpeg.org/).
 
 To convert from our _.bin_ file to a _.wav_ file that any laptop can play natively, do this:
 
@@ -50,7 +50,7 @@ I knew DMA transfers might be a tricky beast, so I began by just proving I could
 
 Looking at `main()`, you'll see that we first call `audio_init()`. This function ensures that PWM1 is correctly mapped. PWM is a technique used to control analogue devices using digital signals. Whilst digital signals are either on (1 - full power) or off (0 - no power), analogue signals may be an infinite number of values between 1 and 0. PWM fakes an analogue signal by applying power in quick pulses/bursts of regulated voltage. The resultant average voltage will end up looking roughly like an analogue signal, despite not being one. Clever, eh?
 
-These pulses/bursts do need to be highly accurate for this trick to work, and so we need a reliable clock source. Just like your kitchen clock ticks every second, so the oscillator on the Raspberry Pi 4 has a regular 'tick' - in this case, 54,000,000 times per second (54Mhz)! Our audio sample is at 44.1Khz though, so we need to 'slow it down'. We do this by first stopping the clock, then setting a clock divisor, setting the PWM range, and enabling the clock again. In my code, I use 2 as the clock divisor (so we're down to 27Mhz) and set the range to 612 (0x264). Essentially, this means that our PWM module will move to a new sample every 27,000,000/612 times per second - roughly equivalent to 44.1Khz, which just happens to be the sample rate of the included audio sample _audio.bin_ (I've included _audio.wav_ so you can listen normally on your laptop too!).
+These pulses/bursts do need to be highly accurate for this trick to work, and so we need a reliable clock source. Just like your kitchen clock ticks every second, so the oscillator on the Raspberry Pi 4 has a regular 'tick' - in this case, 54,000,000 times per second (54 MHz)! Our audio sample is at 44.1 KHz though, so we need to 'slow it down'. We do this by first stopping the clock, then setting a clock divisor, setting the PWM range, and enabling the clock again. In my code, I use 2 as the clock divisor (so we're down to 27 MHz) and set the range to 612 (0x264). Essentially, this means that our PWM module will move to a new sample every 27,000,000/612 times per second - roughly equivalent to 44.1 KHz, which just happens to be the sample rate of the included audio sample _audio.bin_ (I've included _audio.wav_ so you can listen normally on your laptop too!).
 
 We then enable the PWM module, telling it to wait for sample data on its FIFO input, and we're good to go. Until we start filling the buffer, no audio will play.
 
