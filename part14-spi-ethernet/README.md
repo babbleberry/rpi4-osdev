@@ -51,7 +51,7 @@ void gpio_initOutputPinWithPullNone(unsigned int pin_number);
 
 Specifically, `spi_init()` sets GPIO 7, 9, 10, and 11 to use the ALT0 function. Cross-referencing with the [BCM2711 ARM Peripherals document](https://datasheets.raspberrypi.com/bcm2711/bcm2711-peripherals.pdf), page 77, you'll see that this maps SPI0 to the GPIO header. GPIO 8 is mapped as an output pin, since we'll use this to signal to the ENC28J60 that we want to talk. In fact, the `spi_chip_select()` function takes a true/false (boolean) parameter which either sets or clears this pin.
 
-Looking at the SPI0 register map on page 134, we see this reflected in our `REGS_SPI0` structure. This gives us handy access to the SPI0 peripheral's memory-mapped registers.
+Looking at the SPI0 register map on page 136, we see this reflected in our `REGS_SPI0` structure. This gives us handy access to the SPI0 peripheral's memory-mapped registers.
 
 Our `spi_send_recv()` function then sets us up for some communcation:
 
@@ -99,7 +99,7 @@ void ENC_SPI_SendWithoutSelection(unsigned char command) {
 }
 ```
 
-Perhaps the most confusing aspect is the chip selection. Through a bit of trial & error I discovered that when GPIO08 is clear, the device is selected, and when it's set, the device is deselected. If you can explain this to me, I'd love to hear from you - frankly, I was just pleased to get it working, so I moved on!
+Perhaps the most confusing aspect is the chip selection. Through a bit of trial & error I discovered that when GPIO08 is clear, the device is selected, and when it's set, the device is deselected. It turns out this is because the Chip Select pin on the ENC28J60 is active LOW and there's no invertor on the board (presumably to save costs), so GPIO08 must be LOW to enable the IC.
 
 Some more timer functions
 -------------------------

@@ -105,7 +105,7 @@ void SendArpPacket(uint8_t *targetIP, uint8_t *deviceMAC)
    // The source of the packet will be the ENC28J60 MAC address
    memcpy(arpPacket.eth.SrcAddrs, deviceMAC, 6);
     
-   // The destination is broadcast - a MAC address of FF:FF:FF:FF:FF:FF */
+   // The destination is broadcast - a MAC address of FF:FF:FF:FF:FF:FF
    memset(arpPacket.eth.DestAddrs, 0xFF, 6);
     
    arpPacket.eth.type = ARPPACKET;
