@@ -1,4 +1,4 @@
-theme: jekyll-theme-cayman
+remote-theme: isometimes/cayman-ga4
 google_analytics: G-YL02TRV3C8
 url: "https://www.rpi4os.com"
 plugins:
