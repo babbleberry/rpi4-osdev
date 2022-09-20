@@ -1,4 +1,5 @@
 theme: jekyll-theme-cayman
+google_analytics: G-YL02TRV3C8
 url: "https://www.rpi4os.com"
 plugins:
           - jekyll-sitemap
