@@ -23,7 +23,7 @@ Note: you can avoid re-imaging the Pi, by instead [building a cross-compiler you
 
 Now let's build something:
 
- * Use `git` to clone this repo: `git clone https://github.com/isometimes/rpi4-osdev.git`
+ * Use `git` to clone this repo: `git clone https://github.com/babbleberry/rpi4-osdev.git`
  * Decide which part you want to build - I like testing with _part5-framebuffer_ (it's visual, so you'll know when it works!)
  * Copy the _Makefile.gcc_ to _Makefile_
  * Edit the _Makefile_ and ensure the `GCCPATH` variable points to the _bin_ subdirectory where your cross-compiler is to be found
