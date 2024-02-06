@@ -35,6 +35,7 @@ The timers are set up using these calls:
 ```c
 irq_init_vectors();
 enable_interrupt_controller();
+irq_barrier();
 irq_enable();
 timer_init();
 ```
@@ -77,7 +78,7 @@ In the middle we simply call a function called `handle_irq()` which is written i
 void handle_irq() {
     unsigned int irq = REGS_IRQ->irq0_pending_0;
 
-    while(irq) {
+    while(irq & (SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3)) {
         if (irq & SYS_TIMER_IRQ_1) {
             irq &= ~SYS_TIMER_IRQ_1;
 
@@ -119,6 +120,8 @@ Masking is a technique used by the CPU to prevent a particular piece of code fro
 
 The `irq_enable` and `irq_disable` functions in _utils.S_ are responsible for masking and unmasking interrupts:
 
+They are helped by the `irq_barrier` function which ensures that the `enable_interrupt_controller()` call properly finishes before the `irq_enable()` call is made.
+
 ```c
 .globl irq_enable
 irq_enable:
@@ -128,6 +131,11 @@ irq_enable:
 .globl irq_disable
 irq_disable:
     msr daifset, #2
+    ret
+
+.globl irq_barrier
+irq_barrier:
+    dsb sy
     ret
 ```
 
