@@ -13,3 +13,8 @@ irq_enable:
 irq_disable:
     msr daifset, #2
     ret
+
+.globl irq_barrier
+irq_barrier:
+    dsb sy
+    ret

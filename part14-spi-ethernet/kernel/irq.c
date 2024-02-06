@@ -11,7 +11,7 @@ void disable_interrupt_controller() {
 void handle_irq() {
     unsigned int irq = REGS_IRQ->irq0_pending_0;
 
-    while(irq) {
+    while(irq & (SYS_TIMER_IRQ_1 | SYS_TIMER_IRQ_3)) {
         if (irq & SYS_TIMER_IRQ_1) {
             irq &= ~SYS_TIMER_IRQ_1;
 

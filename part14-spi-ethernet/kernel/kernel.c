@@ -147,6 +147,7 @@ void main(void)
 
     irq_init_vectors();
     enable_interrupt_controller();
+    irq_barrier();
     irq_enable();
     timer_init();
 
