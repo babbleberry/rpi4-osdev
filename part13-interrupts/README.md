@@ -118,9 +118,9 @@ To begin receiving interrupts, we need to take one more step: unmasking all type
 
 Masking is a technique used by the CPU to prevent a particular piece of code from being stopped in its tracks by an interrupt. It's used to protect important code that *must* complete. Imagine what would happen if our `kernel_entry` code (that saves register state) was interrupted halfway through! In this case, the register state would be overwritten and lost. This is why the CPU automatically masks all interrupts when an exception handler is executed.
 
-The `irq_enable` and `irq_disable` functions in _utils.S_ are responsible for masking and unmasking interrupts:
+The `irq_enable` and `irq_disable` functions in _utils.S_ are responsible for masking and unmasking interrupts.
 
-They are helped by the `irq_barrier` function which ensures that the `enable_interrupt_controller()` call properly finishes before the `irq_enable()` call is made.
+They are helped by the `irq_barrier` function which ensures that the `enable_interrupt_controller()` call properly finishes before the `irq_enable()` call is made:
 
 ```c
 .globl irq_enable
