@@ -4,7 +4,7 @@ Writing a "bare metal" operating system for Raspberry Pi 4
 Introduction
 ------------
 
-As a tech CEO @RealVNC, I don't write code any more. And I've recently realised just how much I miss it.
+As a tech CEO, I don't write code any more. And I've recently realised just how much I miss it.
 
 Currently in the throes of a nationwide "lockdown" due to Covid-19 (and having been spared my usual commute), I've found myself with more hours in the day. I have taken this time for myself and used it to fulfil a childhood ambition - to write a **bare metal** operating system that runs on commercial hardware.
 
