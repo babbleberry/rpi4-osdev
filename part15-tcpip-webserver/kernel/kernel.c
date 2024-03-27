@@ -59,7 +59,7 @@ ENC_HandleTypeDef handle;
 unsigned char myMAC[6] = { 0xc0, 0xff, 0xee, 0xc0, 0xff, 0xee };
 
 // IP address to be assigned to the ENC28J60
-unsigned char deviceIP[4] = { 192, 168, 0, 66 };
+unsigned char deviceIP[4] = { 10, 7, 3, 20 };
 
 void init_network(void)
 {

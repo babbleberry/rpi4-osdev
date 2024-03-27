@@ -1,20 +1,25 @@
+BOOTMNT ?= /media/cvdeveloper/bootfs
+
 CFILES = $(wildcard *.c lib/*.c kernel/*.c net/*.c tcpip/*.c)
 SFILES = $(wildcard boot/*.S lib/*.S kernel/*.S)
 OFILES = $(CFILES:.c=.o) $(SFILES:.S=.o)
-LLVMPATH = /opt/homebrew/opt/llvm/bin
-CLANGFLAGS = -Wall -O0 -ffreestanding -nostdlib -mcpu=cortex-a72+nosimd
+GCCFLAGS = -Wall -O0 -ffreestanding -nostdlib -nostartfiles
+GCCPATH = ../../gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin
 
 all: clean kernel8.img
 
 %.o: %.c
-	$(LLVMPATH)/clang --target=aarch64-elf $(CLANGFLAGS) -c $< -o $@
+	$(GCCPATH)/aarch64-none-elf-gcc $(GCCFLAGS) -c $< -o $@
 
 %.o: %.S
-	$(LLVMPATH)/clang --target=aarch64-elf $(CLANGFLAGS) -c $< -o $@
+	$(GCCPATH)/aarch64-none-elf-gcc $(GCCFLAGS) -c $< -o $@
 
 kernel8.img: $(OFILES)
-	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib $(OFILES) -T boot/link.ld -o kernel8.elf
-	$(LLVMPATH)/llvm-objcopy -O binary kernel8.elf kernel8.img
+	$(GCCPATH)/aarch64-none-elf-ld -nostdlib $(OFILES) -T boot/link.ld -o kernel8.elf
+	$(GCCPATH)/aarch64-none-elf-objcopy -O binary kernel8.elf kernel8.img
+	cp kernel8.img $(BOOTMNT)/kernel8.img
+	cp config.txt $(BOOTMNT)/
+	sync
 
 clean:
 	/bin/rm kernel8.elf */*.o *.img > /dev/null 2> /dev/null || true
