@@ -18,8 +18,8 @@ enum {
 
 enum {
     Pull_None = 0,
-    Pull_Down = 2,
-    Pull_Up = 1
+    Pull_Down = 1, // Are down and up the right way around?
+    Pull_Up = 2
 };
 
 void mmio_write(long reg, unsigned int val) { *(volatile unsigned int *)reg = val; }
