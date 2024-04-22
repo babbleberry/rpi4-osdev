@@ -1,5 +1,5 @@
-remote_theme: babbleberry/cayman-ga4
-google_analytics: G-YL02TRV3C8
+remote_theme: pages-themes/cayman@v0.2.0
 url: "https://www.rpi4os.com"
 plugins:
-          - jekyll-sitemap
+	- jekyll-remote-theme
+	- jekyll-sitemap
