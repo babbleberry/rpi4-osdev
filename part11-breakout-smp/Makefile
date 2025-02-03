@@ -1,6 +1,7 @@
 CFILES = $(wildcard *.c lib/*.c)
 OFILES = $(CFILES:.c=.o)
 LLVMPATH = /opt/homebrew/opt/llvm/bin
+LLDPATH = /opt/homebrew/opt/lld/bin
 CLANGFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -mcpu=cortex-a72+nosimd
 
 all: clean kernel8.img
@@ -18,7 +19,7 @@ bin/audio.o : bin/audio.bin
 	$(LLVMPATH)/clang --target=aarch64-elf $(CLANGFLAGS) -c $< -o $@
 
 kernel8.img: boot/boot.o $(OFILES) bin/BCM4345C0.o bin/audio.o
-	$(LLVMPATH)/ld.lld -m aarch64elf -nostdlib boot/boot.o $(OFILES) bin/BCM4345C0.o bin/audio.o -T boot/link.ld -o kernel8.elf
+	$(LLDPATH)/ld.lld -m aarch64elf -nostdlib boot/boot.o $(OFILES) bin/BCM4345C0.o bin/audio.o -T boot/link.ld -o kernel8.elf
 	$(LLVMPATH)/llvm-objcopy -O binary kernel8.elf kernel8.img
 
 clean:
